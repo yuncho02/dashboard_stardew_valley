@@ -1,0 +1,11 @@
+/* Ghost AI — Radius scale, verbatim from source Figma extraction. */
+:root {
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;   /* Inputs, Select, Tooltip */
+  --radius-lg: 8px;   /* Alerts, kanban cards, Badge */
+  --radius-xl: 10px;  /* Button */
+  --radius-2xl: 12px; /* Card, Dialog */
+  --radius-3xl: 14px;
+  --radius-full: 9999px; /* Avatar, Switch, pills */
+}

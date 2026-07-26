@@ -1,0 +1,36 @@
+/* Ghost AI — Type tokens. Families from source kit; scale trimmed to the
+   steps this system actually uses (display down to caption). */
+:root {
+  --font-display: 'Geist', -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Geist', -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', 'Roboto Mono', ui-monospace, monospace;
+  --font-alt: 'Inter', -apple-system, sans-serif;
+
+  --text-display: 600 48px/1.05 var(--font-display);
+  --ls-display: -0.01em;
+
+  --text-h1: 600 30px/1.2 var(--font-display);
+  --text-h2: 600 24px/1.25 var(--font-display);
+  --text-h3: 600 20px/1.3 var(--font-display);
+  --text-h4: 600 16px/1.3 var(--font-display);
+
+  --text-body-lg: 400 16px/1.5 var(--font-body);
+  --text-body: 400 14px/1.5 var(--font-body);
+  --text-body-sm: 400 13px/1.5 var(--font-alt);
+  --text-caption: 500 12px/1.35 var(--font-body);
+  --text-label: 500 13px/1.2 var(--font-body);
+
+  --text-mono: 400 13px/1.5 var(--font-mono);
+  --text-mono-sm: 400 12px/1.4 var(--font-mono);
+
+  /* additional scale steps from the token snapshot (12/16, 14/20, 16/24, 18/28) */
+  --text-xs: 400 12px/16px var(--font-body);
+  --text-sm: 400 14px/20px var(--font-body);
+  --text-base: 400 16px/24px var(--font-body);
+  --text-lg: 400 18px/28px var(--font-body);
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: normal;
+  --tracking-wide: 0.02em;
+  --tracking-caps: 0.06em;
+}

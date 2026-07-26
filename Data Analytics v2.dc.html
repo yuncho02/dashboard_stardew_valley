@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+  <link rel="stylesheet" href="_ds/ghost-ai-design-system-updated-84ae0cdc-d07b-4b71-8ec7-7958331723bb/tokens/fonts.css">
+  <link rel="stylesheet" href="_ds/ghost-ai-design-system-updated-84ae0cdc-d07b-4b71-8ec7-7958331723bb/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/ghost-ai-design-system-updated-84ae0cdc-d07b-4b71-8ec7-7958331723bb/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/ghost-ai-design-system-updated-84ae0cdc-d07b-4b71-8ec7-7958331723bb/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/ghost-ai-design-system-updated-84ae0cdc-d07b-4b71-8ec7-7958331723bb/tokens/radius.css">
+  <link rel="stylesheet" href="_ds/ghost-ai-design-system-updated-84ae0cdc-d07b-4b71-8ec7-7958331723bb/tokens/shadow.css">
+  <link rel="stylesheet" href="_ds/ghost-ai-design-system-updated-84ae0cdc-d07b-4b71-8ec7-7958331723bb/base.css">
+  <link rel="stylesheet" href="_ds/ghost-ai-design-system-updated-84ae0cdc-d07b-4b71-8ec7-7958331723bb/styles.css">
+  <script src="_ds/ghost-ai-design-system-updated-84ae0cdc-d07b-4b71-8ec7-7958331723bb/_ds_bundle.js"></script>
+  <style>
+    body { margin: 0; background: var(--bg-canvas); color: var(--text-primary); font-family: var(--font-body); }
+    a { color: var(--accent); }
+    a:hover { color: var(--accent-hover); }
+    .sidebar-shell {
+      transition: width 320ms cubic-bezier(0.22, 1, 0.36, 1);
+      overflow: hidden;
+      will-change: width;
+    }
+    .sidebar-label {
+      display: inline-block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      opacity: 1;
+      max-width: 180px;
+      transform: translateX(0);
+      transition:
+        opacity 220ms cubic-bezier(0.22, 1, 0.36, 1),
+        max-width 320ms cubic-bezier(0.22, 1, 0.36, 1),
+        transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .sidebar-shell.is-collapsed .sidebar-label {
+      opacity: 0;
+      max-width: 0;
+      transform: translateX(-6px);
+      pointer-events: none;
+    }
+    .sidebar-nav-item {
+      transition: padding 320ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .sidebar-nav-btn {
+      transition: padding 320ms cubic-bezier(0.22, 1, 0.36, 1), justify-content 320ms cubic-bezier(0.22, 1, 0.36, 1), background-color 180ms ease;
+    }
+    .sidebar-profile {
+      transition: flex-direction 320ms cubic-bezier(0.22, 1, 0.36, 1), gap 320ms cubic-bezier(0.22, 1, 0.36, 1), justify-content 320ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .sidebar-collapse-btn {
+      transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1), color 180ms ease;
+    }
+    .sidebar-shell.is-collapsed .sidebar-collapse-btn {
+      transform: rotate(180deg);
+    }
+  </style>
+</helmet>
+<div style="display:flex;height:100vh;width:100%;background:#000" data-screen-label="Player Report">
+  <sc-if value="{{ showBugReport }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;height:100%;width:100%;min-height:0">
+      <div style="flex:1;min-width:0;padding:24px;box-sizing:border-box;display:flex">
+        <div style="flex:1;min-width:0;border-radius:18px;overflow:hidden;background:#171717;position:relative">
+          <video src="assets/stardew.mp4" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;display:block"></video>
+        </div>
+      </div>
+      <div style="width:340px;flex-shrink:0;align-self:stretch;display:flex;flex-direction:column;min-height:0;box-sizing:border-box;background:#000;position:relative">
+        <div style="flex:1;min-height:0;overflow:auto;padding:32px 20px 16px;display:flex;flex-direction:column;gap:8px;box-sizing:border-box">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px">
+            <span style="color:var(--accent);display:flex;flex-shrink:0">{{ ghostIcon }}</span>
+            <span style="font:600 18px/28px var(--font-body);color:#fff">Ghost AI</span>
+          </div>
+
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid var(--border-default)">
+            <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+              <span style="font:500 13px/15.6px var(--font-body);color:var(--lime-300,#bef264)">#BUG-47248</span>
+              <span style="font:500 12px/16.2px var(--font-body);color:var(--text-secondary)">Reported: July 14, 2026</span>
+            </div>
+            <span style="font:500 12px/12px var(--font-body);color:var(--danger);background:var(--danger-muted);padding:4px 8px;border-radius:4px;flex-shrink:0">P0</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:14px;padding:24px 20px;border-radius:12px;background:var(--bg-surface);border:1px solid var(--border-default);box-sizing:border-box">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font:var(--text-h4);color:#fff">User Report Summary</span>
+              <span style="align-self:flex-start;font:500 12px/16.2px var(--font-body);color:var(--warning);background:var(--warning-muted);padding:2px 8px;border-radius:4px">Behavior</span>
+            </div>
+            <span style="font:400 14px/20px var(--font-body);color:#fff">Player tried to enter the farmhouse door with the axe equipped. Interaction failed and the character snapped into the nearby oak tree, then became stuck with no exit path.</span>
+            <div style="display:flex;align-items:flex-end;gap:8px">
+              <img src="assets/bug-report/clip-thumb.png" alt="Clip thumbnail" style="width:42px;height:42px;border-radius:6px;object-fit:cover;flex-shrink:0">
+              <span style="font:400 12px/16.2px var(--font-mono,ui-monospace,monospace);color:var(--text-secondary)">0:15</span>
+            </div>
+            <span style="font:400 14px/20px var(--font-body);color:var(--text-secondary);text-decoration:underline;cursor:pointer">See more details</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:14px;padding:24px 20px;border-radius:12px;background:var(--bg-surface);border:1px solid var(--border-default);box-sizing:border-box">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font:var(--text-h4);color:#fff">Analyzed Problem</span>
+              <div style="align-self:flex-start;display:inline-flex;align-items:center;gap:10px;padding:4px 8px;border-radius:4px;background:var(--bg-surface-2)">
+                <img src="assets/bug-report/cursor-agent.png" alt="" style="width:14px;height:14px;object-fit:cover;flex-shrink:0">
+                <span style="font:500 12px/16px var(--font-body);color:#fff">Cursor Agent</span>
+              </div>
+            </div>
+            <span style="font:400 14px/20px var(--font-body);color:#fff">Based on the replay clip and player input history, this looks like a collision / interaction ordering bug — not a rendering issue.</span>
+            <sc-if value="{{ analyzedExpanded }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:10px;font:400 14px/20px var(--font-body);color:#fff">
+                <span>When the axe is active, <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">FarmhouseDoor::tryEnter()</span> returns early without clearing the pending move, while <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">TreeCollider::resolveOverlap()</span> still pushes the character into the tree’s hitbox.</span>
+                <span>Likely source: <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">src/World/InteractionSystem.cpp</span> around lines 418–461, called from <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">CharacterController.cpp</span>.</span>
+                <span style="color:var(--text-secondary)">Impersonate BerniceSun02 and reproduce with axe equipped → door interact to confirm.</span>
+              </div>
+              <span style="font:400 14px/20px var(--font-body);color:var(--text-secondary);text-decoration:underline;cursor:pointer">Go to Code</span>
+            </sc-if>
+            <span onClick="{{ toggleAnalyzed }}" style="font:400 14px/20px var(--font-body);color:var(--text-secondary);text-decoration:underline;cursor:pointer">{{ analyzedToggleLabel }}</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:14px;padding:24px 20px;border-radius:12px;background:var(--bg-surface);border:1px solid var(--border-default);box-sizing:border-box">
+            <span style="font:var(--text-h4);color:#fff">Player Log</span>
+            <div style="display:flex;flex-direction:column;gap:6px;font:400 12px/16px var(--font-mono,ui-monospace,Menlo,monospace);color:var(--text-secondary)">
+              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:01</span><span style="color:#fff">MOVE_UP</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:02</span><span style="color:#fff">MOVE_RIGHT ×3</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:04</span><span style="color:#fff">EQUIP tool=axe</span></div>
+              <sc-if value="{{ playerLogExpanded }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:05</span><span style="color:#fff">MOVE_UP (approach door)</span></div>
+                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:06</span><span style="color:var(--warning)">INTERACT target=farmhouse_door → FAIL</span></div>
+                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:06</span><span style="color:var(--danger)">COLLISION resolve → tree_oak_03</span></div>
+                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:07</span><span style="color:#fff">MOVE_LEFT / MOVE_RIGHT (no effect)</span></div>
+                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:09</span><span style="color:var(--danger)">STATE stuck=true pos=(42.5, 18.0)</span></div>
+              </sc-if>
+            </div>
+            <span onClick="{{ togglePlayerLog }}" style="font:400 14px/20px var(--font-body);color:var(--text-secondary);text-decoration:underline;cursor:pointer">{{ playerLogToggleLabel }}</span>
+          </div>
+        </div>
+
+        <div style="flex-shrink:0;position:sticky;bottom:0;z-index:2;display:flex;align-items:center;gap:8px;padding:16px 20px 20px;background:var(--bg-surface-2,#18181b);border-top:1px solid var(--border-default);box-sizing:border-box">
+          <div style="width:40px;height:40px;border-radius:var(--radius-md);background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <span style="font:600 14px/20px var(--font-body);color:#09090b">B</span>
+          </div>
+          <div style="display:flex;flex-direction:column;min-width:0">
+            <span style="font:600 14px/20px var(--font-body);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">User id: BerniceSun02</span>
+            <span onClick="{{ closeBugReport }}" style="font:500 14px/20px var(--font-body);color:var(--accent-active,#65a30d);text-decoration:underline;cursor:pointer">End Impersonation</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showDashboard }}" hint-placeholder-val="{{ true }}">
+  <div style="position:relative;flex-shrink:0;align-self:stretch">
+    <div class="sidebar-shell {{ sidebarCollapsedClass }}" style="width:{{ sidebarWidthPx }};height:100%;background:#000;display:flex;flex-direction:column;justify-content:space-between;box-sizing:border-box">
+      <div style="display:flex;flex-direction:column;gap:24px">
+        <div style="height:64px;padding:24px;display:flex;flex-direction:row;gap:6px;align-items:center;justify-content:space-between;box-sizing:border-box">
+          <div style="display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden">
+            <span style="color:var(--accent);display:flex;flex-shrink:0">{{ ghostIcon }}</span>
+            <span class="sidebar-label" style="font:600 20px/20px var(--font-body);color:#fff">Ghost AI</span>
+          </div>
+          <span onClick="{{ toggleCollapsed }}" class="sidebar-collapse-btn" style="color:var(--text-secondary);display:flex;cursor:pointer;flex-shrink:0">{{ arrowBarRightIcon }}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <sc-for list="{{ navDisplayItems }}" as="item" hint-placeholder-count="4">
+            <div class="sidebar-nav-item" style="height:52px;padding:{{ item.outerPad }};display:flex;align-items:center;box-sizing:border-box">
+              <div onClick="{{ item.onClick }}" class="sidebar-nav-btn" style="flex:1;height:100%;display:flex;flex-direction:row;gap:8px;align-items:center;justify-content:{{ item.justify }};padding:{{ item.innerPad }};border-radius:var(--radius-xl);background:{{ item.bg }};cursor:pointer;box-sizing:border-box;overflow:hidden">
+                <span style="color:{{ item.color }};display:flex;flex-shrink:0">{{ item.icon }}</span>
+                <span class="sidebar-label" style="font:{{ item.weight }} 14px/20px var(--font-body);color:{{ item.color }}">{{ item.label }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="padding:16px 24px 20px;box-sizing:border-box">
+        <div class="sidebar-profile" style="display:flex;flex-direction:{{ profileDir }};align-items:center;gap:{{ profileGap }};justify-content:{{ profileJustify }}">
+          <div style="display:flex;align-items:center;gap:12px;min-width:0;overflow:hidden">
+            <img src="assets/june-cho-avatar.jpg" alt="June Cho" style="width:40px;height:40px;border-radius:var(--radius-md);object-fit:cover;flex-shrink:0">
+            <div class="sidebar-label" style="display:flex;flex-direction:column;min-width:0">
+              <span style="font:600 14px/20px var(--font-body);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">June Cho</span>
+              <span style="font:500 14px/20px var(--font-body);color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Game Developer</span>
+            </div>
+          </div>
+          <span style="color:var(--text-secondary);flex-shrink:0;cursor:pointer">{{ settingsIcon }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:1;min-width:0;display:flex;padding:24px 24px 24px 8px;box-sizing:border-box">
+    <div style="flex:1;min-width:0;border-radius:18px;background:#171717;overflow:auto">
+      <div style="width:100%;padding:16px 14px 40px;display:flex;flex-direction:column;gap:28px;box-sizing:border-box">
+
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font:var(--text-h1);letter-spacing:var(--tracking-tight)">Player Report</span>
+          <span style="font:var(--text-body-sm);color:var(--text-tertiary)">Stardew Valley · 1.6 update era (2024) — exact current build number needs more data</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+          <div style="position:relative;display:inline-flex;align-items:center;height:36px;padding:0 28px 0 36px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface-2)">
+            <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-tertiary);display:flex;pointer-events:none">{{ calendarIcon }}</span>
+            <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--text-tertiary);display:flex;pointer-events:none">{{ chevronDownIcon }}</span>
+            <select value="{{ dateRange }}" onChange="{{ setDateRangeNative }}" style="border:none;background:transparent;outline:none;color:var(--text-primary);font:var(--text-label);appearance:none;-webkit-appearance:none;width:150px;cursor:pointer">
+              <sc-for list="{{ dateRangeOptions }}" as="opt" hint-placeholder-count="4">
+                <option value="{{ opt.value }}">{{ opt.label }}</option>
+              </sc-for>
+            </select>
+          </div>
+          <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.Button" variant="secondary" size="sm" icon="{{ downloadIcon }}" hint-size="auto,32px">Export</x-import>
+          <button type="button" aria-label="Notifications" style="width:32px;height:32px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface-2);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer">{{ bellIcon }}</button>
+          <button type="button" onClick="{{ toggleTheme }}" aria-label="Toggle light mode" style="width:64px;height:32px;border-radius:var(--radius-full);border:none;box-shadow:inset 0 0 0 1px var(--border-strong);padding:4px;position:relative;background:var(--bg-surface-2);cursor:pointer">
+            <span style="width:24px;height:24px;border-radius:var(--radius-full);background:#fff;box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;color:var(--accent);transition:transform 150ms ease;transform:{{ thumbTransform }}">{{ currentIcon }}</span>
+          </button>
+        </div>
+      </div>
+
+      <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.Tabs" tabs="{{ tabItems }}" value="{{ tab }}" on-change="{{ setTab }}" hint-size="100%,42px"></x-import>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+        <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+          <div onClick="{{ k.onClick }}" style="cursor:{{ k.cursor }};min-width:0">
+            <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.Card" padding="{{21}}" hint-size="100%,150px">
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;align-items:center;gap:6px">
+                  <span style="color:var(--text-tertiary);display:flex">{{ k.iconEl }}</span>
+                  <span style="font:var(--text-caption);color:var(--text-tertiary);text-transform:uppercase;letter-spacing:var(--tracking-caps)">{{ k.label }}</span>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:8px">
+                  <span style="font:var(--text-h2);letter-spacing:var(--tracking-tight)">{{ k.value }}</span>
+                  <span style="display:flex;align-items:center;gap:2px;color:{{ k.trendColor }};font:var(--text-caption)">{{ k.arrowEl }}</span>
+                </div>
+                <span style="font:var(--text-body-sm);color:var(--text-secondary)">{{ k.trend }}</span>
+                <span style="display:flex">{{ k.sparklineEl }}</span>
+              </div>
+            </x-import>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.Select" options="{{ rangeOptions }}" value="{{ range }}" on-change="{{ setRange }}" hint-size="220px,36px"></x-import>
+        <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.Select" options="{{ segmentOptions }}" value="{{ segment }}" on-change="{{ setSegment }}" hint-size="180px,36px"></x-import>
+        <div style="display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 12px 0 14px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface-2);font:var(--text-label);color:var(--text-primary);box-sizing:border-box">
+          Stardew Valley
+          <span style="display:flex;align-items:center;justify-content:center;width:12px;height:12px;color:var(--text-tertiary)">{{ xIcon }}</span>
+        </div>
+        <button type="button" style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:var(--radius-md);border:1px dashed var(--border-strong);background:transparent;color:var(--text-secondary);font:var(--text-label);cursor:pointer;box-sizing:border-box">{{ plusIcon }}Add filter</button>
+        <button type="button" style="display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 16px;margin-left:auto;border:none;border-radius:var(--radius-full);background:var(--accent);color:#09090b;font:600 13px/1 var(--font-body);cursor:pointer;box-sizing:border-box;flex-shrink:0">
+          <span style="display:flex;color:#09090b">{{ sparkleSm }}</span>Ask GhostAI
+        </button>
+      </div>
+
+      <sc-if value="{{ showCharts }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:1.55fr 1fr;gap:16px;align-items:stretch">
+          <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.Card" padding="{{24}}" hint-size="100%,300px">
+            <div style="display:flex;flex-direction:column;gap:17px">
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <span style="font:var(--text-h4)">{{ chartTitle }}</span>
+                <span style="font:var(--text-body-sm);color:var(--text-tertiary)">{{ chartSub }}</span>
+              </div>
+              <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.AreaChart" data="{{ trendData }}" x-key="label" y-key="ccu" height="{{220}}" hint-size="100%,220px"></x-import>
+              <div style="display:flex;justify-content:space-between;font:var(--text-mono-sm);color:var(--text-tertiary)">
+                <span>{{ trendFirstLabel }}</span>
+                <span>{{ trendLastLabel }}</span>
+              </div>
+              <sc-if value="{{ hasGhostSummary }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;gap:8px;padding:14px 16px;border-radius:var(--radius-md);background:var(--bg-surface-2)">
+                  <span style="color:var(--accent);flex-shrink:0;display:flex;align-items:center;height:16px">{{ sparkleSm }}</span>
+                  <div style="display:flex;flex-direction:column;gap:3px">
+                    <span style="font:var(--text-caption);color:var(--text-tertiary);text-transform:uppercase;letter-spacing:var(--tracking-caps)">Ghost summary</span>
+                    <span style="font:var(--text-body-sm);color:var(--text-secondary);line-height:1.5">{{ ghostSummaryEl }}</span>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </x-import>
+
+          <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.Card" padding="{{24}}" hint-size="100%,300px">
+            <div style="display:flex;flex-direction:column;gap:32px;height:100%;align-items:center">
+              <div style="display:flex;flex-direction:column;gap:4px;width:100%">
+                <span style="font:var(--text-h4)">{{ secondaryTitle }}</span>
+                <span style="font:var(--text-body-sm);color:var(--text-tertiary)">{{ secondarySub }}</span>
+              </div>
+              <sc-if value="{{ isPie }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:32px;flex:1;justify-content:center;width:100%">
+                  <div style="position:relative;width:140px;height:140px">
+                    <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.PieChart" data="{{ pieData }}" size="{{140}}" hint-size="140px,140px"></x-import>
+                    <div style="position:absolute;inset:28px;border-radius:var(--radius-full);background:var(--bg-surface);display:flex;flex-direction:column;align-items:center;justify-content:center">
+                      <span style="font:var(--text-h3);letter-spacing:var(--tracking-tight)">{{ donutLabel }}</span>
+                      <span style="font:var(--text-caption);color:var(--text-tertiary);text-transform:uppercase;letter-spacing:var(--tracking-caps)">{{ donutSub }}</span>
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:12px;width:100%">
+                    <sc-for list="{{ pieLegend }}" as="p" hint-placeholder-count="3">
+                      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;font:var(--text-body-sm);width:100%">
+                        <div style="display:flex;align-items:center;gap:8px;min-width:0">
+                          <span style="width:8px;height:8px;border-radius:2px;background:{{ p.color }};flex-shrink:0"></span>
+                          <span style="color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.label }}</span>
+                        </div>
+                        <span style="font:var(--text-mono-sm);color:var(--text-primary);flex-shrink:0">{{ p.display }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ isBar }}" hint-placeholder-val="{{ false }}">
+                <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.BarChart" data="{{ barData }}" x-key="label" y-key="ccu" height="{{220}}" hint-size="100%,220px"></x-import>
+              </sc-if>
+            </div>
+          </x-import>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isRaw }}" hint-placeholder-val="{{ false }}">
+        <div style="border:1px dashed var(--border-strong);border-radius:var(--radius-2xl);background:var(--bg-surface);padding:28px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">
+          <span style="font:var(--text-h4)">Import data</span>
+          <span style="font:var(--text-body-sm);color:var(--text-secondary);max-width:440px">Drop a CSV or JSON export here, or connect a source to add rows to the raw data table below.</span>
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.Button" variant="secondary" size="sm" hint-size="auto,32px">Upload file</x-import>
+            <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.Button" variant="ghost" size="sm" hint-size="auto,32px">Connect a source</x-import>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ hasInsights }}" hint-placeholder-val="{{ true }}">
+        <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.Card" padding="{{0}}" hint-size="100%,160px">
+          <div style="padding:18px 20px;display:flex;flex-direction:column;gap:20px">
+            <sc-for list="{{ insights }}" as="ins" hint-placeholder-count="2">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+                  <span style="font:var(--text-label);color:var(--text-primary)">{{ ins.title }}</span>
+                  <sc-if value="{{ ins.flag }}" hint-placeholder-val="{{ false }}">
+                    <span style="font:var(--text-caption);color:var(--warning);background:var(--warning-muted);padding:2px 8px;border-radius:var(--radius-sm);flex-shrink:0">{{ ins.badge }}</span>
+                  </sc-if>
+                </div>
+                <span style="font:var(--text-body-sm);color:var(--text-secondary)">{{ ins.body }}</span>
+              </div>
+              <sc-if value="{{ ins.showDivider }}" hint-placeholder-val="{{ true }}">
+                <div style="height:1px;background:var(--border-default);width:100%"></div>
+              </sc-if>
+            </sc-for>
+          </div>
+        </x-import>
+      </sc-if>
+
+      <sc-if value="{{ showExtraRow }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;align-items:stretch">
+          <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.Card" padding="{{20}}" hint-size="100%,240px">
+            <div style="display:flex;flex-direction:column;gap:14px;height:100%">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font:var(--text-h4)">Regional breakdown</span>
+                <span style="font:var(--text-caption);color:var(--warning);background:var(--warning-muted);padding:2px 8px;border-radius:var(--radius-sm)">Need more data</span>
+              </div>
+              <span style="font:var(--text-body);color:var(--text-secondary);line-height:1.5">ConcernedApe\u2019s public figures don\u2019t break sales or concurrent players out by region (North America / Europe / Asia-Pacific, etc.) \u2014 that split isn\u2019t published anywhere we could find. Wire this up to first-party or storefront regional data if it becomes available.</span>
+            </div>
+          </x-import>
+
+          <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.Card" padding="{{20}}" hint-size="100%,240px">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <span style="font:var(--text-h4)">Sales by platform</span>
+              <sc-for list="{{ platformBars }}" as="p" hint-placeholder-count="3">
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <div style="display:flex;justify-content:space-between;font:var(--text-body-sm)">
+                    <span style="color:var(--text-secondary)">{{ p.label }}</span>
+                    <span style="font:var(--text-mono-sm);color:var(--text-primary)">{{ p.display }}</span>
+                  </div>
+                  <div style="height:6px;border-radius:var(--radius-full);background:var(--bg-surface-2);overflow:hidden">
+                    <div style="height:100%;width:{{ p.pct }}%;background:{{ p.color }};border-radius:var(--radius-full)"></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </x-import>
+
+          <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.Card" padding="{{20}}" hint-size="100%,240px">
+            <div style="display:flex;flex-direction:column;gap:0">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <span style="font:var(--text-h4)">Update milestones</span>
+                <span onClick="{{ goToRaw }}" style="font:var(--text-caption);color:var(--accent);cursor:pointer">View all →</span>
+              </div>
+              <sc-for list="{{ milestoneList }}" as="m" hint-placeholder-count="4">
+                <div style="display:flex;flex-direction:column;padding:9px 0;border-bottom:1px solid var(--border-default)">
+                  <span style="font:var(--text-label);color:var(--text-primary)">{{ m.update }} — {{ m.peak }} CCU</span>
+                  <span style="font:var(--text-caption);color:var(--text-tertiary)">{{ m.meta }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </x-import>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isRaw }}" hint-placeholder-val="{{ false }}">
+        <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.Card" padding="{{0}}" hint-size="100%,500px">
+          <div style="display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--border-default);flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface-2);flex:1;min-width:200px;max-width:320px">
+                <span style="color:var(--text-tertiary);display:flex">{{ searchIcon }}</span>
+                <input value="{{ rawSearch }}" onChange="{{ setRawSearch }}" placeholder="Search metrics, sources, or period…" style="flex:1;border:none;outline:none;background:transparent;color:var(--text-primary);font:var(--text-body)">
+              </div>
+              <button type="button" style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:transparent;color:var(--text-secondary);font:var(--text-label);cursor:pointer">{{ columnsIcon }}Columns</button>
+              <button type="button" style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px 0 12px;border-radius:var(--radius-full);border:1px solid var(--accent-border);background:var(--accent-muted);color:var(--accent);font:var(--text-label);cursor:pointer">{{ sparkleSm }}Summarize</button>
+              <button type="button" onClick="{{ exportCsv }}" style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border-radius:var(--radius-md);border:none;background:var(--accent);color:var(--text-on-accent);font:var(--text-label);cursor:pointer;margin-left:auto">{{ downloadIcon }}Export CSV</button>
+            </div>
+
+            <div style="display:flex">
+              <div style="flex:1;min-width:0;overflow-x:auto">
+                <div style="display:flex;border-bottom:1px solid var(--border-default);background:var(--bg-surface)">
+                  <div style="width:40px;flex-shrink:0"></div>
+                  <div onClick="{{ sortByMetric }}" style="flex:2;min-width:0;padding:10px 12px;font:var(--text-label);color:var(--text-primary);cursor:pointer">Metric</div>
+                  <div style="flex:1;min-width:0;padding:10px 12px;font:var(--text-label);color:var(--text-primary);text-align:right">Value</div>
+                  <div style="flex:1;min-width:0;padding:10px 12px;font:var(--text-label);color:var(--text-primary)">Period</div>
+                  <div style="flex:1;min-width:0;padding:10px 12px;font:var(--text-label);color:var(--text-primary)">Source</div>
+                </div>
+                <sc-for list="{{ rawRowsView }}" as="row" hint-placeholder-count="8">
+                  <div onClick="{{ row.onClick }}" style="display:flex;border-bottom:1px solid var(--border-default);background:{{ row.rowBg }};cursor:pointer">
+                    <div style="width:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+                      <span style="width:16px;height:16px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);background:{{ row.checkBg }};display:inline-block"></span>
+                    </div>
+                    <div style="flex:2;min-width:0;padding:12px;font:var(--text-body-sm);color:var(--text-primary)">{{ row.metric }}</div>
+                    <div style="flex:1;min-width:0;padding:12px;font:var(--text-mono-sm);color:var(--text-primary);text-align:right">{{ row.value }}</div>
+                    <div style="flex:1;min-width:0;padding:12px;font:var(--text-body-sm);color:var(--text-secondary)">{{ row.period }}</div>
+                    <div style="flex:1;min-width:0;padding:12px;font:var(--text-body-sm);color:var(--text-secondary)">{{ row.source }}</div>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ rawEmpty }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:32px;text-align:center;font:var(--text-body-sm);color:var(--text-tertiary)">No records match your search.</div>
+                </sc-if>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 12px">
+                  <span style="font:var(--text-body-sm);color:var(--text-tertiary)">Showing {{ rawPageStart }}–{{ rawPageEnd }} of {{ rawCount }} records</span>
+                  <div style="display:flex;gap:8px">
+                    <button type="button" onClick="{{ goRawPrev }}" disabled="{{ rawPrevDisabled }}" style="height:32px;padding:0 14px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:transparent;color:var(--text-primary);font:var(--text-label);cursor:pointer">Previous</button>
+                    <button type="button" onClick="{{ goRawNext }}" disabled="{{ rawNextDisabled }}" style="height:32px;padding:0 14px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:transparent;color:var(--text-primary);font:var(--text-label);cursor:pointer">Next</button>
+                  </div>
+                </div>
+              </div>
+
+              <sc-if value="{{ hasSelectedRaw }}" hint-placeholder-val="{{ true }}">
+                <div style="width:300px;flex-shrink:0;border-left:1px solid var(--border-default);padding:20px;display:flex;flex-direction:column;gap:14px">
+                  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+                    <span style="font:var(--text-h4)">{{ selectedRaw.metric }}</span>
+                    <span onClick="{{ closeRawDetail }}" style="cursor:pointer;color:var(--text-tertiary);flex-shrink:0">{{ xIcon }}</span>
+                  </div>
+                  <span style="font:var(--text-h2);letter-spacing:var(--tracking-tight)">{{ selectedRaw.value }}</span>
+                  <div style="display:flex;flex-direction:column;gap:8px;font:var(--text-body-sm)">
+                    <div style="display:flex;justify-content:space-between"><span style="color:var(--text-tertiary)">Period</span><span>{{ selectedRaw.period }}</span></div>
+                    <div style="display:flex;justify-content:space-between"><span style="color:var(--text-tertiary)">Source</span><span>{{ selectedRaw.source }}</span></div>
+                  </div>
+                  <div style="height:1px;background:var(--border-default)"></div>
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <span style="font:var(--text-caption);color:var(--text-tertiary);text-transform:uppercase;letter-spacing:var(--tracking-caps)">Note</span>
+                    <span style="font:var(--text-body-sm);color:var(--text-secondary);line-height:1.5">{{ selectedRawNote }}</span>
+                  </div>
+                  <div style="height:1px;background:var(--border-default)"></div>
+                  <span onClick="{{ toggleRawDetailExpanded }}" style="font:var(--text-label);color:var(--accent);cursor:pointer">{{ seeMoreLabel }}</span>
+                  <sc-if value="{{ rawDetailExpanded }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;gap:8px">
+                      <span style="font:var(--text-caption);color:var(--text-tertiary);text-transform:uppercase;letter-spacing:var(--tracking-caps)">Related metric</span>
+                      <sc-if value="{{ selectedChartIsMilestones }}" hint-placeholder-val="{{ false }}">
+                        <span style="font:var(--text-body-sm);color:var(--text-secondary)">Concurrent players around major updates</span>
+                        <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.AreaChart" data="{{ trendData }}" x-key="label" y-key="ccu" height="{{120}}" hint-size="100%,120px"></x-import>
+                      </sc-if>
+                      <sc-if value="{{ selectedChartIsPlatform }}" hint-placeholder-val="{{ false }}">
+                        <span style="font:var(--text-body-sm);color:var(--text-secondary)">Lifetime sales by platform</span>
+                        <div style="display:flex;justify-content:center">
+                          <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.PieChart" data="{{ pieData }}" size="{{110}}" hint-size="110px,110px"></x-import>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ selectedChartIsNone }}" hint-placeholder-val="{{ false }}">
+                        <span style="font:var(--text-body-sm);color:var(--text-tertiary)">No connected time-series or breakdown for this metric — need more data.</span>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </x-import>
+      </sc-if>
+
+      <sc-if value="{{ showRegularTable }}" hint-placeholder-val="{{ true }}">
+      <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.Card" padding="{{24}}" hint-size="100%,260px">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <span style="font:var(--text-h4)">{{ tableTitle }}</span>
+          <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.DataTable" columns="{{ tableCols }}" data="{{ tableRows }}" searchable="{{ tableSearchable }}" selectable="{{false}}" page-size="{{10}}" empty-label="{{ tableEmptyLabel }}" hint-size="100%,200px"></x-import>
+        </div>
+      </x-import>
+      </sc-if>
+
+      <span style="font:var(--text-caption);color:var(--text-tertiary)">{{ sourceLine }}</span>
+
+    </div>
+  </div>
+  </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const NAV_ITEMS = [
+  { value: 'analytics', label: 'Dashboard', icon: 'home' },
+  { value: 'player', label: 'Player Report', icon: 'trendUp2' },
+  { value: 'tasks', label: 'My Task', icon: 'tasks' },
+  { value: 'messages', label: 'Message', icon: 'messages' }
+];
+const TAB_ITEMS = [
+  { value: 'overview', label: 'Overview' },
+  { value: 'retention', label: 'Retention' },
+  { value: 'engagement', label: 'Engagement' },
+  { value: 'raw', label: 'Raw data · 19' }
+];
+const GAME_OPTIONS = [{ value: 'stardew', label: 'Stardew Valley' }];
+const DATE_RANGE_OPTIONS = [
+  { value: 'last7', label: 'Last 7 days' },
+  { value: 'last30', label: 'Last 30 days' },
+  { value: 'last90', label: 'Last 90 days' },
+  { value: 'all', label: 'All time' }
+];
+const RANGE_OPTIONS = [
+  { value: 'all', label: 'All-time' },
+  { value: 'since16', label: 'Since 1.6 update' },
+  { value: '90d', label: 'Last 90 days' },
+  { value: '30d', label: 'Last 30 days' }
+];
+const SEGMENT_OPTIONS = [
+  { value: 'all', label: 'All platforms' },
+  { value: 'pc', label: 'PC (Steam)' },
+  { value: 'switch', label: 'Nintendo Switch' },
+  { value: 'other', label: 'Console & mobile' }
+];
+
+// Concurrent-player counts at real milestones (SteamDB / press coverage).
+const MILESTONES = [
+  { label: '2016 launch', ccu: 64427 },
+  { label: '2020 · 1.5', ccu: 89807 },
+  { label: '2021 · 1.5 tail', ccu: 94879 },
+  { label: '2024 · 1.6 day 1', ccu: 146159 },
+  { label: '2024 · 1.6 peak', ccu: 236614 },
+  { label: '2026 · today', ccu: 113287 }
+];
+
+// Lifetime unit sales by platform, Dec 2024 press figures (41M total: 26M PC, 7.9M Switch, remainder other).
+const PLATFORM_MIX = [
+  { label: 'PC (Steam & other stores)', value: 26, display: '26M · 63%', color: 'var(--accent)' },
+  { label: 'Nintendo Switch', value: 7.9, display: '7.9M · 19%', color: 'var(--info)' },
+  { label: 'Console & mobile', value: 7.1, display: '7.1M · 17%', color: 'var(--warning)' }
+];
+
+const PATCH_COLS = [
+  { key: 'update', label: 'Update', sortable: true },
+  { key: 'date', label: 'Date', sortable: true },
+  { key: 'peak', label: 'Peak CCU', sortable: true, align: 'right', mono: true },
+  { key: 'prior', label: 'Prior record', align: 'right', mono: true },
+  { key: 'change', label: 'Change', align: 'right' }
+];
+const PATCH_ROWS = [
+  { id: 1, update: 'Launch', date: 'Feb 26, 2016', peak: '64,427', prior: '—', change: '—' },
+  { id: 2, update: '1.5 update', date: 'Dec 27, 2020', peak: '89,807', prior: '64,427', change: '+39%' },
+  { id: 3, update: '1.6 update', date: 'Mar 19–24, 2024', peak: '236,614', prior: '94,879', change: '+149%' },
+  { id: 4, update: 'Current', date: '2026', peak: '113,287', prior: '236,614', change: '−52%' }
+];
+
+const PLATFORM_COLS = [
+  { key: 'platform', label: 'Platform', sortable: true },
+  { key: 'copies', label: 'Copies sold', sortable: true, align: 'right', mono: true },
+  { key: 'share', label: 'Share', align: 'right' },
+  { key: 'notes', label: 'Notes' }
+];
+const PLATFORM_ROWS = [
+  { id: 1, platform: 'PC (Steam & other stores)', copies: '26M', share: '63%', notes: 'Primary platform since 2016 launch' },
+  { id: 2, platform: 'Nintendo Switch', copies: '7.9M', share: '19%', notes: 'Ported 2017; strong handheld demand' },
+  { id: 3, platform: 'Console & mobile', copies: '7.1M', share: '17%', notes: 'PS, Xbox, iOS, Android combined' }
+];
+
+const TAB_CONFIG = {
+  overview: {
+    kpis: [
+      { icon: 'box', label: 'Lifetime copies sold', value: '41.3M', dir: 'up', trend: '+11M since Feb 2024' },
+      { icon: 'trendUp', label: 'Gross revenue', value: '$518M', dir: 'flat', trend: '$152.8M net after cuts & tax' },
+      { icon: 'users', label: 'Peak concurrent players', value: '236,614', dir: 'flat', trend: 'All-time record · Mar 24, 2024' },
+      { icon: 'star', label: 'Steam reviews', value: '1,010,577', dir: 'up', trend: 'Overwhelmingly Positive · 98/100' }
+    ],
+    chartTitle: 'Concurrent players by update',
+    chartSub: 'Milestone peaks · all-time (SteamDB)',
+    secondaryTitle: 'Lifetime sales by platform',
+    secondarySub: '41.3M copies · Dec 2024',
+    secondary: 'pie',
+    donutLabel: '63%',
+    donutSub: 'PC',
+    tableTitle: 'Update impact on concurrent players',
+    tableCols: PATCH_COLS,
+    tableRows: PATCH_ROWS,
+    ghostSummary: 'Concurrent players are up sharply since the <b>1.6 update (March 2024)</b>, which remains the largest content patch in the game\u2019s history. CCU peaked at 236,614 \u2014 149% above the prior record \u2014 and has settled at 113,287, still nearly double the 2016 launch peak.',
+    showExtraRow: true,
+    insights: [
+      { title: '1.6 update drove the largest concurrent-player spike in the game\u2019s history', body: 'CCU jumped from a prior record of 94,879 (Jan 2021) to an all-time peak of 236,614 within days of the March 19, 2024 patch. (SteamDB)', flag: false },
+      { title: 'Per-title revenue by platform \u2014 need more data', body: 'The press page reports only total gross revenue and platform unit splits, not a revenue breakdown by platform or region. Flag for follow-up with first-party sales data.', flag: true }
+    ]
+  },
+  retention: {
+    kpis: [
+      { icon: 'users', label: 'Current concurrent players', value: '113,287', dir: 'flat', trend: '±3.7% month-over-month · stable' },
+      { icon: 'trendUp', label: 'Vs. all-time peak', value: '−52%', dir: 'down', trend: '236,614 peak on Mar 24, 2024' },
+      { icon: 'box', label: 'Retained of 1.6 launch-day CCU', value: '77%', dir: 'up', trend: '146,159 day 1 → 113,287 today' },
+      { icon: 'star', label: 'Lifetime reviews', value: '1.01M', dir: 'up', trend: 'Signal of sustained goodwill' }
+    ],
+    chartTitle: 'Concurrent players by update',
+    chartSub: 'Milestone peaks · all-time (SteamDB)',
+    secondaryTitle: 'Peak CCU by milestone',
+    secondarySub: 'Launch through 1.6 update',
+    secondary: 'bar',
+    tableTitle: 'Post-update player retention',
+    tableCols: PATCH_COLS,
+    tableRows: PATCH_ROWS,
+    ghostSummary: 'Concurrent players sit <b>52% below the all-time peak</b> set at the 1.6 update, 19 months later \u2014 but that\u2019s still 77% of the update\u2019s own launch-day count, and nearly double the 2016 baseline.',
+    insights: [
+      { title: 'Current concurrent players sit 52% below the all-time peak, 19 months on', body: '113,287 today vs. 236,614 at the March 2024 high \u2014 typical decay after a major content update, not a sign of decline. (Steambase)', flag: false },
+      { title: 'Day-1 / Day-7 / Day-30 retention curves \u2014 need more data', body: 'Valve does not publish per-title retention cohorts; Steam concurrent-player counts are the closest public proxy available for a premium single-player title.', flag: true }
+    ]
+  },
+  engagement: {
+    kpis: [
+      { icon: 'star', label: 'Steam reviews', value: '1,010,577', dir: 'up', trend: 'Overwhelmingly Positive · 98/100' },
+      { icon: 'users', label: 'Reddit subscribers', value: '3.12M', dir: 'up', trend: 'r/StardewValley' },
+      { icon: 'trendUp', label: 'Twitch watched hours', value: '975,619', dir: 'up', trend: 'Trailing period, 2026' },
+      { icon: 'box', label: 'TikTok posts', value: '468.9K', dir: 'up', trend: '#stardewvalley' }
+    ],
+    chartTitle: 'Concurrent players by update',
+    chartSub: 'Milestone peaks · all-time (SteamDB)',
+    secondaryTitle: 'Lifetime sales by platform',
+    secondarySub: '41.3M copies · Dec 2024',
+    secondary: 'pie',
+    donutLabel: '63%',
+    donutSub: 'PC',
+    tableTitle: 'Sales & engagement by platform',
+    tableCols: PLATFORM_COLS,
+    tableRows: PLATFORM_ROWS,
+    ghostSummary: 'Reach extends well past Steam: <b>3.12M Reddit subscribers</b> and <b>975,619 Twitch watched hours</b> point to a community that stays active between content updates, not just around them.',
+    insights: [
+      { title: 'Community engagement spans far beyond Steam', body: '3.12M Reddit subscribers and 975,619 Twitch watched hours show sustained cross-platform reach outside the storefront. (SubredditStats, activeplayer.io)', flag: false },
+      { title: 'Discord member count & mobile store ratings \u2014 need more data', body: 'No public membership count for the official Discord, and iOS/Android review scores weren\u2019t available in this pass \u2014 worth pulling directly from those storefronts.', flag: true }
+    ]
+  },
+  raw: {
+    kpis: [
+      { icon: 'box', label: 'Records', value: '19', dir: 'flat', trend: 'Individual data points below' },
+      { icon: 'trendUp', label: 'Date range covered', value: '2016–2026', dir: 'flat', trend: 'Launch through current period' },
+      { icon: 'users', label: 'Sources', value: '9', dir: 'flat', trend: 'SteamDB, Steambase, Reddit, TikTok & more' },
+      { icon: 'star', label: 'Last refreshed', value: '2026', dir: 'flat', trend: 'Manual pull, not a live feed' }
+    ],
+    insights: []
+  }
+};
+
+const SOURCE_LINE = 'Sources: SteamDB, Steambase, Tracker.gg, ConcernedApe/Stardew Valley press page, Statista (Eurogamer), activeplayer.io, SubredditStats/OpenCommunity, TikTok.';
+
+const RAW_COLS = [
+  { key: 'metric', label: 'Metric', sortable: true },
+  { key: 'value', label: 'Value', sortable: true, align: 'right', mono: true },
+  { key: 'period', label: 'Date / period', sortable: true },
+  { key: 'source', label: 'Source' }
+];
+const RAW_ROWS = [
+  { id: 1, metric: 'Concurrent players — all-time peak', value: '236,614', period: '2024-03-24', source: 'SteamDB' },
+  { id: 2, metric: 'Concurrent players — 2016 launch peak', value: '64,427', period: '2016-02-26', source: 'SteamDB' },
+  { id: 3, metric: 'Concurrent players — 1.5 update peak', value: '89,807', period: '2020-12-27', source: 'PCGamesN / SteamDB' },
+  { id: 4, metric: 'Concurrent players — 1.5 tail record', value: '94,879', period: '2021-01', source: 'Notebookcheck' },
+  { id: 5, metric: 'Concurrent players — 1.6 update day 1', value: '146,159', period: '2024-03-19', source: 'Game World Observer' },
+  { id: 6, metric: 'Concurrent players — current (24h peak)', value: '113,287', period: '2026', source: 'Steambase' },
+  { id: 7, metric: 'Concurrent players — live now', value: '69,266', period: '2026', source: 'SteamDB' },
+  { id: 8, metric: 'Lifetime copies sold — all platforms', value: '41,300,000', period: '2024-12', source: 'ConcernedApe press page' },
+  { id: 9, metric: 'Copies sold — PC', value: '26,000,000', period: '2024-12', source: 'ConcernedApe press page' },
+  { id: 10, metric: 'Copies sold — Nintendo Switch', value: '7,900,000', period: '2024-12', source: 'ConcernedApe press page' },
+  { id: 11, metric: 'Copies sold — console & mobile', value: '7,100,000', period: '2024-12', source: 'Derived (41.3M − PC − Switch)' },
+  { id: 12, metric: 'Gross revenue', value: '$518,000,000', period: '2024-12', source: 'Udonis analysis' },
+  { id: 13, metric: 'Net revenue (est., after cuts/discounts/tax)', value: '$152,800,000', period: '2024-12', source: 'Udonis analysis' },
+  { id: 14, metric: 'Steam reviews — total', value: '1,010,577', period: '2026', source: 'Steambase' },
+  { id: 15, metric: 'Steam review score', value: '98 / 100', period: '2026', source: 'Steambase' },
+  { id: 16, metric: 'Community hub followers', value: '1,029,383', period: '2026', source: 'Steambase' },
+  { id: 17, metric: 'Twitch watched hours', value: '975,619', period: '2026 (trailing)', source: 'activeplayer.io' },
+  { id: 18, metric: 'Reddit subscribers — r/StardewValley', value: '3,119,329', period: '2026', source: 'SubredditStats / OpenCommunity' },
+  { id: 19, metric: 'TikTok posts — #stardewvalley', value: '468,900', period: '2026', source: 'TikTok' }
+];
+
+// Editorial notes shown in the raw-data detail panel — only where we have real supporting context.
+const RAW_NOTES = {
+  1: 'Set within days of the March 19, 2024 "1.6" update \u2014 the largest content patch in the game\u2019s history. 149% above the prior record.',
+  2: 'The original record, set shortly after the Feb 26, 2016 launch on Steam.',
+  4: 'Record set during the tail of the 1.5 update\u2019s surge, before being broken by 1.6 in 2024.',
+  5: 'Recorded hours after the 1.6 update went live \u2014 crossed 100k concurrent for the first time ever.',
+  6: 'Steambase\u2019s own comparison: 52% below the March 2024 peak, but still a historically high baseline for an 8+ year old title.',
+  8: 'Reported directly on the developer\u2019s press page; PC + Switch + console/mobile combined.',
+  11: 'Not an official figure \u2014 derived by subtracting PC and Switch units from the 41.3M total.',
+  13: 'Estimated by third-party analysis (Udonis), not disclosed directly by the developer.'
+};
+const RAW_NOTE_FALLBACK = 'No additional editorial context captured for this metric yet — need more data.';
+const CCU_METRIC_IDS = [1, 2, 3, 4, 5, 6, 7];
+const PLATFORM_METRIC_IDS = [8, 9, 10, 11, 12, 13];
+
+function sparkle(size) {
+  // Lucide sparkles from assets/lucide/sparkles.svg — currentColor so it inherits context.
+  return React.createElement('svg', {
+    width: size,
+    height: size,
+    viewBox: '0 0 20 20',
+    fill: 'none',
+    xmlns: 'http://www.w3.org/2000/svg',
+    style: { flexShrink: 0, display: 'block' }
+  },
+    React.createElement('path', {
+      d: 'M16.6667 2.50004V5.83337M18.3334 4.16671H15M3.33335 14.1667V15.8334M4.16669 15H2.50002M8.2808 12.9167C8.20641 12.6283 8.05609 12.3651 7.84548 12.1545C7.63488 11.9439 7.3717 11.7936 7.0833 11.7192L1.9708 10.4009C1.88358 10.3761 1.80681 10.3236 1.75215 10.2512C1.69748 10.1789 1.66791 10.0907 1.66791 10C1.66791 9.90938 1.69748 9.82118 1.75215 9.74884C1.80681 9.6765 1.88358 9.62397 1.9708 9.59921L7.0833 8.28005C7.37159 8.20572 7.63471 8.05552 7.84531 7.84508C8.0559 7.63463 8.20627 7.37162 8.2808 7.08338L9.59914 1.97088C9.62364 1.88331 9.67612 1.80616 9.74857 1.75121C9.82102 1.69625 9.90945 1.6665 10.0004 1.6665C10.0913 1.6665 10.1798 1.69625 10.2522 1.75121C10.3246 1.80616 10.3771 1.88331 10.4016 1.97088L11.7191 7.08338C11.7935 7.37177 11.9439 7.63496 12.1545 7.84556C12.3651 8.05616 12.6282 8.20648 12.9166 8.28088L18.0291 9.59838C18.1171 9.62263 18.1946 9.67505 18.2498 9.74761C18.3051 9.82017 18.335 9.90885 18.335 10C18.335 10.0912 18.3051 10.1799 18.2498 10.2525C18.1946 10.325 18.1171 10.3775 18.0291 10.4017L12.9166 11.7192C12.6282 11.7936 12.3651 11.9439 12.1545 12.1545C11.9439 12.3651 11.7935 12.6283 11.7191 12.9167L10.4008 18.0292C10.3763 18.1168 10.3238 18.1939 10.2514 18.2489C10.1789 18.3038 10.0905 18.3336 9.99955 18.3336C9.90862 18.3336 9.82018 18.3038 9.74774 18.2489C9.67529 18.1939 9.62281 18.1168 9.5983 18.0292L8.2808 12.9167Z',
+      stroke: 'currentColor',
+      strokeWidth: 1.5,
+      strokeLinecap: 'round',
+      strokeLinejoin: 'round'
+    })
+  );
+}
+
+function chevron(collapsed) {
+  return React.createElement('svg', { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', style: { transform: collapsed ? 'rotate(180deg)' : 'none' } },
+    React.createElement('path', { d: 'M15 6l-6 6 6 6', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })
+  );
+}
+
+// Exact Tabler icon path data materialized from the Figma sidebar (fig_materialize icon-data).
+const FIG_ICON_PATHS = {
+  trendUp2: "<path d=\"M -0.707 9.293 C -1.098 9.683 -1.098 10.317 -0.707 10.707 C -0.317 11.098 0.317 11.098 0.707 10.707 L 0 10 L -0.707 9.293 Z M 6 4 L 6.707 3.293 C 6.317 2.902 5.683 2.902 5.293 3.293 L 6 4 Z M 10 8 L 9.293 8.707 C 9.683 9.098 10.317 9.098 10.707 8.707 L 10 8 Z M 18.707 0.707 C 19.098 0.317 19.098 -0.317 18.707 -0.707 C 18.317 -1.098 17.683 -1.098 17.293 -0.707 L 18 0 L 18.707 0.707 Z M 0 10 L 0.707 10.707 L 6.707 4.707 L 6 4 L 5.293 3.293 L -0.707 9.293 L 0 10 Z M 6 4 L 5.293 4.707 L 9.293 8.707 L 10 8 L 10.707 7.293 L 6.707 3.293 L 6 4 Z M 10 8 L 10.707 8.707 L 18.707 0.707 L 18 0 L 17.293 -0.707 L 9.293 7.293 L 10 8 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 3 7)\"/><path d=\"M 0 -1 C -0.552 -1 -1 -0.552 -1 0 C -1 0.552 -0.552 1 0 1 L 0 0 L 0 -1 Z M 7 0 L 8 0 C 8 -0.552 7.552 -1 7 -1 L 7 0 Z M 6 7 C 6 7.552 6.448 8 7 8 C 7.552 8 8 7.552 8 7 L 7 7 L 6 7 Z M 0 0 L 0 1 L 7 1 L 7 0 L 7 -1 L 0 -1 L 0 0 Z M 7 0 L 6 0 L 6 7 L 7 7 L 8 7 L 8 0 L 7 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 14 7)\"/>",
+  arrowBarRight: "<path d=\"M20 12H4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/><path d=\"M14 18l6-6-6-6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><line x1=\"4\" y1=\"4\" x2=\"4\" y2=\"20\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/>",
+  chefHat: "<path d=\"M 8.955 0 L 8.955 -1 L 8.954 -1 L 8.955 0 Z M 12.865 3.151 L 11.887 3.363 C 11.945 3.631 12.111 3.863 12.345 4.005 C 12.579 4.148 12.861 4.188 13.126 4.116 L 12.865 3.151 Z M 14.955 10.874 L 14.693 9.909 C 14.257 10.027 13.955 10.422 13.955 10.874 L 14.955 10.874 Z M 14.955 18 L 14.955 19 C 15.507 19 15.955 18.552 15.955 18 L 14.955 18 Z M 2.955 18 L 1.955 18 C 1.955 18.552 2.402 19 2.955 19 L 2.955 18 Z M 2.955 10.874 L 3.955 10.874 C 3.955 10.422 3.652 10.027 3.216 9.909 L 2.955 10.874 Z M 5.047 3.151 L 4.785 4.116 C 5.05 4.188 5.332 4.148 5.566 4.006 C 5.8 3.863 5.966 3.631 6.024 3.363 L 5.047 3.151 Z M 8.955 0 L 8.955 1 C 10.392 1 11.595 2.012 11.887 3.363 L 12.865 3.151 L 13.842 2.939 C 13.355 0.688 11.354 -1 8.955 -1 L 8.955 0 Z M 12.865 3.151 L 13.126 4.116 C 13.894 3.908 14.713 4.014 15.403 4.41 L 15.901 3.543 L 16.399 2.676 C 15.249 2.016 13.884 1.839 12.603 2.186 L 12.865 3.151 Z M 15.901 3.543 L 15.403 4.41 C 16.094 4.807 16.598 5.461 16.806 6.229 L 17.771 5.967 L 18.736 5.706 C 18.39 4.426 17.549 3.336 16.399 2.676 L 15.901 3.543 Z M 17.771 5.967 L 16.806 6.229 C 17.014 6.997 16.908 7.816 16.512 8.506 L 17.379 9.004 L 18.246 9.502 C 18.907 8.352 19.083 6.986 18.736 5.706 L 17.771 5.967 Z M 17.379 9.004 L 16.512 8.506 C 16.116 9.196 15.462 9.701 14.693 9.909 L 14.955 10.874 L 15.216 11.839 C 16.496 11.493 17.586 10.652 18.246 9.502 L 17.379 9.004 Z M 14.955 10.874 L 13.955 10.874 L 13.955 18 L 14.955 18 L 15.955 18 L 15.955 10.874 L 14.955 10.874 Z M 14.955 18 L 14.955 17 L 2.955 17 L 2.955 18 L 2.955 19 L 14.955 19 L 14.955 18 Z M 2.955 18 L 3.955 18 L 3.955 10.874 L 2.955 10.874 L 1.955 10.874 L 1.955 18 L 2.955 18 Z M 2.955 10.874 L 3.216 9.909 C 2.836 9.806 2.479 9.629 2.167 9.388 L 1.557 10.18 L 0.946 10.971 C 1.466 11.373 2.059 11.668 2.693 11.839 L 2.955 10.874 Z M 1.557 10.18 L 2.167 9.388 C 1.856 9.147 1.594 8.848 1.398 8.506 L 0.531 9.003 L -0.337 9.501 C -0.01 10.071 0.426 10.57 0.946 10.971 L 1.557 10.18 Z M 0.531 9.003 L 1.398 8.506 C 1.202 8.164 1.075 7.787 1.025 7.396 L 0.033 7.524 L -0.959 7.652 C -0.875 8.303 -0.664 8.931 -0.337 9.501 L 0.531 9.003 Z M 0.033 7.524 L 1.025 7.396 C 0.974 7.005 1.001 6.608 1.104 6.228 L 0.139 5.967 L -0.826 5.705 C -0.998 6.339 -1.043 7 -0.959 7.652 L 0.033 7.524 Z M 0.139 5.967 L 1.104 6.228 C 1.207 5.848 1.384 5.491 1.625 5.179 L 0.833 4.568 L 0.042 3.957 C -0.359 4.477 -0.654 5.071 -0.826 5.705 L 0.139 5.967 Z M 0.833 4.568 L 1.625 5.179 C 1.866 4.867 2.166 4.606 2.507 4.41 L 2.01 3.542 L 1.512 2.675 C 0.943 3.002 0.443 3.438 0.042 3.957 L 0.833 4.568 Z M 2.01 3.542 L 2.507 4.41 C 2.849 4.214 3.226 4.087 3.617 4.036 L 3.489 3.045 L 3.361 2.053 C 2.71 2.137 2.082 2.348 1.512 2.675 L 2.01 3.542 Z M 3.489 3.045 L 3.617 4.036 C 4.008 3.986 4.405 4.013 4.785 4.116 L 5.047 3.151 L 5.308 2.186 C 4.674 2.014 4.013 1.969 3.361 2.053 L 3.489 3.045 Z M 5.047 3.151 L 6.024 3.363 C 6.169 2.694 6.539 2.094 7.072 1.665 L 6.445 0.886 L 5.817 0.108 C 4.928 0.824 4.312 1.823 4.069 2.939 L 5.047 3.151 Z M 6.445 0.886 L 7.072 1.665 C 7.606 1.235 8.27 1 8.955 1 L 8.955 0 L 8.954 -1 C 7.813 -1 6.706 -0.609 5.817 0.108 L 6.445 0.886 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 3.045 3)\"/><path d=\"M -0.001 -0.991 C -0.553 -0.991 -1 -0.543 -1 0.01 C -1 0.562 -0.552 1.009 0.001 1.009 L 0 0.009 L -0.001 -0.991 Z M 11.84 1 C 12.392 1 12.839 0.552 12.839 -0.001 C 12.839 -0.553 12.391 -1 11.838 -1 L 11.839 0 L 11.84 1 Z M 0 0.009 L 0.001 1.009 L 11.84 1 L 11.839 0 L 11.838 -1 L -0.001 -0.991 L 0 0.009 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 6.161 17)\"/>",
+  cookie: "<path d=\"M 10 0 L 10.956 0.294 C 11.049 -0.009 10.993 -0.339 10.804 -0.594 C 10.616 -0.849 10.317 -1 10 -1 L 10 0 Z M 20 10 L 21 10 C 21 9.683 20.849 9.384 20.594 9.196 C 20.339 9.007 20.009 8.951 19.706 9.044 L 20 10 Z M 15 5 L 15.956 5.294 C 16.065 4.94 15.969 4.555 15.707 4.293 C 15.445 4.031 15.06 3.935 14.706 4.044 L 15 5 Z M 7.5 6.5 C 7.5 5.948 7.052 5.5 6.5 5.5 C 5.948 5.5 5.5 5.948 5.5 6.5 L 6.5 6.5 L 7.5 6.5 Z M 5.5 6.51 C 5.5 7.062 5.948 7.51 6.5 7.51 C 7.052 7.51 7.5 7.062 7.5 6.51 L 6.5 6.51 L 5.5 6.51 Z M 15 13.5 C 15 12.948 14.552 12.5 14 12.5 C 13.448 12.5 13 12.948 13 13.5 L 14 13.5 L 15 13.5 Z M 13 13.51 C 13 14.062 13.448 14.51 14 14.51 C 14.552 14.51 15 14.062 15 13.51 L 14 13.51 L 13 13.51 Z M 11 10 C 11 9.448 10.552 9 10 9 C 9.448 9 9 9.448 9 10 L 10 10 L 11 10 Z M 9 10.01 C 9 10.562 9.448 11.01 10 11.01 C 10.552 11.01 11 10.562 11 10.01 L 10 10.01 L 9 10.01 Z M 10 15 C 10 14.448 9.552 14 9 14 C 8.448 14 8 14.448 8 15 L 9 15 L 10 15 Z M 8 15.01 C 8 15.562 8.448 16.01 9 16.01 C 9.552 16.01 10 15.562 10 15.01 L 9 15.01 L 8 15.01 Z M 6 12 C 6 11.448 5.552 11 5 11 C 4.448 11 4 11.448 4 12 L 5 12 L 6 12 Z M 4 12.01 C 4 12.562 4.448 13.01 5 13.01 C 5.552 13.01 6 12.562 6 12.01 L 5 12.01 L 4 12.01 Z M 10 0 L 10 -1 C 7.824 -1 5.698 -0.355 3.889 0.854 L 4.444 1.685 L 5 2.517 C 6.48 1.528 8.22 1 10 1 L 10 0 Z M 4.444 1.685 L 3.889 0.854 C 2.08 2.063 0.67 3.78 -0.163 5.79 L 0.761 6.173 L 1.685 6.556 C 2.366 4.911 3.52 3.506 5 2.517 L 4.444 1.685 Z M 0.761 6.173 L -0.163 5.79 C -0.995 7.8 -1.213 10.012 -0.789 12.146 L 0.192 11.951 L 1.173 11.756 C 0.826 10.01 1.004 8.2 1.685 6.556 L 0.761 6.173 Z M 0.192 11.951 L -0.789 12.146 C -0.364 14.28 0.683 16.24 2.222 17.778 L 2.929 17.071 L 3.636 16.364 C 2.377 15.105 1.52 13.502 1.173 11.756 L 0.192 11.951 Z M 2.929 17.071 L 2.222 17.778 C 3.76 19.317 5.72 20.364 7.854 20.789 L 8.049 19.808 L 8.244 18.827 C 6.498 18.48 4.895 17.623 3.636 16.364 L 2.929 17.071 Z M 8.049 19.808 L 7.854 20.789 C 9.988 21.213 12.2 20.995 14.21 20.163 L 13.827 19.239 L 13.444 18.315 C 11.8 18.996 9.99 19.174 8.244 18.827 L 8.049 19.808 Z M 13.827 19.239 L 14.21 20.163 C 16.22 19.33 17.937 17.92 19.146 16.111 L 18.315 15.556 L 17.483 15 C 16.494 16.48 15.089 17.634 13.444 18.315 L 13.827 19.239 Z M 18.315 15.556 L 19.146 16.111 C 20.355 14.302 21 12.176 21 10 L 20 10 L 19 10 C 19 11.78 18.472 13.52 17.483 15 L 18.315 15.556 Z M 20 10 L 19.706 9.044 C 19.184 9.205 18.629 9.22 18.1 9.089 L 17.859 10.059 L 17.618 11.03 C 18.5 11.249 19.426 11.223 20.294 10.956 L 20 10 Z M 17.859 10.059 L 18.1 9.089 C 17.571 8.957 17.087 8.684 16.702 8.298 L 15.994 9.006 L 15.287 9.713 C 15.93 10.355 16.736 10.811 17.618 11.03 L 17.859 10.059 Z M 15.994 9.006 L 16.702 8.298 C 16.316 7.913 16.043 7.429 15.911 6.9 L 14.941 7.141 L 13.97 7.382 C 14.189 8.264 14.645 9.07 15.287 9.713 L 15.994 9.006 Z M 14.941 7.141 L 15.911 6.9 C 15.78 6.371 15.795 5.816 15.956 5.294 L 15 5 L 14.044 4.706 C 13.777 5.574 13.751 6.5 13.97 7.382 L 14.941 7.141 Z M 15 5 L 14.706 4.044 C 14.184 4.205 13.629 4.22 13.1 4.089 L 12.859 5.059 L 12.618 6.03 C 13.5 6.249 14.426 6.223 15.294 5.956 L 15 5 Z M 12.859 5.059 L 13.1 4.089 C 12.571 3.957 12.087 3.684 11.702 3.298 L 10.994 4.006 L 10.287 4.713 C 10.93 5.355 11.736 5.811 12.618 6.03 L 12.859 5.059 Z M 10.994 4.006 L 11.702 3.298 C 11.316 2.913 11.043 2.429 10.911 1.9 L 9.941 2.141 L 8.97 2.382 C 9.189 3.264 9.645 4.07 10.287 4.713 L 10.994 4.006 Z M 9.941 2.141 L 10.911 1.9 C 10.78 1.371 10.795 0.816 10.956 0.294 L 10 0 L 9.044 -0.294 C 8.777 0.574 8.751 1.5 8.97 2.382 L 9.941 2.141 Z M 6.5 6.5 L 5.5 6.5 L 5.5 6.51 L 6.5 6.51 L 7.5 6.51 L 7.5 6.5 L 6.5 6.5 Z M 14 13.5 L 13 13.5 L 13 13.51 L 14 13.51 L 15 13.51 L 15 13.5 L 14 13.5 Z M 10 10 L 9 10 L 9 10.01 L 10 10.01 L 11 10.01 L 11 10 L 10 10 Z M 9 15 L 8 15 L 8 15.01 L 9 15.01 L 10 15.01 L 10 15 L 9 15 Z M 5 12 L 4 12 L 4 12.01 L 5 12.01 L 6 12.01 L 6 12 L 5 12 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 2 2)\"/>",
+  cookingPot: "<path d=\"M 0 9 C -0.552 9 -1 9.448 -1 10 C -1 10.553 -0.552 11 0 11 L 0 10 L 0 9 Z M 20 11 C 20.552 11 21 10.553 21 10 C 21 9.448 20.552 9 20 9 L 20 10 L 20 11 Z M 19 10 C 19 9.448 18.552 9 18 9 C 17.448 9 17 9.448 17 10 L 18 10 L 19 10 Z M 2 18 L 1 18 L 2 18 Z M 3 10 C 3 9.448 2.552 9 2 9 C 1.448 9 1 9.448 1 10 L 2 10 L 3 10 Z M 1.757 5.03 C 1.222 5.164 0.896 5.707 1.03 6.243 C 1.164 6.779 1.707 7.105 2.243 6.971 L 2 6 L 1.757 5.03 Z M 18.243 2.971 C 18.778 2.837 19.104 2.294 18.97 1.758 C 18.836 1.222 18.293 0.896 17.757 1.03 L 18 2 L 18.243 2.971 Z M 5.89 5.022 C 6.023 5.558 6.565 5.884 7.101 5.751 C 7.637 5.618 7.964 5.075 7.83 4.539 L 6.86 4.781 L 5.89 5.022 Z M 6.41 2.971 L 7.38 2.729 L 7.379 2.725 L 6.41 2.971 Z M 7.86 0.541 L 7.62 -0.43 L 7.616 -0.429 L 7.86 0.541 Z M 9.8 0.061 L 10.04 1.031 L 10.044 1.03 L 9.8 0.061 Z M 12.23 1.521 L 11.259 1.76 L 11.26 1.763 L 12.23 1.521 Z M 11.71 3.563 C 11.844 4.099 12.387 4.425 12.923 4.291 C 13.458 4.157 13.784 3.614 13.65 3.078 L 12.68 3.321 L 11.71 3.563 Z M 0 10 L 0 11 L 20 11 L 20 10 L 20 9 L 0 9 L 0 10 Z M 18 10 L 17 10 L 17 18 L 18 18 L 19 18 L 19 10 L 18 10 Z M 18 18 L 17 18 C 17 18.266 16.895 18.52 16.707 18.708 L 17.414 19.415 L 18.121 20.122 C 18.684 19.559 19 18.796 19 18 L 18 18 Z M 17.414 19.415 L 16.707 18.708 C 16.52 18.895 16.265 19 16 19 L 16 20 L 16 21 C 16.796 21 17.559 20.684 18.121 20.122 L 17.414 19.415 Z M 16 20 L 16 19 L 4 19 L 4 20 L 4 21 L 16 21 L 16 20 Z M 4 20 L 4 19 C 3.735 19 3.48 18.895 3.293 18.708 L 2.586 19.415 L 1.879 20.122 C 2.441 20.684 3.204 21 4 21 L 4 20 Z M 2.586 19.415 L 3.293 18.708 C 3.105 18.52 3 18.266 3 18 L 2 18 L 1 18 C 1 18.796 1.316 19.559 1.879 20.122 L 2.586 19.415 Z M 2 18 L 3 18 L 3 10 L 2 10 L 1 10 L 1 18 L 2 18 Z M 2 6 L 2.243 6.971 L 18.243 2.971 L 18 2 L 17.757 1.03 L 1.757 5.03 L 2 6 Z M 6.86 4.781 L 7.83 4.539 L 7.38 2.729 L 6.41 2.971 L 5.44 3.212 L 5.89 5.022 L 6.86 4.781 Z M 6.41 2.971 L 7.379 2.725 C 7.347 2.598 7.34 2.465 7.359 2.335 L 6.37 2.191 L 5.38 2.046 C 5.323 2.436 5.344 2.834 5.441 3.216 L 6.41 2.971 Z M 6.37 2.191 L 7.359 2.335 C 7.378 2.205 7.423 2.08 7.49 1.967 L 6.631 1.455 L 5.773 0.943 C 5.571 1.281 5.437 1.656 5.38 2.046 L 6.37 2.191 Z M 6.631 1.455 L 7.49 1.967 C 7.557 1.855 7.646 1.756 7.752 1.678 L 7.155 0.876 L 6.558 0.073 C 6.241 0.309 5.975 0.604 5.773 0.943 L 6.631 1.455 Z M 7.155 0.876 L 7.752 1.678 C 7.857 1.599 7.977 1.542 8.104 1.51 L 7.86 0.541 L 7.616 -0.429 C 7.233 -0.333 6.874 -0.162 6.558 0.073 L 7.155 0.876 Z M 7.86 0.541 L 8.1 1.511 L 10.04 1.031 L 9.8 0.061 L 9.56 -0.91 L 7.62 -0.43 L 7.86 0.541 Z M 9.8 0.061 L 10.044 1.03 C 10.172 0.998 10.305 0.991 10.435 1.011 L 10.582 0.022 L 10.728 -0.968 C 10.337 -1.026 9.939 -1.006 9.556 -0.909 L 9.8 0.061 Z M 10.582 0.022 L 10.435 1.011 C 10.565 1.03 10.69 1.075 10.803 1.143 L 11.318 0.286 L 11.833 -0.572 C 11.495 -0.775 11.119 -0.91 10.728 -0.968 L 10.582 0.022 Z M 11.318 0.286 L 10.803 1.143 C 10.916 1.211 11.015 1.3 11.093 1.406 L 11.897 0.812 L 12.702 0.218 C 12.467 -0.1 12.172 -0.368 11.833 -0.572 L 11.318 0.286 Z M 11.897 0.812 L 11.093 1.406 C 11.171 1.512 11.228 1.632 11.259 1.76 L 12.23 1.521 L 13.201 1.281 C 13.106 0.897 12.937 0.536 12.702 0.218 L 11.897 0.812 Z M 12.23 1.521 L 11.26 1.763 L 11.71 3.563 L 12.68 3.321 L 13.65 3.078 L 13.2 1.278 L 12.23 1.521 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 2 2.000)\"/>",
+  messageDots: "<path d=\"M 1 0 C 1 -0.552 0.552 -1 0 -1 C -0.552 -1 -1 -0.552 -1 0 L 0 0 L 1 0 Z M -1 0.01 C -1 0.562 -0.552 1.01 0 1.01 C 0.552 1.01 1 0.562 1 0.01 L 0 0.01 L -1 0.01 Z M 0 0 L -1 0 L -1 0.01 L 0 0.01 L 1 0.01 L 1 0 L 0 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 12 11)\"/><path d=\"M 1 0 C 1 -0.552 0.552 -1 0 -1 C -0.552 -1 -1 -0.552 -1 0 L 0 0 L 1 0 Z M -1 0.01 C -1 0.562 -0.552 1.01 0 1.01 C 0.552 1.01 1 0.562 1 0.01 L 0 0.01 L -1 0.01 Z M 0 0 L -1 0 L -1 0.01 L 0 0.01 L 1 0.01 L 1 0 L 0 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 8 11)\"/><path d=\"M 1 0 C 1 -0.552 0.552 -1 0 -1 C -0.552 -1 -1 -0.552 -1 0 L 0 0 L 1 0 Z M -1 0.01 C -1 0.562 -0.552 1.01 0 1.01 C 0.552 1.01 1 0.562 1 0.01 L 0 0.01 L -1 0.01 Z M 0 0 L -1 0 L -1 0.01 L 0 0.01 L 1 0.01 L 1 0 L 0 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 16 11)\"/><path d=\"M 18 3 L 19 3 L 18 3 Z M 18 11 L 19 11 L 18 11 Z M 15 14 L 15 15 L 15 14 Z M 10 14 L 10 13 C 9.819 13 9.641 13.049 9.486 13.143 L 10 14 Z M 5 17 L 4 17 C 4 17.36 4.194 17.693 4.507 17.87 C 4.821 18.048 5.206 18.043 5.514 17.857 L 5 17 Z M 5 14 L 6 14 C 6 13.448 5.552 13 5 13 L 5 14 Z M 3 14 L 3 15 L 3 14 Z M 0 11 L -1 11 L 0 11 Z M 0 3 L -1 3 L 0 3 Z M 15 0 L 15 1 C 15.53 1 16.039 1.211 16.414 1.586 L 17.121 0.879 L 17.828 0.172 C 17.078 -0.579 16.061 -1 15 -1 L 15 0 Z M 17.121 0.879 L 16.414 1.586 C 16.789 1.961 17 2.47 17 3 L 18 3 L 19 3 C 19 1.939 18.579 0.922 17.828 0.172 L 17.121 0.879 Z M 18 3 L 17 3 L 17 11 L 18 11 L 19 11 L 19 3 L 18 3 Z M 18 11 L 17 11 C 17 11.53 16.789 12.039 16.414 12.414 L 17.121 13.121 L 17.828 13.828 C 18.579 13.078 19 12.061 19 11 L 18 11 Z M 17.121 13.121 L 16.414 12.414 C 16.039 12.789 15.53 13 15 13 L 15 14 L 15 15 C 16.061 15 17.078 14.579 17.828 13.828 L 17.121 13.121 Z M 15 14 L 15 13 L 10 13 L 10 14 L 10 15 L 15 15 L 15 14 Z M 10 14 L 9.486 13.143 L 4.486 16.143 L 5 17 L 5.514 17.857 L 10.514 14.857 L 10 14 Z M 5 17 L 6 17 L 6 14 L 5 14 L 4 14 L 4 17 L 5 17 Z M 5 14 L 5 13 L 3 13 L 3 14 L 3 15 L 5 15 L 5 14 Z M 3 14 L 3 13 C 2.47 13 1.961 12.789 1.586 12.414 L 0.879 13.121 L 0.172 13.828 C 0.922 14.579 1.939 15 3 15 L 3 14 Z M 0.879 13.121 L 1.586 12.414 C 1.211 12.039 1 11.53 1 11 L 0 11 L -1 11 C -1 12.061 -0.579 13.078 0.172 13.828 L 0.879 13.121 Z M 0 11 L 1 11 L 1 3 L 0 3 L -1 3 L -1 11 L 0 11 Z M 0 3 L 1 3 C 1 2.47 1.211 1.961 1.586 1.586 L 0.879 0.879 L 0.172 0.172 C -0.579 0.922 -1 1.939 -1 3 L 0 3 Z M 0.879 0.879 L 1.586 1.586 C 1.961 1.211 2.47 1 3 1 L 3 0 L 3 -1 C 1.939 -1 0.922 -0.579 0.172 0.172 L 0.879 0.879 Z M 3 0 L 3 1 L 15 1 L 15 0 L 15 -1 L 3 -1 L 3 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 3 4)\"/>",
+  ellipsisVertical: "<path d=\"M 1.524 3.048 C 2.365 3.048 3.048 2.365 3.048 1.524 C 3.048 0.682 2.365 0 1.524 0 C 0.682 0 0 0.682 0 1.524 C 0 2.365 0.682 3.048 1.524 3.048 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 14.952 2) matrix(0 1 -1 0 3.048 6.476)\"/><path d=\"M 1.524 3.048 C 2.365 3.048 3.048 2.365 3.048 1.524 C 3.048 0.682 2.365 0 1.524 0 C 0.682 0 0 0.682 0 1.524 C 0 2.365 0.682 3.048 1.524 3.048 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 14.952 2) matrix(0 1 -1 0 3.048 12.952)\"/><path d=\"M 1.524 3.048 C 2.365 3.048 3.048 2.365 3.048 1.524 C 3.048 0.682 2.365 0 1.524 0 C 0.682 0 0 0.682 0 1.524 C 0 2.365 0.682 3.048 1.524 3.048 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 14.952 2) matrix(0 1 -1 0 3.048 0)\"/>",
+  ghost: "<path d=\"M 0 -1 C -0.552 -1 -1 -0.552 -1 0 C -1 0.552 -0.552 1 0 1 L 0 0 L 0 -1 Z M 0.01 1 C 0.562 1 1.01 0.552 1.01 0 C 1.01 -0.552 0.562 -1 0.01 -1 L 0.01 0 L 0.01 1 Z M 0 0 L 0 1 L 0.01 1 L 0.01 0 L 0.01 -1 L 0 -1 L 0 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 10 9)\"/><path d=\"M 0 -1 C -0.552 -1 -1 -0.552 -1 0 C -1 0.552 -0.552 1 0 1 L 0 0 L 0 -1 Z M 0.01 1 C 0.562 1 1.01 0.552 1.01 0 C 1.01 -0.552 0.562 -1 0.01 -1 L 0.01 0 L 0.01 1 Z M 0 0 L 0 1 L 0.01 1 L 0.01 0 L 0.01 -1 L 0 -1 L 0 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 14 9)\"/><path d=\"M 10 0.001 L 10 -0.999 L 10 0.001 Z M 17 7.001 L 18 7.001 L 17 7.001 Z M 17 8.001 L 16 8.001 C 16 8.553 16.448 9.001 17 9.001 L 17 8.001 Z M 17 12.001 L 17 11.001 C 16.448 11.001 16 11.449 16 12.001 L 17 12.001 Z M 17 15.001 L 16 15.001 C 16 15.198 16.058 15.391 16.168 15.556 L 17 15.001 Z M 19 18.001 L 19 19.001 C 19.369 19.001 19.708 18.798 19.882 18.473 C 20.056 18.148 20.037 17.753 19.832 17.446 L 19 18.001 Z M 9 18.001 L 9 17.001 L 8.999 17.001 L 9 18.001 Z M 3 12.226 L 2 12.226 C 2 12.239 2 12.251 2.001 12.263 L 3 12.226 Z M 3 12 L 4 12 C 4 11.448 3.552 11 3 11 L 3 12 Z M 0 10 L -1 10 L 0 10 Z M 2 8 L 2 9 L 2 8 Z M 3 8 L 3 9 C 3.552 9 4 8.552 4 8 L 3 8 Z M 10 0.001 L 10 1.001 C 11.591 1.001 13.117 1.633 14.243 2.758 L 14.95 2.051 L 15.657 1.344 C 14.157 -0.156 12.122 -0.999 10 -0.999 L 10 0.001 Z M 14.95 2.051 L 14.243 2.758 C 15.368 3.884 16 5.41 16 7.001 L 17 7.001 L 18 7.001 C 18 4.879 17.157 2.844 15.657 1.344 L 14.95 2.051 Z M 17 7.001 L 16 7.001 L 16 8.001 L 17 8.001 L 18 8.001 L 18 7.001 L 17 7.001 Z M 17 8.001 L 17 9.001 L 18 9.001 L 18 8.001 L 18 7.001 L 17 7.001 L 17 8.001 Z M 18 8.001 L 18 9.001 C 18.265 9.001 18.52 9.106 18.707 9.294 L 19.414 8.587 L 20.121 7.88 C 19.559 7.317 18.796 7.001 18 7.001 L 18 8.001 Z M 19.414 8.587 L 18.707 9.294 C 18.895 9.481 19 9.736 19 10.001 L 20 10.001 L 21 10.001 C 21 9.205 20.684 8.442 20.121 7.88 L 19.414 8.587 Z M 20 10.001 L 19 10.001 C 19 10.266 18.895 10.521 18.707 10.708 L 19.414 11.415 L 20.121 12.122 C 20.684 11.56 21 10.797 21 10.001 L 20 10.001 Z M 19.414 11.415 L 18.707 10.708 C 18.52 10.896 18.265 11.001 18 11.001 L 18 12.001 L 18 13.001 C 18.796 13.001 19.559 12.685 20.121 12.122 L 19.414 11.415 Z M 18 12.001 L 18 11.001 L 17 11.001 L 17 12.001 L 17 13.001 L 18 13.001 L 18 12.001 Z M 17 12.001 L 16 12.001 L 16 15.001 L 17 15.001 L 18 15.001 L 18 12.001 L 17 12.001 Z M 17 15.001 L 16.168 15.556 L 18.168 18.556 L 19 18.001 L 19.832 17.446 L 17.832 14.446 L 17 15.001 Z M 19 18.001 L 19 17.001 L 9 17.001 L 9 18.001 L 9 19.001 L 19 19.001 L 19 18.001 Z M 9 18.001 L 8.999 17.001 C 7.705 17.002 6.461 16.501 5.528 15.603 L 4.835 16.324 L 4.141 17.044 C 5.447 18.301 7.189 19.002 9.001 19.001 L 9 18.001 Z M 4.835 16.324 L 5.528 15.603 C 4.596 14.706 4.048 13.482 3.999 12.189 L 3 12.226 L 2.001 12.263 C 2.069 14.074 2.836 15.788 4.141 17.044 L 4.835 16.324 Z M 3 12.226 L 4 12.226 L 4 12 L 3 12 L 2 12 L 2 12.226 L 3 12.226 Z M 3 12 L 3 11 L 2 11 L 2 12 L 2 13 L 3 13 L 3 12 Z M 2 12 L 2 11 C 1.735 11 1.48 10.895 1.293 10.707 L 0.586 11.414 L -0.121 12.121 C 0.441 12.684 1.204 13 2 13 L 2 12 Z M 0.586 11.414 L 1.293 10.707 C 1.105 10.52 1 10.265 1 10 L 0 10 L -1 10 C -1 10.796 -0.684 11.559 -0.121 12.121 L 0.586 11.414 Z M 0 10 L 1 10 C 1 9.735 1.105 9.48 1.293 9.293 L 0.586 8.586 L -0.121 7.879 C -0.684 8.441 -1 9.204 -1 10 L 0 10 Z M 0.586 8.586 L 1.293 9.293 C 1.48 9.105 1.735 9 2 9 L 2 8 L 2 7 C 1.204 7 0.441 7.316 -0.121 7.879 L 0.586 8.586 Z M 2 8 L 2 9 L 3 9 L 3 8 L 3 7 L 2 7 L 2 8 Z M 3 8 L 4 8 L 4 7 L 3 7 L 2 7 L 2 8 L 3 8 Z M 3 7 L 4 7 C 4 5.409 4.632 3.883 5.757 2.757 L 5.05 2.05 L 4.343 1.343 C 2.843 2.843 2 4.878 2 7 L 3 7 Z M 5.05 2.05 L 5.757 2.757 C 6.882 1.632 8.408 1.001 10 1.001 L 10 0.001 L 10 -0.999 C 7.879 -0.999 5.844 -0.157 4.343 1.343 L 5.05 2.05 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 2 2.999)\"/><path d=\"M 0 1 L -1 1 C -1 1.552 -0.552 2 0 2 L 0 1 Z M 2 1 L 2 2 C 2.552 2 3 1.552 3 1 L 2 1 Z M 0 1 L 0 2 L 2 2 L 2 1 L 2 0 L 0 0 L 0 1 Z M 2 1 L 3 1 C 3 0.47 2.789 -0.039 2.414 -0.414 L 1.707 0.293 L 1 1 L 1 1 L 2 1 Z M 1.707 0.293 L 2.414 -0.414 C 2.039 -0.789 1.53 -1 1 -1 L 1 0 L 1 1 L 1 1 L 1.707 0.293 Z M 1 0 L 1 -1 C 0.47 -1 -0.039 -0.789 -0.414 -0.414 L 0.293 0.293 L 1 1 L 1 1 L 1 0 Z M 0.293 0.293 L -0.414 -0.414 C -0.789 -0.039 -1 0.47 -1 1 L 0 1 L 1 1 L 1 1 L 0.293 0.293 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 11 13)\"/>",
+  home: "<path d=\"M 1 0 L 1 1 L 1 0 Z M 1 0 L 1 1 L 5 1 L 5 0 L 5 -1 L 1 -1 L 1 0 Z M 5 0 L 5 1 L 5 1 L 5.707 0.293 L 6.414 -0.414 C 6.039 -0.789 5.53 -1 5 -1 L 5 0 Z M 5.707 0.293 L 5 1 L 5 1 L 6 1 L 7 1 C 7 0.47 6.789 -0.039 6.414 -0.414 L 5.707 0.293 Z M 6 1 L 5 1 L 5 7 L 6 7 L 7 7 L 7 1 L 6 1 Z M 6 7 L 5 7 L 5 7 L 5.707 7.707 L 6.414 8.414 C 6.789 8.039 7 7.53 7 7 L 6 7 Z M 5.707 7.707 L 5 7 L 5 7 L 5 8 L 5 9 C 5.53 9 6.039 8.789 6.414 8.414 L 5.707 7.707 Z M 5 8 L 5 7 L 1 7 L 1 8 L 1 9 L 5 9 L 5 8 Z M 1 8 L 1 7 L 1 7 L 0.293 7.707 L -0.414 8.414 C -0.039 8.789 0.47 9 1 9 L 1 8 Z M 0.293 7.707 L 1 7 L 1 7 L 0 7 L -1 7 C -1 7.53 -0.789 8.039 -0.414 8.414 L 0.293 7.707 Z M 0 7 L 1 7 L 1 1 L 0 1 L -1 1 L -1 7 L 0 7 Z M 0 1 L 1 1 L 1 1 L 0.293 0.293 L -0.414 -0.414 C -0.789 -0.039 -1 0.47 -1 1 L 0 1 Z M 0.293 0.293 L 1 1 L 1 1 L 1 0 L 1 -1 C 0.47 -1 -0.039 -0.789 -0.414 -0.414 L 0.293 0.293 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 4 4)\"/><path d=\"M 1 0 L 1 1 L 5 1 L 5 0 L 5 -1 L 1 -1 L 1 0 Z M 5 0 L 5 1 L 5 1 L 5.707 0.293 L 6.414 -0.414 C 6.039 -0.789 5.53 -1 5 -1 L 5 0 Z M 5.707 0.293 L 5 1 L 5 1 L 6 1 L 7 1 C 7 0.47 6.789 -0.039 6.414 -0.414 L 5.707 0.293 Z M 6 1 L 5 1 L 5 3 L 6 3 L 7 3 L 7 1 L 6 1 Z M 6 3 L 5 3 L 5 3 L 5.707 3.707 L 6.414 4.414 C 6.789 4.039 7 3.53 7 3 L 6 3 Z M 5.707 3.707 L 5 3 L 5 3 L 5 4 L 5 5 C 5.53 5 6.039 4.789 6.414 4.414 L 5.707 3.707 Z M 5 4 L 5 3 L 1 3 L 1 4 L 1 5 L 5 5 L 5 4 Z M 1 4 L 1 3 L 1 3 L 0.293 3.707 L -0.414 4.414 C -0.039 4.789 0.47 5 1 5 L 1 4 Z M 0.293 3.707 L 1 3 L 1 3 L 0 3 L -1 3 C -1 3.53 -0.789 4.039 -0.414 4.414 L 0.293 3.707 Z M 0 3 L 1 3 L 1 1 L 0 1 L -1 1 L -1 3 L 0 3 Z M 0 1 L 1 1 L 1 1 L 0.293 0.293 L -0.414 -0.414 C -0.789 -0.039 -1 0.47 -1 1 L 0 1 Z M 0.293 0.293 L 1 1 L 1 1 L 1 0 L 1 -1 C 0.47 -1 -0.039 -0.789 -0.414 -0.414 L 0.293 0.293 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 4 16)\"/><path d=\"M 1 0 L 1 1 L 5 1 L 5 0 L 5 -1 L 1 -1 L 1 0 Z M 5 0 L 5 1 L 5 1 L 5.707 0.293 L 6.414 -0.414 C 6.039 -0.789 5.53 -1 5 -1 L 5 0 Z M 5.707 0.293 L 5 1 L 5 1 L 6 1 L 7 1 C 7 0.47 6.789 -0.039 6.414 -0.414 L 5.707 0.293 Z M 6 1 L 5 1 L 5 7 L 6 7 L 7 7 L 7 1 L 6 1 Z M 6 7 L 5 7 L 5 7 L 5.707 7.707 L 6.414 8.414 C 6.789 8.039 7 7.53 7 7 L 6 7 Z M 5.707 7.707 L 5 7 L 5 7 L 5 8 L 5 9 C 5.53 9 6.039 8.789 6.414 8.414 L 5.707 7.707 Z M 5 8 L 5 7 L 1 7 L 1 8 L 1 9 L 5 9 L 5 8 Z M 1 8 L 1 7 L 1 7 L 0.293 7.707 L -0.414 8.414 C -0.039 8.789 0.47 9 1 9 L 1 8 Z M 0.293 7.707 L 1 7 L 1 7 L 0 7 L -1 7 C -1 7.53 -0.789 8.039 -0.414 8.414 L 0.293 7.707 Z M 0 7 L 1 7 L 1 1 L 0 1 L -1 1 L -1 7 L 0 7 Z M 0 1 L 1 1 L 1 1 L 0.293 0.293 L -0.414 -0.414 C -0.789 -0.039 -1 0.47 -1 1 L 0 1 Z M 0.293 0.293 L 1 1 L 1 1 L 1 0 L 1 -1 C 0.47 -1 -0.039 -0.789 -0.414 -0.414 L 0.293 0.293 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 14 12)\"/><path d=\"M 1 0 L 1 1 L 1 0 Z M 1 0 L 1 1 L 5 1 L 5 0 L 5 -1 L 1 -1 L 1 0 Z M 5 0 L 5 1 L 5 1 L 5.707 0.293 L 6.414 -0.414 C 6.039 -0.789 5.53 -1 5 -1 L 5 0 Z M 5.707 0.293 L 5 1 L 5 1 L 6 1 L 7 1 C 7 0.47 6.789 -0.039 6.414 -0.414 L 5.707 0.293 Z M 6 1 L 5 1 L 5 3 L 6 3 L 7 3 L 7 1 L 6 1 Z M 6 3 L 5 3 L 5 3 L 5.707 3.707 L 6.414 4.414 C 6.789 4.039 7 3.53 7 3 L 6 3 Z M 5.707 3.707 L 5 3 L 5 3 L 5 4 L 5 5 C 5.53 5 6.039 4.789 6.414 4.414 L 5.707 3.707 Z M 5 4 L 5 3 L 1 3 L 1 4 L 1 5 L 5 5 L 5 4 Z M 1 4 L 1 3 L 1 3 L 0.293 3.707 L -0.414 4.414 C -0.039 4.789 0.47 5 1 5 L 1 4 Z M 0.293 3.707 L 1 3 L 1 3 L 0 3 L -1 3 C -1 3.53 -0.789 4.039 -0.414 4.414 L 0.293 3.707 Z M 0 3 L 1 3 L 1 1 L 0 1 L -1 1 L -1 3 L 0 3 Z M 0 1 L 1 1 L 1 1 L 0.293 0.293 L -0.414 -0.414 C -0.789 -0.039 -1 0.47 -1 1 L 0 1 Z M 0.293 0.293 L 1 1 L 1 1 L 1 0 L 1 -1 C 0.47 -1 -0.039 -0.789 -0.414 -0.414 L 0.293 0.293 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 14 4)\"/>",
+  tasks: "<path d=\"M 0.707 0.293 C 0.317 -0.098 -0.317 -0.098 -0.707 0.293 C -1.098 0.683 -1.098 1.317 -0.707 1.707 L 0 1 L 0.707 0.293 Z M 1.5 2.5 L 0.793 3.207 C 1.183 3.598 1.817 3.598 2.207 3.207 L 1.5 2.5 Z M 4.707 0.707 C 5.098 0.317 5.098 -0.317 4.707 -0.707 C 4.317 -1.098 3.683 -1.098 3.293 -0.707 L 4 0 L 4.707 0.707 Z M 0 1 L -0.707 1.707 L 0.793 3.207 L 1.5 2.5 L 2.207 1.793 L 0.707 0.293 L 0 1 Z M 1.5 2.5 L 2.207 3.207 L 4.707 0.707 L 4 0 L 3.293 -0.707 L 0.793 1.793 L 1.5 2.5 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 3.500 4.500)\"/><path d=\"M 0.707 0.293 C 0.317 -0.098 -0.317 -0.098 -0.707 0.293 C -1.098 0.683 -1.098 1.317 -0.707 1.707 L 0 1 L 0.707 0.293 Z M 1.5 2.5 L 0.793 3.207 C 1.183 3.598 1.817 3.598 2.207 3.207 L 1.5 2.5 Z M 4.707 0.707 C 5.098 0.317 5.098 -0.317 4.707 -0.707 C 4.317 -1.098 3.683 -1.098 3.293 -0.707 L 4 0 L 4.707 0.707 Z M 0 1 L -0.707 1.707 L 0.793 3.207 L 1.5 2.5 L 2.207 1.793 L 0.707 0.293 L 0 1 Z M 1.5 2.5 L 2.207 3.207 L 4.707 0.707 L 4 0 L 3.293 -0.707 L 0.793 1.793 L 1.5 2.5 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 3.500 10.500)\"/><path d=\"M 0.707 0.293 C 0.317 -0.098 -0.317 -0.098 -0.707 0.293 C -1.098 0.683 -1.098 1.317 -0.707 1.707 L 0 1 L 0.707 0.293 Z M 1.5 2.5 L 0.793 3.207 C 1.183 3.598 1.817 3.598 2.207 3.207 L 1.5 2.5 Z M 4.707 0.707 C 5.098 0.317 5.098 -0.317 4.707 -0.707 C 4.317 -1.098 3.683 -1.098 3.293 -0.707 L 4 0 L 4.707 0.707 Z M 0 1 L -0.707 1.707 L 0.793 3.207 L 1.5 2.5 L 2.207 1.793 L 0.707 0.293 L 0 1 Z M 1.5 2.5 L 2.207 3.207 L 4.707 0.707 L 4 0 L 3.293 -0.707 L 0.793 1.793 L 1.5 2.5 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 3.500 16.500)\"/><path d=\"M 0 -1 C -0.552 -1 -1 -0.552 -1 0 C -1 0.552 -0.552 1 0 1 L 0 0 L 0 -1 Z M 9 1 C 9.552 1 10 0.552 10 0 C 10 -0.552 9.552 -1 9 -1 L 9 0 L 9 1 Z M 0 0 L 0 1 L 9 1 L 9 0 L 9 -1 L 0 -1 L 0 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 11 6)\"/><path d=\"M 0 -1 C -0.552 -1 -1 -0.552 -1 0 C -1 0.552 -0.552 1 0 1 L 0 0 L 0 -1 Z M 9 1 C 9.552 1 10 0.552 10 0 C 10 -0.552 9.552 -1 9 -1 L 9 0 L 9 1 Z M 0 0 L 0 1 L 9 1 L 9 0 L 9 -1 L 0 -1 L 0 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 11 12)\"/><path d=\"M 0 -1 C -0.552 -1 -1 -0.552 -1 0 C -1 0.552 -0.552 1 0 1 L 0 0 L 0 -1 Z M 9 1 C 9.552 1 10 0.552 10 0 C 10 -0.552 9.552 -1 9 -1 L 9 0 L 9 1 Z M 0 0 L 0 1 L 9 1 L 9 0 L 9 -1 L 0 -1 L 0 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 11 18)\"/>",
+  messages: "<path d=\"M 0 -1 C -0.552 -1 -1 -0.552 -1 0 C -1 0.552 -0.552 1 0 1 L 0 0 L 0 -1 Z M 8 1 C 8.552 1 9 0.552 9 0 C 9 -0.552 8.552 -1 8 -1 L 8 0 L 8 1 Z M 0 0 L 0 1 L 8 1 L 8 0 L 8 -1 L 0 -1 L 0 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 8 9)\"/><path d=\"M 0 -1 C -0.552 -1 -1 -0.552 -1 0 C -1 0.552 -0.552 1 0 1 L 0 0 L 0 -1 Z M 6 1 C 6.552 1 7 0.552 7 0 C 7 -0.552 6.552 -1 6 -1 L 6 0 L 6 1 Z M 0 0 L 0 1 L 6 1 L 6 0 L 6 -1 L 0 -1 L 0 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 8 13)\"/><path d=\"M 18 3 L 19 3 L 18 3 Z M 18 11 L 19 11 L 18 11 Z M 15 14 L 15 15 L 15 14 Z M 10 14 L 10 13 C 9.819 13 9.641 13.049 9.486 13.143 L 10 14 Z M 5 17 L 4 17 C 4 17.36 4.194 17.693 4.507 17.87 C 4.821 18.048 5.206 18.043 5.514 17.857 L 5 17 Z M 5 14 L 6 14 C 6 13.448 5.552 13 5 13 L 5 14 Z M 3 14 L 3 15 L 3 14 Z M 0 11 L -1 11 L 0 11 Z M 0 3 L -1 3 L 0 3 Z M 15 0 L 15 1 C 15.53 1 16.039 1.211 16.414 1.586 L 17.121 0.879 L 17.828 0.172 C 17.078 -0.579 16.061 -1 15 -1 L 15 0 Z M 17.121 0.879 L 16.414 1.586 C 16.789 1.961 17 2.47 17 3 L 18 3 L 19 3 C 19 1.939 18.579 0.922 17.828 0.172 L 17.121 0.879 Z M 18 3 L 17 3 L 17 11 L 18 11 L 19 11 L 19 3 L 18 3 Z M 18 11 L 17 11 C 17 11.53 16.789 12.039 16.414 12.414 L 17.121 13.121 L 17.828 13.828 C 18.579 13.078 19 12.061 19 11 L 18 11 Z M 17.121 13.121 L 16.414 12.414 C 16.039 12.789 15.53 13 15 13 L 15 14 L 15 15 C 16.061 15 17.078 14.579 17.828 13.828 L 17.121 13.121 Z M 15 14 L 15 13 L 10 13 L 10 14 L 10 15 L 15 15 L 15 14 Z M 10 14 L 9.486 13.143 L 4.486 16.143 L 5 17 L 5.514 17.857 L 10.514 14.857 L 10 14 Z M 5 17 L 6 17 L 6 14 L 5 14 L 4 14 L 4 17 L 5 17 Z M 5 14 L 5 13 L 3 13 L 3 14 L 3 15 L 5 15 L 5 14 Z M 3 14 L 3 13 C 2.47 13 1.961 12.789 1.586 12.414 L 0.879 13.121 L 0.172 13.828 C 0.922 14.579 1.939 15 3 15 L 3 14 Z M 0.879 13.121 L 1.586 12.414 C 1.211 12.039 1 11.53 1 11 L 0 11 L -1 11 C -1 12.061 -0.579 13.078 0.172 13.828 L 0.879 13.121 Z M 0 11 L 1 11 L 1 3 L 0 3 L -1 3 L -1 11 L 0 11 Z M 0 3 L 1 3 C 1 2.47 1.211 1.961 1.586 1.586 L 0.879 0.879 L 0.172 0.172 C -0.579 0.922 -1 1.939 -1 3 L 0 3 Z M 0.879 0.879 L 1.586 1.586 C 1.961 1.211 2.47 1 3 1 L 3 0 L 3 -1 C 1.939 -1 0.922 -0.579 0.172 0.172 L 0.879 0.879 Z M 3 0 L 3 1 L 15 1 L 15 0 L 15 -1 L 3 -1 L 3 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 3 4)\"/>",
+  analytics: "<line x1=\"18\" y1=\"20\" x2=\"18\" y2=\"10\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/><line x1=\"12\" y1=\"20\" x2=\"12\" y2=\"4\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/><line x1=\"6\" y1=\"20\" x2=\"6\" y2=\"14\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/>",
+  settings: "<path d=\"M 7.325 1.317 L 8.297 1.553 L 8.297 1.553 L 7.325 1.317 Z M 10.675 1.317 L 11.647 1.082 L 11.647 1.081 L 10.675 1.317 Z M 13.248 2.383 L 12.728 1.529 L 12.727 1.529 L 13.248 2.383 Z M 15.618 4.753 L 16.472 5.273 L 16.472 5.273 L 15.618 4.753 Z M 16.683 7.325 L 16.447 8.297 L 16.447 8.297 L 16.683 7.325 Z M 16.683 10.675 L 16.918 11.647 L 16.919 11.647 L 16.683 10.675 Z M 15.617 13.248 L 16.471 12.728 L 16.471 12.727 L 15.617 13.248 Z M 13.247 15.618 L 12.727 16.472 L 12.727 16.472 L 13.247 15.618 Z M 10.675 16.683 L 9.703 16.447 L 9.703 16.447 L 10.675 16.683 Z M 7.325 16.683 L 6.353 16.918 L 6.353 16.919 L 7.325 16.683 Z M 4.752 15.617 L 5.272 16.471 L 5.273 16.471 L 4.752 15.617 Z M 2.382 13.247 L 1.528 12.727 L 1.528 12.727 L 2.382 13.247 Z M 1.317 10.675 L 1.553 9.703 L 1.553 9.703 L 1.317 10.675 Z M 1.317 7.325 L 1.082 6.353 L 1.081 6.353 L 1.317 7.325 Z M 2.383 4.752 L 1.529 5.272 L 1.529 5.273 L 2.383 4.752 Z M 4.753 2.382 L 4.233 3.236 L 4.233 3.236 L 4.753 2.382 Z M 7.325 1.317 L 8.297 1.553 C 8.476 0.816 9.524 0.816 9.703 1.553 L 10.675 1.317 L 11.647 1.081 C 10.974 -1.694 7.026 -1.694 6.353 1.081 L 7.325 1.317 Z M 10.675 1.317 L 9.703 1.552 C 9.804 1.969 10.002 2.356 10.281 2.682 L 11.041 2.032 L 11.8 1.382 C 11.726 1.295 11.674 1.192 11.647 1.082 L 10.675 1.317 Z M 11.041 2.032 L 10.281 2.682 C 10.56 3.008 10.912 3.263 11.308 3.428 L 11.691 2.504 L 12.073 1.58 C 11.968 1.536 11.875 1.468 11.8 1.382 L 11.041 2.032 Z M 11.691 2.504 L 11.308 3.428 C 11.704 3.592 12.133 3.66 12.561 3.627 L 12.484 2.63 L 12.406 1.633 C 12.293 1.642 12.179 1.624 12.073 1.58 L 11.691 2.504 Z M 12.484 2.63 L 12.561 3.627 C 12.989 3.594 13.402 3.46 13.769 3.237 L 13.248 2.383 L 12.727 1.529 C 12.63 1.589 12.52 1.624 12.406 1.633 L 12.484 2.63 Z M 13.248 2.383 L 13.768 3.237 C 14.416 2.842 15.159 3.584 14.764 4.233 L 15.618 4.753 L 16.472 5.273 C 17.957 2.834 15.166 0.044 12.728 1.529 L 13.248 2.383 Z M 15.618 4.753 L 14.764 4.233 C 14.541 4.599 14.408 5.012 14.374 5.44 L 15.372 5.517 L 16.369 5.594 C 16.377 5.48 16.413 5.37 16.472 5.273 L 15.618 4.753 Z M 15.372 5.517 L 14.374 5.44 C 14.341 5.867 14.41 6.296 14.574 6.692 L 15.498 6.309 L 16.421 5.927 C 16.378 5.822 16.36 5.708 16.369 5.594 L 15.372 5.517 Z M 15.498 6.309 L 14.574 6.692 C 14.738 7.088 14.993 7.44 15.318 7.718 L 15.969 6.959 L 16.619 6.2 C 16.533 6.126 16.465 6.032 16.421 5.927 L 15.498 6.309 Z M 15.969 6.959 L 15.318 7.718 C 15.644 7.997 16.03 8.195 16.447 8.297 L 16.683 7.325 L 16.919 6.353 C 16.809 6.326 16.706 6.274 16.619 6.2 L 15.969 6.959 Z M 16.683 7.325 L 16.447 8.297 C 17.184 8.476 17.184 9.524 16.447 9.703 L 16.683 10.675 L 16.919 11.647 C 19.694 10.974 19.694 7.026 16.919 6.353 L 16.683 7.325 Z M 16.683 10.675 L 16.448 9.703 C 16.031 9.804 15.644 10.002 15.318 10.281 L 15.968 11.041 L 16.618 11.8 C 16.705 11.726 16.808 11.674 16.918 11.647 L 16.683 10.675 Z M 15.968 11.041 L 15.318 10.281 C 14.992 10.56 14.737 10.912 14.572 11.308 L 15.496 11.691 L 16.42 12.073 C 16.464 11.968 16.532 11.875 16.618 11.8 L 15.968 11.041 Z M 15.496 11.691 L 14.572 11.308 C 14.408 11.704 14.34 12.133 14.373 12.561 L 15.37 12.484 L 16.367 12.406 C 16.358 12.293 16.376 12.179 16.42 12.073 L 15.496 11.691 Z M 15.37 12.484 L 14.373 12.561 C 14.406 12.989 14.54 13.402 14.763 13.769 L 15.617 13.248 L 16.471 12.727 C 16.411 12.63 16.376 12.52 16.367 12.406 L 15.37 12.484 Z M 15.617 13.248 L 14.763 13.768 C 15.158 14.416 14.416 15.159 13.767 14.764 L 13.247 15.618 L 12.727 16.472 C 15.166 17.957 17.956 15.166 16.471 12.728 L 15.617 13.248 Z M 13.247 15.618 L 13.767 14.764 C 13.401 14.541 12.988 14.408 12.56 14.374 L 12.483 15.372 L 12.406 16.369 C 12.52 16.377 12.63 16.413 12.727 16.472 L 13.247 15.618 Z M 12.483 15.372 L 12.56 14.374 C 12.133 14.341 11.704 14.41 11.308 14.574 L 11.691 15.498 L 12.073 16.421 C 12.178 16.378 12.292 16.36 12.406 16.369 L 12.483 15.372 Z M 11.691 15.498 L 11.308 14.574 C 10.912 14.738 10.56 14.993 10.282 15.318 L 11.041 15.969 L 11.8 16.619 C 11.874 16.533 11.968 16.465 12.073 16.421 L 11.691 15.498 Z M 11.041 15.969 L 10.282 15.318 C 10.003 15.644 9.805 16.03 9.703 16.447 L 10.675 16.683 L 11.647 16.919 C 11.674 16.809 11.726 16.706 11.8 16.619 L 11.041 15.969 Z M 10.675 16.683 L 9.703 16.447 C 9.524 17.184 8.476 17.184 8.297 16.447 L 7.325 16.683 L 6.353 16.919 C 7.026 19.694 10.974 19.694 11.647 16.919 L 10.675 16.683 Z M 7.325 16.683 L 8.297 16.448 C 8.196 16.031 7.998 15.644 7.719 15.318 L 6.959 15.968 L 6.2 16.618 C 6.274 16.705 6.326 16.808 6.353 16.918 L 7.325 16.683 Z M 6.959 15.968 L 7.719 15.318 C 7.44 14.992 7.088 14.737 6.692 14.572 L 6.309 15.496 L 5.927 16.42 C 6.032 16.464 6.125 16.532 6.2 16.618 L 6.959 15.968 Z M 6.309 15.496 L 6.692 14.572 C 6.296 14.408 5.867 14.34 5.439 14.373 L 5.516 15.37 L 5.594 16.367 C 5.707 16.358 5.821 16.376 5.927 16.42 L 6.309 15.496 Z M 5.516 15.37 L 5.439 14.373 C 5.011 14.406 4.598 14.54 4.231 14.763 L 4.752 15.617 L 5.273 16.471 C 5.37 16.411 5.48 16.376 5.594 16.367 L 5.516 15.37 Z M 4.752 15.617 L 4.232 14.763 C 3.584 15.158 2.841 14.416 3.236 13.767 L 2.382 13.247 L 1.528 12.727 C 0.043 15.166 2.834 17.956 5.272 16.471 L 4.752 15.617 Z M 2.382 13.247 L 3.236 13.767 C 3.459 13.401 3.592 12.988 3.626 12.56 L 2.628 12.483 L 1.631 12.406 C 1.623 12.52 1.587 12.63 1.528 12.727 L 2.382 13.247 Z M 2.628 12.483 L 3.626 12.56 C 3.659 12.133 3.59 11.704 3.426 11.308 L 2.502 11.691 L 1.579 12.073 C 1.622 12.178 1.64 12.292 1.631 12.406 L 2.628 12.483 Z M 2.502 11.691 L 3.426 11.308 C 3.262 10.912 3.007 10.56 2.682 10.282 L 2.031 11.041 L 1.381 11.8 C 1.467 11.874 1.535 11.968 1.579 12.073 L 2.502 11.691 Z M 2.031 11.041 L 2.682 10.282 C 2.356 10.003 1.97 9.805 1.553 9.703 L 1.317 10.675 L 1.081 11.647 C 1.191 11.674 1.294 11.726 1.381 11.8 L 2.031 11.041 Z M 1.317 10.675 L 1.553 9.703 C 0.816 9.524 0.816 8.476 1.553 8.297 L 1.317 7.325 L 1.081 6.353 C -1.694 7.026 -1.694 10.974 1.081 11.647 L 1.317 10.675 Z M 1.317 7.325 L 1.552 8.297 C 1.969 8.196 2.356 7.998 2.682 7.719 L 2.032 6.959 L 1.382 6.2 C 1.295 6.274 1.192 6.326 1.082 6.353 L 1.317 7.325 Z M 2.032 6.959 L 2.682 7.719 C 3.008 7.44 3.263 7.088 3.428 6.692 L 2.504 6.309 L 1.58 5.927 C 1.536 6.032 1.468 6.125 1.382 6.2 L 2.032 6.959 Z M 2.504 6.309 L 3.428 6.692 C 3.592 6.296 3.66 5.867 3.627 5.439 L 2.63 5.516 L 1.633 5.594 C 1.642 5.707 1.624 5.821 1.58 5.927 L 2.504 6.309 Z M 2.63 5.516 L 3.627 5.439 C 3.594 5.011 3.46 4.598 3.237 4.231 L 2.383 4.752 L 1.529 5.273 C 1.589 5.37 1.624 5.48 1.633 5.594 L 2.63 5.516 Z M 2.383 4.752 L 3.237 4.232 C 2.842 3.584 3.584 2.841 4.233 3.236 L 4.753 2.382 L 5.273 1.528 C 2.834 0.043 0.044 2.834 1.529 5.272 L 2.383 4.752 Z M 4.753 2.382 L 4.233 3.236 C 5.811 4.196 7.861 3.346 8.297 1.553 L 7.325 1.317 L 6.353 1.081 C 6.237 1.558 5.695 1.784 5.273 1.528 L 4.753 2.382 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 3 3)\"/><path d=\"M 0 3 L -1 3 C -1 4.061 -0.579 5.078 0.172 5.828 L 0.879 5.121 L 1.586 4.414 C 1.211 4.039 1 3.53 1 3 L 0 3 Z M 0.879 5.121 L 0.172 5.828 C 0.922 6.579 1.939 7 3 7 L 3 6 L 3 5 C 2.47 5 1.961 4.789 1.586 4.414 L 0.879 5.121 Z M 3 6 L 3 7 C 4.061 7 5.078 6.579 5.828 5.828 L 5.121 5.121 L 4.414 4.414 C 4.039 4.789 3.53 5 3 5 L 3 6 Z M 5.121 5.121 L 5.828 5.828 C 6.579 5.078 7 4.061 7 3 L 6 3 L 5 3 C 5 3.53 4.789 4.039 4.414 4.414 L 5.121 5.121 Z M 6 3 L 7 3 C 7 1.939 6.579 0.922 5.828 0.172 L 5.121 0.879 L 4.414 1.586 C 4.789 1.961 5 2.47 5 3 L 6 3 Z M 5.121 0.879 L 5.828 0.172 C 5.078 -0.579 4.061 -1 3 -1 L 3 0 L 3 1 C 3.53 1 4.039 1.211 4.414 1.586 L 5.121 0.879 Z M 3 0 L 3 -1 C 1.939 -1 0.922 -0.579 0.172 0.172 L 0.879 0.879 L 1.586 1.586 C 1.961 1.211 2.47 1 3 1 L 3 0 Z M 0.879 0.879 L 0.172 0.172 C -0.579 0.922 -1 1.939 -1 3 L 0 3 L 1 3 C 1 2.47 1.211 1.961 1.586 1.586 L 0.879 0.879 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 9 9)\"/>",
+  sun: "<circle cx=\"12\" cy=\"12\" r=\"5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><g stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><line x1=\"12\" y1=\"1\" x2=\"12\" y2=\"3\"/><line x1=\"12\" y1=\"21\" x2=\"12\" y2=\"23\"/><line x1=\"4.22\" y1=\"4.22\" x2=\"5.64\" y2=\"5.64\"/><line x1=\"18.36\" y1=\"18.36\" x2=\"19.78\" y2=\"19.78\"/><line x1=\"1\" y1=\"12\" x2=\"3\" y2=\"12\"/><line x1=\"21\" y1=\"12\" x2=\"23\" y2=\"12\"/><line x1=\"4.22\" y1=\"19.78\" x2=\"5.64\" y2=\"18.36\"/><line x1=\"18.36\" y1=\"5.64\" x2=\"19.78\" y2=\"4.22\"/></g>",
+  moon: "<path d=\"M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+  users: "<path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"9\" cy=\"7\" r=\"4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/>",
+  trendUp: "<polyline points=\"3 17 9 11 13 15 21 7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><polyline points=\"15 7 21 7 21 13\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+  box: "<path d=\"M21 8l-9-5-9 5 9 5 9-5Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M3 8v8l9 5 9-5V8\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M12 13v8\" stroke=\"currentColor\" stroke-width=\"2\"/>",
+  star: "<path d=\"M12 2l2.9 6.26 6.9.6-5.2 4.6 1.6 6.8L12 17.3 5.8 20.26l1.6-6.8-5.2-4.6 6.9-.6L12 2Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linejoin=\"round\"/>",
+  download: "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><polyline points=\"7 10 12 15 17 10\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><line x1=\"12\" y1=\"15\" x2=\"12\" y2=\"3\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/>",
+  bell: "<path d=\"M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M13.73 21a2 2 0 0 1-3.46 0\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/>",
+  x: "<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/>",
+  plus: "<line x1=\"12\" y1=\"5\" x2=\"12\" y2=\"19\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/>",
+  calendar: "<rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><line x1=\"16\" y1=\"3\" x2=\"16\" y2=\"7\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/><line x1=\"8\" y1=\"3\" x2=\"8\" y2=\"7\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\" stroke=\"currentColor\" stroke-width=\"2\"/>",
+  search: "<circle cx=\"11\" cy=\"11\" r=\"7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/>",
+  columns: "<rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><line x1=\"9\" y1=\"4\" x2=\"9\" y2=\"20\" stroke=\"currentColor\" stroke-width=\"2\"/><line x1=\"15\" y1=\"4\" x2=\"15\" y2=\"20\" stroke=\"currentColor\" stroke-width=\"2\"/>",
+  chevronDown: "<polyline points=\"6 9 12 15 18 9\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"
+};
+
+function trendArrow(dir, size) {
+  const d = dir === 'up' ? 'M12 19V5M5 12l7-7 7 7' : dir === 'down' ? 'M12 5v14M5 12l7 7 7-7' : 'M5 12h14';
+  return React.createElement('svg', { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', style: { flexShrink: 0 } },
+    React.createElement('path', { d, stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })
+  );
+}
+
+function sparkline(color) {
+  const vals = MILESTONES.map(m => m.ccu);
+  const max = Math.max(...vals), min = Math.min(...vals);
+  const w = 140, h = 28;
+  const pts = vals.map((v, i) => `${(i / (vals.length - 1)) * w},${h - ((v - min) / (max - min || 1)) * h}`).join(' ');
+  return React.createElement('svg', { width: w, height: h, viewBox: `0 0 ${w} ${h}`, preserveAspectRatio: 'none' },
+    React.createElement('polyline', { points: pts, fill: 'none', stroke: color, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })
+  );
+}
+
+const ICON_VIEWBOX = { ellipsisVertical: '0 0 20 20' };
+function navIcon(value, size, centered) {
+  const svg = React.createElement('svg', { width: size, height: size, viewBox: ICON_VIEWBOX[value] || '0 0 24 24', fill: 'none', style: { flexShrink: 0 }, dangerouslySetInnerHTML: { __html: FIG_ICON_PATHS[value] || '' } });
+  return centered ? React.createElement('div', { style: { display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center' } }, svg) : svg;
+}
+
+class Component extends DCLogic {
+  state = {
+    tab: 'overview', nav: 'player', game: 'stardew', range: 'all', segment: 'all', collapsed: false, theme: 'dark',
+    dateRange: 'last7', rawSearch: '', rawSortKey: null, rawSortDir: null, selectedRawId: 6, rawPage: 0, rawDetailExpanded: false,
+    showBugReport: false,
+    analyzedExpanded: false,
+    playerLogExpanded: false
+  };
+
+  componentDidMount() {
+    document.documentElement.setAttribute('data-theme', this.state.theme);
+  }
+
+  toggleTheme = () => {
+    const next = this.state.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    this.setState({ theme: next });
+  };
+
+  exportCsv = () => {
+    const cols = ['metric', 'value', 'period', 'source'];
+    const csv = [cols.join(',')].concat(
+      RAW_ROWS.map(r => cols.map(c => `"${String(r[c]).replace(/"/g, '""')}"`).join(','))
+    ).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'stardew-valley-raw-data.csv';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  toggleRawSort = key => {
+    this.setState(s => s.rawSortKey === key
+      ? { rawSortDir: s.rawSortDir === 'asc' ? 'desc' : s.rawSortDir === 'desc' ? null : 'asc', rawSortKey: s.rawSortDir === 'desc' ? null : key }
+      : { rawSortKey: key, rawSortDir: 'asc' });
+  };
+
+  renderVals() {
+    const cfg = TAB_CONFIG[this.state.tab];
+    const rawFiltered = RAW_ROWS.filter(r => {
+      if (!this.state.rawSearch) return true;
+      const q = this.state.rawSearch.toLowerCase();
+      return r.metric.toLowerCase().includes(q) || r.source.toLowerCase().includes(q) || r.period.toLowerCase().includes(q);
+    });
+    if (this.state.rawSortKey && this.state.rawSortDir) {
+      rawFiltered.sort((a, b) => {
+        const cmp = String(a[this.state.rawSortKey]).localeCompare(String(b[this.state.rawSortKey]), undefined, { numeric: true });
+        return this.state.rawSortDir === 'asc' ? cmp : -cmp;
+      });
+    }
+    const rawPageSize = 10;
+    const rawTotalPages = Math.max(1, Math.ceil(rawFiltered.length / rawPageSize));
+    const rawPage = Math.min(this.state.rawPage, rawTotalPages - 1);
+    const rawPageRows = rawFiltered.slice(rawPage * rawPageSize, rawPage * rawPageSize + rawPageSize);
+    const selectedRaw = RAW_ROWS.find(r => r.id === this.state.selectedRawId) || null;
+    const maxPlatform = Math.max(...PLATFORM_MIX.map(p => p.value));
+    const selectedChartType = !selectedRaw ? 'none' : CCU_METRIC_IDS.includes(selectedRaw.id) ? 'milestones' : PLATFORM_METRIC_IDS.includes(selectedRaw.id) ? 'platform' : 'none';
+    return {
+      tab: this.state.tab,
+      setTab: v => this.setState({ tab: v }),
+      tabItems: TAB_ITEMS,
+      navItems: NAV_ITEMS,
+      navValue: this.state.nav,
+      setNav: v => this.setState({ nav: v }),
+      collapsed: this.state.collapsed,
+      notCollapsed: !this.state.collapsed,
+      sidebarCollapsedClass: this.state.collapsed ? 'is-collapsed' : '',
+      toggleCollapsed: () => this.setState({ collapsed: !this.state.collapsed }),
+      sidebarWidthPx: (this.state.collapsed ? 72 : 290) + 'px',
+      profileJustify: this.state.collapsed ? 'center' : 'space-between',
+      profileDir: this.state.collapsed ? 'column-reverse' : 'row',
+      profileGap: this.state.collapsed ? '14px' : '8px',
+      ghostIcon: navIcon('ghost', 20, false),
+      settingsIcon: navIcon('settings', 20, false),
+      arrowBarRightIcon: navIcon('arrowBarRight', 18, false),
+      navDisplayItems: NAV_ITEMS.map(it => {
+        const active = it.value === this.state.nav;
+        return {
+          value: it.value,
+          label: it.label,
+          icon: navIcon(it.icon, 20, false),
+          active,
+          bg: active ? 'var(--accent-muted)' : 'transparent',
+          color: active ? 'var(--accent)' : 'var(--text-secondary)',
+          weight: active ? 600 : 500,
+          outerPad: this.state.collapsed ? '0 8px' : '0 20px',
+          innerPad: this.state.collapsed ? '16px 0' : '16px',
+          justify: this.state.collapsed ? 'center' : 'flex-start',
+          onClick: () => this.setState({ nav: it.value })
+        };
+      }),
+      chevronIcon: chevron(this.state.collapsed),
+      downloadIcon: navIcon('download', 16, false),
+      bellIcon: navIcon('bell', 18, false),
+      xIcon: navIcon('x', 12, false),
+      plusIcon: navIcon('plus', 14, false),
+      isLight: this.state.theme === 'light',
+      currentIcon: navIcon(this.state.theme === 'light' ? 'sun' : 'moon', 14),
+      thumbTransform: this.state.theme === 'light' ? 'translateX(32px)' : 'translateX(0)',
+      toggleTheme: this.toggleTheme,
+      gameOptions: GAME_OPTIONS,
+      game: this.state.game,
+      setGame: v => this.setState({ game: v }),
+      rangeOptions: RANGE_OPTIONS,
+      range: this.state.range,
+      setRange: v => this.setState({ range: v }),
+      dateRangeOptions: DATE_RANGE_OPTIONS,
+      dateRange: this.state.dateRange,
+      setDateRange: v => this.setState({ dateRange: v }),
+      calendarIcon: navIcon('calendar', 16, false),
+      chevronDownIcon: navIcon('chevronDown', 12, false),
+      setDateRangeNative: e => this.setState({ dateRange: e.target.value }),
+      segmentOptions: SEGMENT_OPTIONS,
+      segment: this.state.segment,
+      setSegment: v => this.setState({ segment: v }),
+      kpis: cfg.kpis.map(k => {
+        const opensBugReport = k.label === 'Records';
+        return {
+          ...k,
+          iconEl: navIcon(k.icon, 16, false),
+          arrowEl: k.dir !== 'flat' ? trendArrow(k.dir, 14) : null,
+          trendColor: k.dir === 'up' ? 'var(--success)' : k.dir === 'down' ? 'var(--danger)' : 'var(--text-tertiary)',
+          sparklineEl: sparkline(k.dir === 'up' ? 'var(--success)' : k.dir === 'down' ? 'var(--danger)' : 'var(--border-strong)'),
+          cursor: opensBugReport ? 'pointer' : 'default',
+          onClick: opensBugReport ? () => this.setState({ showBugReport: true, analyzedExpanded: false, playerLogExpanded: false }) : () => {}
+        };
+      }),
+      showBugReport: this.state.showBugReport,
+      showDashboard: !this.state.showBugReport,
+      closeBugReport: () => this.setState({ showBugReport: false, analyzedExpanded: false, playerLogExpanded: false }),
+      analyzedExpanded: this.state.analyzedExpanded,
+      playerLogExpanded: this.state.playerLogExpanded,
+      analyzedToggleLabel: this.state.analyzedExpanded ? 'Show less' : 'See more',
+      playerLogToggleLabel: this.state.playerLogExpanded ? 'Show less' : 'See all',
+      toggleAnalyzed: () => this.setState(s => ({ analyzedExpanded: !s.analyzedExpanded })),
+      togglePlayerLog: () => this.setState(s => ({ playerLogExpanded: !s.playerLogExpanded })),
+      trendData: MILESTONES,
+      trendFirstLabel: MILESTONES[0].label,
+      trendLastLabel: MILESTONES[MILESTONES.length - 1].label,
+      chartTitle: cfg.chartTitle,
+      chartSub: cfg.chartSub,
+      secondaryTitle: cfg.secondaryTitle,
+      secondarySub: cfg.secondarySub,
+      donutLabel: cfg.donutLabel,
+      donutSub: cfg.donutSub,
+      isPie: cfg.secondary === 'pie',
+      isBar: cfg.secondary === 'bar',
+      pieData: PLATFORM_MIX,
+      pieLegend: PLATFORM_MIX,
+      barData: MILESTONES,
+      insights: (cfg.insights || []).map((i, idx, arr) => ({
+        ...i,
+        badge: i.flag ? 'Need more data' : null,
+        showDivider: idx < arr.length - 1
+      })),
+      hasInsights: (cfg.insights || []).length > 0,
+      ghostSummaryEl: cfg.ghostSummary ? React.createElement('span', { dangerouslySetInnerHTML: { __html: cfg.ghostSummary } }) : null,
+      hasGhostSummary: !!cfg.ghostSummary,
+      showExtraRow: !!cfg.showExtraRow,
+      platformBars: PLATFORM_MIX.map(p => ({ ...p, pct: Math.round((p.value / maxPlatform) * 100) })),
+      milestoneList: PATCH_ROWS.map(r => ({ ...r, meta: r.date })),
+      tableTitle: this.state.tab === 'raw' ? 'Raw data export' : cfg.tableTitle,
+      tableCols: this.state.tab === 'raw' ? RAW_COLS : cfg.tableCols,
+      tableRows: this.state.tab === 'raw' ? RAW_ROWS : cfg.tableRows,
+      tableSearchable: this.state.tab === 'raw',
+      showCharts: this.state.tab !== 'raw',
+      isRaw: this.state.tab === 'raw',
+      showRegularTable: this.state.tab !== 'raw',
+      goToRaw: () => this.setState({ tab: 'raw' }),
+      tableEmptyLabel: this.state.tab === 'raw' ? 'No records match your search. Try a different metric, date, or source.' : 'No results found.',
+      sparkleSm: sparkle(14),
+      sourceLine: SOURCE_LINE,
+      // Raw data tab custom grid
+      searchIcon: navIcon('search', 16, false),
+      columnsIcon: navIcon('columns', 16, false),
+      rawSearch: this.state.rawSearch,
+      setRawSearch: e => this.setState({ rawSearch: e.target.value, rawPage: 0 }),
+      exportCsv: this.exportCsv,
+      rawRowsView: rawPageRows.map(r => ({
+        ...r,
+        rowBg: r.id === this.state.selectedRawId ? 'var(--accent-muted)' : 'transparent',
+        checkBg: r.id === this.state.selectedRawId ? 'var(--accent)' : 'transparent',
+        onClick: () => this.setState({ selectedRawId: r.id, rawDetailExpanded: false })
+      })),
+      rawEmpty: rawFiltered.length === 0,
+      rawCount: rawFiltered.length,
+      rawPage: rawPage,
+      rawTotalPages: rawTotalPages,
+      rawPageStart: rawFiltered.length === 0 ? 0 : rawPage * rawPageSize + 1,
+      rawPageEnd: Math.min(rawFiltered.length, rawPage * rawPageSize + rawPageSize),
+      rawPrevDisabled: rawPage === 0,
+      rawNextDisabled: rawPage >= rawTotalPages - 1,
+      goRawPrev: () => this.setState(s => ({ rawPage: Math.max(0, s.rawPage - 1) })),
+      goRawNext: () => this.setState(s => ({ rawPage: Math.min(rawTotalPages - 1, s.rawPage + 1) })),
+      sortByMetric: () => this.toggleRawSort('metric'),
+      selectedRaw: selectedRaw,
+      hasSelectedRaw: !!selectedRaw,
+      selectedRawNote: selectedRaw ? (RAW_NOTES[selectedRaw.id] || RAW_NOTE_FALLBACK) : '',
+      closeRawDetail: () => this.setState({ selectedRawId: null }),
+      rawDetailExpanded: this.state.rawDetailExpanded,
+      seeMoreLabel: this.state.rawDetailExpanded ? '− See less' : '+ See more',
+      toggleRawDetailExpanded: () => this.setState(s => ({ rawDetailExpanded: !s.rawDetailExpanded })),
+      selectedChartIsMilestones: selectedChartType === 'milestones',
+      selectedChartIsPlatform: selectedChartType === 'platform',
+      selectedChartIsNone: selectedChartType === 'none'
+    };
+  }
+}
+
+</script>
+</body>
+</html>

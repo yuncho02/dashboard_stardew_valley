@@ -1,0 +1,5 @@
+/* Ghost AI — Fonts
+   Source kit specifies Geist, Geist Mono, Inter. Geist ships on Google Fonts
+   (added 2024) so we load it from there — flagged in readme.md as a
+   CDN substitution since no font binaries were provided in the source. */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100;300;400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
