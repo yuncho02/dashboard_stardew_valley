@@ -169,6 +169,25 @@
     .dash-panel-body {
       background: #171717;
     }
+    /* My Tasks canvas surfaces — theme-aware via design-system tokens */
+    .task-canvas-shell {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+    }
+    .canvas-note { cursor: grab; }
+    .canvas-note:active { cursor: grabbing; }
+    .task-canvas-viewport {
+      background:
+        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px) 0 0 / 24px 24px,
+        linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px) 0 0 / 24px 24px,
+        var(--bg-canvas);
+    }
+    :root[data-theme="light"] .task-canvas-viewport {
+      background:
+        linear-gradient(rgba(9,9,11,0.05) 1px, transparent 1px) 0 0 / 24px 24px,
+        linear-gradient(90deg, rgba(9,9,11,0.05) 1px, transparent 1px) 0 0 / 24px 24px,
+        var(--bg-canvas);
+    }
     .dash-sidebar {
       background: #000;
       border-right: 1px solid transparent;
@@ -491,6 +510,13 @@
             </sc-if>
           </div>
           </sc-if>
+          <sc-if value="{{ showTasksBody }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:2px;padding:2px;border-radius:var(--radius-full);border:1px solid var(--border-default);background:var(--bg-surface-2);flex-shrink:0">
+            <button type="button" onClick="{{ setCanvasView }}" style="height:30px;padding:0 14px;border:none;border-radius:var(--radius-full);background:{{ canvasToggleBg }};color:{{ canvasToggleColor }};font:600 12px/1 var(--font-body);cursor:pointer;white-space:nowrap">Canvas</button>
+            <button type="button" onClick="{{ setTimelineView }}" style="height:30px;padding:0 14px;border:none;border-radius:var(--radius-full);background:{{ timelineToggleBg }};color:{{ timelineToggleColor }};font:600 12px/1 var(--font-body);cursor:pointer;white-space:nowrap">Timeline</button>
+          </div>
+          <button type="button" onClick="{{ collapsePanel }}" style="display:flex;align-items:center;gap:8px;height:36px;padding:0 16px;border:1px solid var(--border-default);border-radius:var(--radius-full);background:var(--bg-surface-2);color:var(--text-primary);font:600 13px/1 var(--font-body);cursor:pointer;flex-shrink:0;white-space:nowrap">Task Plan<span style="font:var(--text-caption);color:var(--text-tertiary);background:var(--bg-surface);padding:2px 7px;border-radius:var(--radius-full)">{{ taskCount }}</span></button>
+          </sc-if>
           <div style="position:relative">
             <button type="button" onClick="{{ toggleNotif }}" aria-label="Notifications" style="width:36px;height:36px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface-2);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative">
               {{ bellIcon }}
@@ -523,6 +549,152 @@
           <span style="font:var(--text-h3)">{{ navPlaceholderTitle }}</span>
           <span style="font:var(--text-body-sm);color:var(--text-secondary);max-width:420px">{{ navPlaceholderBody }}</span>
           <button type="button" onClick="{{ goDashboard }}" style="margin-top:8px;display:inline-flex;align-items:center;height:36px;padding:0 16px;border-radius:var(--radius-md);border:none;background:var(--accent);color:var(--text-on-accent);font:var(--text-label);cursor:pointer">Back to Dashboard</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showTasksBody }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:stretch;height:calc(100vh - 150px);min-height:520px;box-sizing:border-box">
+          <div data-canvas-container="" ref="{{ canvasContainerRef }}" class="task-canvas-shell" style="flex:1;min-width:0;border-radius:18px;display:flex;flex-direction:column;position:relative;overflow:hidden">
+
+            <div style="flex-shrink:0;display:flex;flex-direction:column;gap:10px;padding:16px 18px 14px">
+              <sc-if value="{{ isCanvasView }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap">
+                <div style="display:flex;align-items:center;gap:2px;padding:2px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface-2)">
+                  <button type="button" onClick="{{ zoomOut }}" aria-label="Zoom out" style="width:28px;height:28px;border:none;border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer">{{ taskMinusIcon }}</button>
+                  <span style="font:var(--text-mono-sm);color:var(--text-secondary);width:42px;text-align:center">{{ zoomLabel }}</span>
+                  <button type="button" onClick="{{ zoomIn }}" aria-label="Zoom in" style="width:28px;height:28px;border:none;border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer">{{ taskPlusIcon }}</button>
+                  <button type="button" onClick="{{ resetView }}" aria-label="Reset view" style="width:28px;height:28px;border:none;border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer">{{ taskMaximizeIcon }}</button>
+                </div>
+                <div style="position:relative;flex-shrink:0">
+                  <button type="button" onClick="{{ toggleRangeMenu }}" style="display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-surface-2);color:var(--text-primary);font:500 13px/1 var(--font-body);cursor:pointer;white-space:nowrap;flex-shrink:0;min-width:100px;justify-content:center">{{ rangeLabel }}{{ taskChevronDownIcon }}</button>
+                  <sc-if value="{{ rangeMenuOpen }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;top:42px;right:0;z-index:25;min-width:170px;padding:6px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface);box-shadow:var(--shadow-lg,0 20px 40px rgba(0,0,0,0.4));display:flex;flex-direction:column;gap:1px">
+                      <sc-for list="{{ rangeOptions }}" as="r" hint-placeholder-count="7">
+                        <button type="button" onClick="{{ r.onClick }}" style="display:flex;align-items:center;height:32px;padding:0 10px;border:none;border-radius:var(--radius-sm);background:{{ r.bg }};color:{{ r.color }};font:500 13px/1 var(--font-body);cursor:pointer;text-align:left">{{ r.label }}</button>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+                <button type="button" onClick="{{ aiGroup }}" title="Auto-group selected notes" aria-label="Auto-group selected notes" disabled="{{ menuGroupDisabled }}" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;flex-shrink:0;border:none;border-radius:var(--radius-full);background:var(--accent);color:#09090b;cursor:{{ menuGroupCursor }};box-sizing:border-box;opacity:{{ aiToolbarOpacity }}">
+                  <span style="display:flex;color:#09090b">{{ taskSparkleIcon }}</span>
+                </button>
+              </div>
+              </sc-if>
+              <sc-if value="{{ isTimelineView }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap">
+                <div style="display:flex;align-items:center;gap:2px;padding:2px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface-2)">
+                  <button type="button" onClick="{{ zoomOutTimeline }}" aria-label="Zoom out" style="width:28px;height:28px;border:none;border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer">{{ taskMinusIcon }}</button>
+                  <button type="button" onClick="{{ zoomInTimeline }}" aria-label="Zoom in" style="width:28px;height:28px;border:none;border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer">{{ taskPlusIcon }}</button>
+                </div>
+                <div style="position:relative;flex-shrink:0">
+                  <button type="button" onClick="{{ toggleTimelineRangeMenu }}" style="display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-surface-2);color:var(--text-primary);font:500 13px/1 var(--font-body);cursor:pointer;white-space:nowrap;flex-shrink:0;min-width:120px;justify-content:center">{{ timelineRangeLabel }}{{ taskChevronDownIcon }}</button>
+                  <sc-if value="{{ timelineRangeMenuOpen }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;top:42px;right:0;z-index:25;min-width:170px;padding:6px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface);box-shadow:var(--shadow-lg,0 20px 40px rgba(0,0,0,0.4));display:flex;flex-direction:column;gap:1px">
+                      <sc-for list="{{ timelineRangeOptions }}" as="r" hint-placeholder-count="6">
+                        <button type="button" onClick="{{ r.onClick }}" style="display:flex;align-items:center;height:32px;padding:0 10px;border:none;border-radius:var(--radius-sm);background:{{ r.bg }};color:{{ r.color }};font:500 13px/1 var(--font-body);cursor:pointer;text-align:left">{{ r.label }}</button>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+              </sc-if>
+            </div>
+
+            <sc-if value="{{ isCanvasView }}" hint-placeholder-val="{{ true }}">
+            <div ref="{{ viewportRef }}" onMouseDown="{{ startPan }}" onContextMenu="{{ onCanvasContextMenu }}" class="task-canvas-viewport" style="flex:1;min-height:0;position:relative;overflow:hidden;cursor:{{ viewportCursor }}">
+              <div style="position:absolute;left:0;top:0;width:2820px;height:1720px;transform:translate({{ panXpx }}, {{ panYpx }}) scale({{ scale }});transform-origin:0 0;transition:{{ canvasTransition }}">
+
+                <sc-for list="{{ bucketsView }}" as="b" hint-placeholder-count="0">
+                  <div style="position:absolute;left:{{ b.left }};top:{{ b.top }};width:{{ b.width }};height:{{ b.height }};border-radius:20px;border:{{ b.borderWidth }} dashed {{ b.borderColor }};background:{{ b.bg }};box-shadow:{{ b.glow }};pointer-events:none;transition:box-shadow 300ms ease"></div>
+                  <div onMouseDown="{{ b.stop }}" style="position:absolute;left:{{ b.labelLeft }};top:{{ b.labelTop }};display:inline-flex;align-items:center;gap:6px;padding:6px 8px 6px 12px;border-radius:var(--radius-full);background:{{ b.chipBg }};border:1px solid {{ b.borderColor }};font:600 12px/16px var(--font-body);color:{{ b.chipColor }};white-space:nowrap;cursor:default">
+                    {{ b.label }}
+                    <span onClick="{{ b.onUngroup }}" title="Ungroup" style="display:flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:999px;cursor:pointer;color:{{ b.chipColor }};opacity:0.7">{{ taskCloseIcon }}</span>
+                  </div>
+                </sc-for>
+
+                <sc-if value="{{ marqueeVisible }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:{{ marqueeLeft }};top:{{ marqueeTop }};width:{{ marqueeWidth }};height:{{ marqueeHeight }};border:1.5px dashed var(--accent);background:var(--accent-muted);border-radius:6px;pointer-events:none"></div>
+                </sc-if>
+
+                <sc-for list="{{ notesView }}" as="n" hint-placeholder-count="22">
+                  <div onMouseDown="{{ n.onMouseDown }}" onContextMenu="{{ n.onContextMenu }}" class="canvas-note" style="position:absolute;left:{{ n.left }};top:{{ n.top }};width:190px;padding:14px 14px 16px;border-radius:10px;background:{{ n.bg }};border:1px solid var(--border-default);border-left:3px solid {{ n.accent }};box-shadow:{{ n.shadow }};transform:rotate({{ n.rot }});opacity:{{ n.opacity }};pointer-events:{{ n.pointerEvents }};box-sizing:border-box">
+                    <div style="font:600 12.5px/17px var(--font-body);color:var(--text-primary);margin-bottom:6px">{{ n.title }}</div>
+                    <div style="font:400 12px/16px var(--font-body);color:var(--text-secondary)">{{ n.body }}</div>
+                  </div>
+                </sc-for>
+
+              </div>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ isTimelineView }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1;min-height:0;overflow-x:auto;overflow-y:hidden;padding:32px;display:flex;align-items:{{ timelineAlign }};justify-content:flex-start">
+              <div style="position:relative;height:280px;min-width:100%;width:{{ timelineTrackWidth }}px;flex-shrink:0">
+                <div style="position:absolute;top:70px;left:0;right:0;height:2px;background:var(--border-default)"></div>
+                <sc-for list="{{ timelineRows }}" as="tr" hint-placeholder-count="8">
+                  <div style="position:absolute;top:70px;left:{{ tr.x }};transform:translate(-50%,0);width:170px;display:flex;flex-direction:column;align-items:center">
+                    <div onClick="{{ tr.onToggle }}" style="width:14px;height:14px;margin-top:-7px;border-radius:50%;background:{{ tr.dotColor }};box-shadow:0 0 0 4px var(--bg-surface);cursor:pointer"></div>
+                    <div onClick="{{ tr.onToggle }}" style="cursor:pointer;margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center">
+                      <span style="font:var(--text-caption);color:var(--text-tertiary)">{{ tr.dateLabel }}</span>
+                      <span style="font:600 13px/18px var(--font-body)">{{ tr.text }}</span>
+                      <span style="display:inline-flex;font:var(--text-caption);color:{{ tr.chipColor }};background:{{ tr.chipBg }};padding:2px 8px;border-radius:var(--radius-sm)">{{ tr.bucketLabel }}</span>
+                    </div>
+                    <sc-if value="{{ tr.expanded }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top:10px;width:190px;display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:var(--radius-md);background:var(--bg-surface-2);border:1px solid var(--border-default);text-align:left;box-sizing:border-box">
+                        <span style="font:var(--text-caption);color:var(--text-tertiary);letter-spacing:0.04em">BACKING DATA</span>
+                        <sc-for list="{{ tr.notes }}" as="nt" hint-placeholder-count="3">
+                          <div style="display:flex;flex-direction:column;gap:2px">
+                            <span style="font:600 12.5px/17px var(--font-body);color:var(--text-primary)">{{ nt.title }}</span>
+                            <span style="font:400 12px/16px var(--font-body);color:var(--text-secondary)">{{ nt.body }}</span>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ contextMenuVisible }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;left:{{ contextMenuLeft }};top:{{ contextMenuTop }};z-index:20;min-width:190px;padding:6px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface);box-shadow:var(--shadow-lg,0 20px 40px rgba(0,0,0,0.4));display:flex;flex-direction:column;gap:1px">
+                <button type="button" onClick="{{ menuGroupSelected }}" disabled="{{ menuGroupDisabled }}" style="display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;border:none;border-radius:var(--radius-sm);background:transparent;color:{{ menuGroupColor }};font:500 13px/1 var(--font-body);cursor:{{ menuGroupCursor }};text-align:left">{{ taskGroupIcon }}Group selected{{ menuGroupCountLabel }}</button>
+                <sc-if value="{{ menuShowUngroup }}" hint-placeholder-val="{{ false }}">
+                  <button type="button" onClick="{{ menuUngroup }}" style="display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;border:none;border-radius:var(--radius-sm);background:transparent;color:var(--text-primary);font:500 13px/1 var(--font-body);cursor:pointer;text-align:left">{{ taskCloseIcon }}Ungroup note</button>
+                </sc-if>
+                <div style="height:1px;background:var(--border-default);margin:4px 2px"></div>
+                <button type="button" onClick="{{ menuAiGroup }}" disabled="{{ menuGroupDisabled }}" style="display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;border:none;border-radius:var(--radius-sm);background:transparent;color:{{ menuAiGroupColor }};font:500 13px/1 var(--font-body);cursor:{{ menuGroupCursor }};text-align:left">{{ taskSparkleIcon }}Auto-group selected{{ menuGroupCountLabel }}</button>
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="width:{{ panelColWidth }};flex-shrink:0;box-sizing:border-box;overflow:hidden;transition:width 280ms cubic-bezier(0.22,1,0.36,1),padding 280ms cubic-bezier(0.22,1,0.36,1);padding:{{ panelColPad }}">
+            <div style="width:340px;height:100%;display:flex;flex-direction:column;border-radius:var(--radius-2xl);border:1px solid var(--border-default);background:var(--bg-surface);box-shadow:var(--shadow-lg,0 20px 40px rgba(0,0,0,0.4));overflow:hidden;box-sizing:border-box">
+              <div style="flex-shrink:0;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:18px 18px 14px;border-bottom:1px solid var(--border-default)">
+                <div style="display:flex;flex-direction:column;gap:2px">
+                  <span style="font:var(--text-h4)">Task Plan</span>
+                  <span style="font:var(--text-caption);color:var(--text-tertiary)">Prioritized by impact · top = most urgent</span>
+                </div>
+                <button type="button" onClick="{{ collapsePanel }}" aria-label="Collapse panel" style="width:28px;height:28px;flex-shrink:0;border:none;border-radius:var(--radius-sm);background:var(--bg-surface-2);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer">{{ taskChevronRightIcon }}</button>
+              </div>
+              <div style="flex:1;min-height:0;overflow-y:auto;padding:10px 10px 14px;display:flex;flex-direction:column;gap:6px">
+                <sc-for list="{{ tasksView }}" as="t" hint-placeholder-count="10">
+                  <div class="task-row" draggable="true" onDragStart="{{ t.onDragStart }}" onDragOver="{{ t.onDragOver }}" onDragEnd="{{ t.onDragEnd }}" style="display:flex;align-items:flex-start;gap:10px;padding:10px 10px;border-radius:var(--radius-md);cursor:grab;opacity:{{ t.rowOpacity }}">
+                    <span style="display:flex;flex-shrink:0;color:var(--text-tertiary);margin-top:2px">{{ taskGripIcon }}</span>
+                    <div onClick="{{ t.onToggle }}" style="width:18px;height:18px;flex-shrink:0;margin-top:1px;border-radius:5px;border:1.5px solid {{ t.checkBorder }};background:{{ t.checkBg }};display:flex;align-items:center;justify-content:center;cursor:pointer;color:#09090b;box-sizing:border-box">{{ t.checkIcon }}</div>
+                    <div onClick="{{ t.onClick }}" style="display:flex;flex-direction:column;gap:4px;min-width:0;cursor:pointer;flex:1">
+                      <div style="display:flex;align-items:baseline;gap:6px">
+                        <span style="font:var(--text-caption);color:var(--text-tertiary);flex-shrink:0">{{ t.priority }}</span>
+                        <span style="font:500 13px/18px var(--font-body);color:{{ t.textColor }};text-decoration:{{ t.strike }}">{{ t.text }}</span>
+                      </div>
+                      <span style="display:inline-flex;align-self:flex-start;font:var(--text-caption);color:{{ t.chipColor }};background:{{ t.chipBg }};padding:2px 8px;border-radius:var(--radius-sm)">{{ t.bucketLabel }}</span>
+                      <span style="font:var(--text-caption);color:var(--text-tertiary)">Est. {{ t.estimate }}</span>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
         </div>
       </sc-if>
 
@@ -809,7 +981,7 @@
 const NAV_ITEMS = [
   { value: 'analytics', label: 'Dashboard', icon: 'home' },
   { value: 'player', label: 'Player Report', icon: 'trendUp2' },
-  { value: 'tasks', label: 'My Task', icon: 'tasks' },
+  { value: 'tasks', label: 'My Tasks', icon: 'tasks' },
   { value: 'messages', label: 'Message', icon: 'messages' }
 ];
 const TAB_ITEMS = [
@@ -818,6 +990,118 @@ const TAB_ITEMS = [
   { value: 'engagement', label: 'Engagement' },
   { value: 'raw', label: 'Raw data · 19' }
 ];
+// ===== My Tasks view (canvas / timeline / task plan) — ported from the standalone reference =====
+const TASK_ICON_PATHS = {
+  plus: '<line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  minus: '<line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  maximize: '<path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  check: '<polyline points="20 6 9 17 4 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>',
+  chevronRight: '<polyline points="9 18 15 12 9 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  chevronDown: '<polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  grip: '<circle cx="9" cy="6" r="1.3" fill="currentColor"/><circle cx="15" cy="6" r="1.3" fill="currentColor"/><circle cx="9" cy="12" r="1.3" fill="currentColor"/><circle cx="15" cy="12" r="1.3" fill="currentColor"/><circle cx="9" cy="18" r="1.3" fill="currentColor"/><circle cx="15" cy="18" r="1.3" fill="currentColor"/>',
+  close: '<line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  group: '<rect x="3" y="3" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>'
+};
+function taskIcon(key, size) {
+  return React.createElement('svg', { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', style: { flexShrink: 0, display: 'block' }, dangerouslySetInnerHTML: { __html: TASK_ICON_PATHS[key] || '' } });
+}
+function taskSparkle(size) {
+  return React.createElement('svg', { width: size, height: size, viewBox: '0 0 20 20', fill: 'none', style: { flexShrink: 0, display: 'block' } },
+    React.createElement('path', {
+      d: 'M16.6667 2.50004V5.83337M18.3334 4.16671H15M3.33335 14.1667V15.8334M4.16669 15H2.50002M8.2808 12.9167C8.20641 12.6283 8.05609 12.3651 7.84548 12.1545C7.63488 11.9439 7.3717 11.7936 7.0833 11.7192L1.9708 10.4009C1.88358 10.3761 1.80681 10.3236 1.75215 10.2512C1.69748 10.1789 1.66791 10.0907 1.66791 10C1.66791 9.90938 1.69748 9.82118 1.75215 9.74884C1.80681 9.6765 1.88358 9.62397 1.9708 9.59921L7.0833 8.28005C7.37159 8.20572 7.63471 8.05552 7.84531 7.84508C8.0559 7.63463 8.20627 7.37162 8.2808 7.08338L9.59914 1.97088C9.62364 1.88331 9.67612 1.80616 9.74857 1.75121C9.82102 1.69625 9.90945 1.6665 10.0004 1.6665C10.0913 1.6665 10.1798 1.69625 10.2522 1.75121C10.3246 1.80616 10.3771 1.88331 10.4016 1.97088L11.7191 7.08338C11.7935 7.37177 11.9439 7.63496 12.1545 7.84556C12.3651 8.05616 12.6282 8.20648 12.9166 8.28088L18.0291 9.59838C18.1171 9.62263 18.1946 9.67505 18.2498 9.74761C18.3051 9.82017 18.335 9.90885 18.335 10C18.335 10.0912 18.3051 10.1799 18.2498 10.2525C18.1946 10.325 18.1171 10.3775 18.0291 10.4017L12.9166 11.7192C12.6282 11.7936 12.3651 11.9439 12.1545 12.1545C11.9439 12.3651 11.7935 12.6283 11.7191 12.9167L10.4008 18.0292C10.3763 18.1168 10.3238 18.1939 10.2514 18.2489C10.1789 18.3038 10.0905 18.3336 9.99955 18.3336C9.90862 18.3336 9.82018 18.3038 9.74774 18.2489C9.67529 18.1939 9.62281 18.1168 9.5983 18.0292L8.2808 12.9167Z',
+      stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round'
+    })
+  );
+}
+const COLOR_MAP = {
+  info: { border: 'var(--info)', bg: 'var(--info-muted)', chip: 'var(--info)' },
+  warning: { border: 'var(--warning)', bg: 'var(--warning-muted)', chip: 'var(--warning)' },
+  danger: { border: 'var(--danger)', bg: 'var(--danger-muted)', chip: 'var(--danger)' },
+  success: { border: 'var(--success)', bg: 'var(--success-muted)', chip: 'var(--success)' },
+  accent: { border: 'var(--accent)', bg: 'var(--accent-muted)', chip: 'var(--accent)' },
+  neutral: { border: 'var(--border-strong)', bg: 'var(--bg-surface-2)', chip: 'var(--text-secondary)' }
+};
+const TOPIC_GROUPS = [
+  { id: 'growth', label: 'Launch & early growth', color: 'info', significant: false, x: 90, y: 90 },
+  { id: 'spike', label: '1.6 update spike', color: 'accent', significant: true, x: 560, y: 60 },
+  { id: 'retention', label: 'Current standing vs. peak', color: 'warning', significant: true, x: 1030, y: 90 },
+  { id: 'bug', label: 'Bug report — farmhouse collision', color: 'danger', significant: true, x: 1500, y: 60 },
+  { id: 'platformPc', label: 'Platform mix — PC dominance', color: 'info', significant: false, x: 110, y: 490 },
+  { id: 'platformSwitch', label: 'Platform mix — Switch & console/mobile', color: 'success', significant: false, x: 580, y: 510 },
+  { id: 'revenue', label: 'Revenue & lifetime sales', color: 'accent', significant: false, x: 1050, y: 490 },
+  { id: 'reviews', label: 'Steam reviews & sentiment', color: 'success', significant: false, x: 1520, y: 510 }
+];
+const NEW_GROUP_COLORS = ['info', 'warning', 'danger', 'success', 'accent'];
+const TASK_RANGE_OPTIONS = [
+  { id: 'all', label: 'All time', days: null },
+  { id: '3d', label: 'Past 3 days', days: 3 },
+  { id: '1w', label: 'Past week', days: 7 },
+  { id: '2w', label: 'Past 2 weeks', days: 14 },
+  { id: '1m', label: 'Past month', days: 30 },
+  { id: '3m', label: 'Past 3 months', days: 90 },
+  { id: '1y', label: 'Past year', days: 365 }
+];
+const TIMELINE_RANGE_OPTIONS = [
+  { id: 'tw', label: 'Next week', days: 7 },
+  { id: 't2w', label: 'Next 2 weeks', days: 14 },
+  { id: 'tm', label: 'Next month', days: 30 },
+  { id: 't3m', label: 'Next 3 months', days: 90 },
+  { id: 'ty', label: 'Next year', days: 365 },
+  { id: 'tall', label: 'All upcoming', days: null }
+];
+const DAYS_AGO = {
+  n1: 3800, n2: 2050, n3: 2020, n4: 860, n5: 855, n6: 860,
+  n7: 0, n8: 0, n9: 0, n10: 16, n11: 16, n12: 16,
+  n13: 200, n14: 200, n15: 200, n16: 200, n17: 600, n18: 600, n19: 600,
+  n20: 5, n21: 5, n22: 5
+};
+const NOTES = [
+  { id: 'n1', topicId: 'growth', dx: 0, dy: 0, title: '2016 launch peak', body: '64,427 CCU at Steam launch, Feb 26, 2016' },
+  { id: 'n2', topicId: 'growth', dx: 200, dy: 40, title: '1.5 update peak', body: '89,807 CCU on Dec 27, 2020 — +39% over launch' },
+  { id: 'n3', topicId: 'growth', dx: 70, dy: 170, title: '1.5 tail record', body: '94,879 CCU set Jan 2021, held until 1.6' },
+  { id: 'n4', topicId: 'spike', dx: 0, dy: 0, title: '1.6 day-1 CCU', body: '146,159 concurrent players, Mar 19, 2024' },
+  { id: 'n5', topicId: 'spike', dx: 200, dy: 40, title: 'All-time peak', body: '236,614 CCU on Mar 24, 2024 — +149% over prior record' },
+  { id: 'n6', topicId: 'spike', dx: 70, dy: 170, title: 'Largest patch ever', body: "1.6 is the biggest content update in the game's history" },
+  { id: 'n7', topicId: 'retention', dx: 0, dy: 0, title: "Today's CCU", body: '113,287 — down 52% from the Mar 2024 peak' },
+  { id: 'n8', topicId: 'retention', dx: 200, dy: 40, title: 'Vs. launch-day retention', body: "77% of 1.6's own day-1 count (146,159) still retained" },
+  { id: 'n9', topicId: 'retention', dx: 70, dy: 170, title: 'Live right now', body: '69,266 concurrent players (SteamDB, 2026)' },
+  { id: 'n10', topicId: 'bug', dx: 0, dy: 0, title: '#BUG-47248 · P0', body: 'Axe equipped + door interact → character stuck in oak tree' },
+  { id: 'n11', topicId: 'bug', dx: 200, dy: 40, title: 'Root cause', body: 'Collision/interaction ordering: FarmhouseDoor::tryEnter() races TreeCollider::resolveOverlap()' },
+  { id: 'n12', topicId: 'bug', dx: 70, dy: 170, title: 'Reported by', body: 'Player BerniceSun02, Jul 14 2026 — replay clip attached' },
+  { id: 'n13', topicId: 'platformPc', dx: 0, dy: 0, title: 'PC share', body: '26M copies · 63% of lifetime sales' },
+  { id: 'n14', topicId: 'platformPc', dx: 200, dy: 40, title: 'Primary platform', body: 'PC has led sales since the 2016 launch' },
+  { id: 'n15', topicId: 'platformSwitch', dx: 0, dy: 0, title: 'Switch sales', body: '7.9M copies · 19% share — ported 2017' },
+  { id: 'n16', topicId: 'platformSwitch', dx: 200, dy: 40, title: 'Console & mobile', body: '7.1M copies · 17% share (PS, Xbox, iOS, Android)' },
+  { id: 'n17', topicId: 'revenue', dx: 0, dy: 0, title: 'Gross revenue', body: '$518M lifetime, across all platforms' },
+  { id: 'n18', topicId: 'revenue', dx: 200, dy: 40, title: 'Net revenue (est.)', body: '$152.8M after platform cuts, discounts, tax' },
+  { id: 'n19', topicId: 'revenue', dx: 70, dy: 170, title: 'Lifetime copies', body: '41.3M sold as of Dec 2024' },
+  { id: 'n20', topicId: 'reviews', dx: 0, dy: 0, title: 'Review score', body: '98/100 — Overwhelmingly Positive' },
+  { id: 'n21', topicId: 'reviews', dx: 200, dy: 40, title: 'Total reviews', body: '1,010,577 Steam reviews' },
+  { id: 'n22', topicId: 'reviews', dx: 70, dy: 170, title: 'Community hub', body: '1,029,383 followers' }
+];
+const TASKS = [
+  { id: 't1', text: 'Fix farmhouse door + axe collision bug (#BUG-47248)', topicId: 'bug', dueDays: 2, estimate: '4 hrs' },
+  { id: 't2', text: 'Investigate root cause of 52% CCU drop since 1.6 peak', topicId: 'retention', dueDays: 5, estimate: '2 days' },
+  { id: 't3', text: 'Plan next major update to replicate 1.6-scale engagement spike', topicId: 'spike', dueDays: 45, estimate: '3 weeks' },
+  { id: 't4', text: 'Expand Switch-specific content — 7.9M unit demand', topicId: 'platformSwitch', dueDays: 21, estimate: '2 weeks' },
+  { id: 't5', text: 'Grow console & mobile share, currently 17% of sales', topicId: 'platformSwitch', dueDays: 60, estimate: '1 month' },
+  { id: 't6', text: 'Source first-party regional sales data — not currently published', topicId: 'platformPc', dueDays: 14, estimate: '3 days' },
+  { id: 't7', text: 'Get platform-level revenue breakdown beyond total gross', topicId: 'revenue', dueDays: 30, estimate: '1 week' },
+  { id: 't8', text: 'Leverage 98/100 Steam sentiment score in store marketing', topicId: 'reviews', dueDays: 10, estimate: '1 day' },
+  { id: 't9', text: 'Set up recurring retention tracking after each patch', topicId: 'retention', dueDays: 7, estimate: '2 days' },
+  { id: 't10', text: 'Refresh raw data pull — last updated manually in 2026', topicId: 'growth', dueDays: -3, estimate: '1 hr' }
+];
+const NOTE_W = 190, NOTE_H = 110, PAD = 46, GRID = 24;
+const snap = v => Math.round(v / GRID) * GRID;
+function bucketBox(notes, groupId) {
+  const own = notes.filter(n => n.groupId === groupId);
+  if (!own.length) return null;
+  const minX = Math.min(...own.map(n => n.x)) - PAD;
+  const minY = Math.min(...own.map(n => n.y)) - PAD - 38;
+  const maxX = Math.max(...own.map(n => n.x + NOTE_W)) + PAD;
+  const maxY = Math.max(...own.map(n => n.y + NOTE_H)) + PAD;
+  return { minX, minY, w: maxX - minX, h: maxY - minY, cx: (minX + maxX) / 2, cy: (minY + maxY) / 2 };
+}
 const GAME_OPTIONS = [{ value: 'stardew', label: 'Stardew Valley' }];
 const DATE_RANGE_OPTIONS = [
   { value: 'last7', label: 'Last 7 days' },
@@ -1610,7 +1894,13 @@ const FIG_ICON_PATHS = {
   columns: "<rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><line x1=\"9\" y1=\"4\" x2=\"9\" y2=\"20\" stroke=\"currentColor\" stroke-width=\"2\"/><line x1=\"15\" y1=\"4\" x2=\"15\" y2=\"20\" stroke=\"currentColor\" stroke-width=\"2\"/>",
   chevronDown: "<polyline points=\"6 9 12 15 18 9\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
   chevronsUpDown: "<path d=\"M7 15l5 5 5-5M7 9l5-5 5 5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
-  refresh: "<path d=\"M21 12a9 9 0 1 1-2.64-6.36\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/><polyline points=\"21 3 21 9 15 9\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"
+  refresh: "<path d=\"M21 12a9 9 0 1 1-2.64-6.36\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/><polyline points=\"21 3 21 9 15 9\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+  minus: "<line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/>",
+  maximize: "<path d=\"M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+  gripVertical: "<circle cx=\"9\" cy=\"6\" r=\"1.4\" fill=\"currentColor\"/><circle cx=\"9\" cy=\"12\" r=\"1.4\" fill=\"currentColor\"/><circle cx=\"9\" cy=\"18\" r=\"1.4\" fill=\"currentColor\"/><circle cx=\"15\" cy=\"6\" r=\"1.4\" fill=\"currentColor\"/><circle cx=\"15\" cy=\"12\" r=\"1.4\" fill=\"currentColor\"/><circle cx=\"15\" cy=\"18\" r=\"1.4\" fill=\"currentColor\"/>",
+  sparkles: "<path d=\"M12 3l1.7 4.3L18 9l-4.3 1.7L12 15l-1.7-4.3L6 9l4.3-1.7L12 3Z\" fill=\"currentColor\"/><path d=\"M19 13l.9 2.1L22 16l-2.1.9L19 19l-.9-2.1L16 16l2.1-.9L19 13Z\" fill=\"currentColor\"/>",
+  check: "<polyline points=\"20 6 9 17 4 12\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+  chevronsRight: "<path d=\"M13 17l5-5-5-5M6 17l5-5-5-5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"
 };
 
 function trendArrow(dir, size) {
@@ -1653,14 +1943,288 @@ class Component extends DCLogic {
     messageThreads: MESSAGE_THREADS_SEED.map(t => ({ ...t, messages: t.messages.map(m => ({ ...m })) })),
     selectedThreadId: MESSAGE_THREADS_SEED[0].id,
     showComposeMenu: false,
-    messageDraft: ''
+    messageDraft: '',
+    // --- My Tasks view state (canvas/timeline/task plan) ---
+    taskHeaderNarrow: false,
+    taskNotes: NOTES.map(n => ({ ...n, x: snap(TOPIC_GROUPS.find(b => b.id === n.topicId).x + n.dx), y: snap(TOPIC_GROUPS.find(b => b.id === n.topicId).y + n.dy), groupId: null, daysAgo: DAYS_AGO[n.id] })),
+    taskGroups: [],
+    selectedIds: {},
+    marqueeRect: null,
+    contextMenu: null,
+    rangeMenuOpen: false,
+    rangeDays: null,
+    taskViewMode: 'canvas',
+    timelineRangeDays: 90,
+    timelineRangeMenuOpen: false,
+    timelineScale: 6,
+    expandedTaskIds: {},
+    pan: { x: -60, y: -40, scale: 0.62 },
+    smoothPan: false,
+    panelCollapsed: false,
+    tasksDone: {},
+    taskOrder: TASKS.map(t => t.id),
+    highlightedGroup: null
   };
+
+  viewportRef = React.createRef();
+  canvasContainerRef = React.createRef();
+  dragTaskIdx = null;
+  _drag = null;
+  spaceDown = false;
+  _wheelEl = null;
+  _roEl = null;
 
   _toastTimer = null;
 
   componentDidMount() {
     document.documentElement.setAttribute('data-theme', this.state.theme);
+    document.addEventListener('mousemove', this.handleTaskMouseMove);
+    document.addEventListener('mouseup', this.handleTaskMouseUp);
+    document.addEventListener('keydown', this.handleTaskKeyDown);
+    document.addEventListener('keyup', this.handleTaskKeyUp);
+    this.attachTaskObservers();
   }
+  componentDidUpdate() {
+    this.attachTaskObservers();
+  }
+  componentWillUnmount() {
+    document.removeEventListener('mousemove', this.handleTaskMouseMove);
+    document.removeEventListener('mouseup', this.handleTaskMouseUp);
+    document.removeEventListener('keydown', this.handleTaskKeyDown);
+    document.removeEventListener('keyup', this.handleTaskKeyUp);
+    if (this._headerRO) this._headerRO.disconnect();
+  }
+
+  // Bind the wheel listener (onWheel isn't a template-bindable event here) and a
+  // ResizeObserver for the responsive header, re-binding whenever the tasks view mounts.
+  attachTaskObservers = () => {
+    const vp = this.viewportRef.current;
+    if (vp && this._wheelEl !== vp) {
+      if (this._wheelEl) this._wheelEl.removeEventListener('wheel', this.onWheel);
+      vp.addEventListener('wheel', this.onWheel, { passive: false });
+      this._wheelEl = vp;
+    } else if (!vp && this._wheelEl) {
+      this._wheelEl = null;
+    }
+    const cc = this.canvasContainerRef.current;
+    if (cc && this._roEl !== cc) {
+      if (this._headerRO) this._headerRO.disconnect();
+      if (window.ResizeObserver) {
+        this._headerRO = new ResizeObserver(entries => {
+          if (!entries || !entries.length) return;
+          const narrow = entries[0].contentRect.width < 460;
+          if (narrow !== this.state.taskHeaderNarrow) this.setState({ taskHeaderNarrow: narrow });
+        });
+        this._headerRO.observe(cc);
+      }
+      this._roEl = cc;
+    } else if (!cc && this._roEl) {
+      if (this._headerRO) this._headerRO.disconnect();
+      this._roEl = null;
+    }
+  };
+
+  handleTaskKeyDown = e => {
+    if (this.state.nav !== 'tasks') return;
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+    if (e.code === 'Space' && !this.spaceDown) { this.spaceDown = true; this.forceUpdate(); }
+  };
+  handleTaskKeyUp = e => {
+    if (e.code === 'Space' && this.spaceDown) { this.spaceDown = false; this.forceUpdate(); }
+  };
+
+  toCanvasCoords = (clientX, clientY) => {
+    const vp = this.viewportRef.current;
+    const r = vp ? vp.getBoundingClientRect() : { left: 0, top: 0 };
+    const { pan } = this.state;
+    return { x: (clientX - r.left - pan.x) / pan.scale, y: (clientY - r.top - pan.y) / pan.scale };
+  };
+
+  startPan = e => {
+    if (this.state.contextMenu || this.state.rangeMenuOpen || this.state.timelineRangeMenuOpen) this.setState({ contextMenu: null, rangeMenuOpen: false, timelineRangeMenuOpen: false });
+    if (this.spaceDown || e.button === 1) {
+      if (Object.keys(this.state.selectedIds).length) this.setState({ selectedIds: {} });
+      this._drag = { type: 'pan', startX: e.clientX, startY: e.clientY, origX: this.state.pan.x, origY: this.state.pan.y };
+      return;
+    }
+    const p = this.toCanvasCoords(e.clientX, e.clientY);
+    this._drag = { type: 'marquee', x1: p.x, y1: p.y, x2: p.x, y2: p.y };
+    this.setState({ marqueeRect: { x1: p.x, y1: p.y, x2: p.x, y2: p.y } });
+  };
+  onNoteMouseDown = note => e => {
+    e.stopPropagation();
+    if (this.state.contextMenu) this.setState({ contextMenu: null });
+    if (e.shiftKey) {
+      this.setState(s => {
+        const sel = { ...s.selectedIds };
+        if (sel[note.id]) delete sel[note.id]; else sel[note.id] = true;
+        return { selectedIds: sel };
+      });
+      return;
+    }
+    this._drag = { type: 'note', id: note.id, startX: e.clientX, startY: e.clientY, origX: note.x, origY: note.y };
+  };
+  stopProp = e => e.stopPropagation();
+
+  menuPos = e => {
+    const box = this.viewportRef.current ? this.viewportRef.current.closest('[data-canvas-container]') : null;
+    const r = box ? box.getBoundingClientRect() : { left: 0, top: 0 };
+    return { left: e.clientX - r.left, top: e.clientY - r.top };
+  };
+  onCanvasContextMenu = e => {
+    e.preventDefault();
+    const { left, top } = this.menuPos(e);
+    this.setState({ contextMenu: { left, top, noteId: null } });
+  };
+  onNoteContextMenu = note => e => {
+    e.preventDefault(); e.stopPropagation();
+    const { left, top } = this.menuPos(e);
+    this.setState(s => {
+      const alreadySelected = s.selectedIds[note.id];
+      const selectedIds = alreadySelected ? s.selectedIds : { [note.id]: true };
+      return { selectedIds, contextMenu: { left, top, noteId: note.id } };
+    });
+  };
+  closeContextMenu = () => this.setState({ contextMenu: null });
+
+  toggleRangeMenu = () => this.setState(s => ({ rangeMenuOpen: !s.rangeMenuOpen, timelineRangeMenuOpen: false }));
+  setRange = days => () => this.setState({ rangeDays: days, rangeMenuOpen: false });
+  setTaskViewMode = mode => () => this.setState({ taskViewMode: mode, contextMenu: null, rangeMenuOpen: false, timelineRangeMenuOpen: false });
+  toggleTimelineRangeMenu = () => this.setState(s => ({ timelineRangeMenuOpen: !s.timelineRangeMenuOpen, rangeMenuOpen: false }));
+  setTimelineRange = days => () => this.setState({ timelineRangeDays: days, timelineRangeMenuOpen: false });
+  zoomInTimeline = () => this.setState(s => ({ timelineScale: Math.min(24, s.timelineScale + 2) }));
+  zoomOutTimeline = () => this.setState(s => ({ timelineScale: Math.max(2, s.timelineScale - 2) }));
+  toggleTaskExpanded = id => () => this.setState(s => ({ expandedTaskIds: { ...s.expandedTaskIds, [id]: !s.expandedTaskIds[id] } }));
+
+  handleTaskMouseMove = e => {
+    if (!this._drag) return;
+    if (this._drag.type === 'pan') {
+      const dx = e.clientX - this._drag.startX, dy = e.clientY - this._drag.startY;
+      this.setState({ pan: { ...this.state.pan, x: this._drag.origX + dx, y: this._drag.origY + dy } });
+    } else if (this._drag.type === 'note') {
+      const dx = e.clientX - this._drag.startX, dy = e.clientY - this._drag.startY;
+      const scale = this.state.pan.scale;
+      const nx = snap(this._drag.origX + dx / scale), ny = snap(this._drag.origY + dy / scale);
+      this.setState(s => ({ taskNotes: s.taskNotes.map(n => n.id === this._drag.id ? { ...n, x: nx, y: ny } : n) }));
+    } else if (this._drag.type === 'marquee') {
+      const p = this.toCanvasCoords(e.clientX, e.clientY);
+      this._drag.x2 = p.x; this._drag.y2 = p.y;
+      this.setState({ marqueeRect: { x1: this._drag.x1, y1: this._drag.y1, x2: p.x, y2: p.y } });
+    }
+  };
+  handleTaskMouseUp = () => {
+    if (this._drag && this._drag.type === 'marquee') {
+      const { x1, y1, x2, y2 } = this._drag;
+      const minX = Math.min(x1, x2), maxX = Math.max(x1, x2), minY = Math.min(y1, y2), maxY = Math.max(y1, y2);
+      const sel = {};
+      this.state.taskNotes.forEach(n => {
+        if (n.x < maxX && n.x + NOTE_W > minX && n.y < maxY && n.y + NOTE_H > minY) sel[n.id] = true;
+      });
+      this.setState({ selectedIds: sel, marqueeRect: null });
+    }
+    this._drag = null;
+  };
+
+  groupSelected = () => {
+    const ids = Object.keys(this.state.selectedIds);
+    if (ids.length < 2) return;
+    const groupId = 'g' + (this.state.taskGroups.length + 1) + '_' + ids.length;
+    const color = NEW_GROUP_COLORS[this.state.taskGroups.length % NEW_GROUP_COLORS.length];
+    this.setState(s => ({
+      taskGroups: [...s.taskGroups, { id: groupId, label: 'New group ' + (s.taskGroups.length + 1), color, significant: false }],
+      taskNotes: s.taskNotes.map(n => ids.includes(n.id) ? { ...n, groupId } : n),
+      selectedIds: {},
+      contextMenu: null
+    }));
+  };
+  ungroup = groupId => e => {
+    e.stopPropagation();
+    this.setState(s => ({
+      taskGroups: s.taskGroups.filter(g => g.id !== groupId),
+      taskNotes: s.taskNotes.map(n => n.groupId === groupId ? { ...n, groupId: null } : n)
+    }));
+  };
+  ungroupNote = noteId => {
+    this.setState(s => {
+      const note = s.taskNotes.find(n => n.id === noteId);
+      if (!note || !note.groupId) return { contextMenu: null };
+      const remaining = s.taskNotes.filter(n => n.groupId === note.groupId && n.id !== noteId);
+      const taskGroups = remaining.length ? s.taskGroups : s.taskGroups.filter(g => g.id !== note.groupId);
+      return { taskNotes: s.taskNotes.map(n => n.id === noteId ? { ...n, groupId: null } : n), taskGroups, contextMenu: null };
+    });
+  };
+  aiGroup = () => {
+    const ids = Object.keys(this.state.selectedIds);
+    if (ids.length < 2) return;
+    this.setState(s => {
+      const selectedNotes = s.taskNotes.filter(n => ids.includes(n.id));
+      const topicIds = [...new Set(selectedNotes.map(n => n.topicId))];
+      const groups = [...s.taskGroups];
+      topicIds.forEach(topicId => {
+        if (!groups.find(g => g.id === topicId)) {
+          const t = TOPIC_GROUPS.find(x => x.id === topicId);
+          groups.push({ id: t.id, label: t.label, color: t.color, significant: t.significant });
+        }
+      });
+      return {
+        taskGroups: groups,
+        taskNotes: s.taskNotes.map(n => ids.includes(n.id) ? { ...n, groupId: n.topicId } : n),
+        selectedIds: {},
+        contextMenu: null
+      };
+    });
+    this.showToast('Auto-grouped selected notes by theme');
+  };
+
+  onWheel = e => {
+    e.preventDefault();
+    if (e.ctrlKey) {
+      const delta = e.deltaY > 0 ? -0.04 : 0.04;
+      this.setState(s => ({ pan: { ...s.pan, scale: Math.min(1.6, Math.max(0.35, s.pan.scale + delta)) } }));
+    } else {
+      this.setState(s => ({ pan: { ...s.pan, x: s.pan.x - e.deltaX, y: s.pan.y - e.deltaY } }));
+    }
+  };
+  zoomIn = () => this.setState(s => ({ pan: { ...s.pan, scale: Math.min(1.6, s.pan.scale + 0.1) } }));
+  zoomOut = () => this.setState(s => ({ pan: { ...s.pan, scale: Math.max(0.35, s.pan.scale - 0.1) } }));
+  resetView = () => this.setState({ pan: { x: -60, y: -40, scale: 0.62 }, smoothPan: true }, () => setTimeout(() => this.setState({ smoothPan: false }), 550));
+
+  toggleDone = id => this.setState(s => ({ tasksDone: { ...s.tasksDone, [id]: !s.tasksDone[id] } }));
+  collapsePanel = () => this.setState(s => {
+    const opening = s.panelCollapsed;
+    return { panelCollapsed: !s.panelCollapsed, collapsed: opening ? true : s.collapsed };
+  });
+
+  reorderLive = targetIdx => {
+    const from = this.dragTaskIdx;
+    if (from === null || from === targetIdx) return;
+    this.setState(s => {
+      const arr = [...s.taskOrder];
+      const [moved] = arr.splice(from, 1);
+      arr.splice(targetIdx, 0, moved);
+      return { taskOrder: arr };
+    });
+    this.dragTaskIdx = targetIdx;
+  };
+
+  highlightTopic = topicId => {
+    const notesInTopic = this.state.taskNotes.filter(n => n.topicId === topicId);
+    if (!notesInTopic.length) return;
+    const cx = notesInTopic.reduce((sum, n) => sum + n.x + NOTE_W / 2, 0) / notesInTopic.length;
+    const cy = notesInTopic.reduce((sum, n) => sum + n.y + NOTE_H / 2, 0) / notesInTopic.length;
+    const vp = this.viewportRef.current;
+    const vw = vp ? vp.clientWidth : 1000, vh = vp ? vp.clientHeight : 700;
+    const scale = this.state.pan.scale;
+    const groupIds = new Set(notesInTopic.map(n => n.groupId).filter(Boolean));
+    this.setState({
+      taskViewMode: 'canvas',
+      highlightedGroup: groupIds.size === 1 ? [...groupIds][0] : null,
+      selectedIds: Object.fromEntries(notesInTopic.map(n => [n.id, true])),
+      smoothPan: true,
+      pan: { x: vw / 2 - cx * scale, y: vh / 2 - cy * scale, scale }
+    }, () => setTimeout(() => this.setState({ smoothPan: false }), 600));
+  };
 
   showToast = (message) => {
     if (this._toastTimer) clearTimeout(this._toastTimer);
@@ -1804,7 +2368,104 @@ class Component extends DCLogic {
     const chartHeadline = kpiView ? kpiView.headline : (cfg.chartHeadline || cfg.chartTitle || '');
     const showAnalyticsBody = this.state.nav === 'analytics';
     const showMessagesBody = this.state.nav === 'messages';
-    const headerTitle = this.state.nav === 'tasks' ? 'My Task' : this.state.nav === 'messages' ? 'Message' : 'Dashboard';
+    const showTasksBody = this.state.nav === 'tasks';
+    const headerTitle = this.state.nav === 'tasks' ? 'My Tasks' : this.state.nav === 'messages' ? 'Message' : 'Dashboard';
+
+    // ---- My Tasks view builders (canvas notes, buckets, timeline, task plan) ----
+    const tNotes = this.state.taskNotes;
+    const tGroupsById = {};
+    this.state.taskGroups.forEach(g => { tGroupsById[g.id] = g; });
+    const tSelectedCount = Object.keys(this.state.selectedIds).length;
+
+    const bucketsView = this.state.taskGroups.map(g => {
+      const box = bucketBox(tNotes, g.id);
+      if (!box) return null;
+      const col = COLOR_MAP[g.color];
+      const isHi = this.state.highlightedGroup === g.id;
+      return {
+        left: box.minX + 'px', top: box.minY + 'px', width: box.w + 'px', height: box.h + 'px',
+        borderColor: col.border, bg: col.bg,
+        borderWidth: g.significant ? '2px' : '1.5px',
+        glow: (g.significant || isHi) ? ('0 0 60px 8px ' + col.bg) : 'none',
+        labelLeft: (box.minX + 16) + 'px', labelTop: (box.minY - 14) + 'px',
+        chipBg: 'var(--bg-surface)', chipColor: col.chip, label: g.label,
+        stop: this.stopProp, onUngroup: this.ungroup(g.id)
+      };
+    }).filter(Boolean);
+
+    const notesView = tNotes.map((n, i) => {
+      const g = n.groupId ? tGroupsById[n.groupId] : null;
+      const accent = g ? COLOR_MAP[g.color].border : 'var(--border-strong)';
+      const selected = !!this.state.selectedIds[n.id];
+      const inRange = this.state.rangeDays === null || n.daysAgo <= this.state.rangeDays;
+      const rot = ((i * 37) % 7) - 3;
+      return {
+        left: n.x + 'px', top: n.y + 'px', rot: rot + 'deg',
+        bg: 'var(--bg-surface-raised)', accent,
+        shadow: selected ? '0 0 0 2px var(--accent), var(--shadow-md)' : 'var(--shadow-md)',
+        opacity: inRange ? 1 : 0.18,
+        pointerEvents: inRange ? 'auto' : 'none',
+        title: n.title, body: n.body,
+        onMouseDown: this.onNoteMouseDown(n),
+        onContextMenu: this.onNoteContextMenu(n)
+      };
+    });
+
+    const mq = this.state.marqueeRect;
+    const tMarqueeVisible = !!mq;
+    const mLeft = mq ? Math.min(mq.x1, mq.x2) : 0, mTop = mq ? Math.min(mq.y1, mq.y2) : 0;
+    const mW = mq ? Math.abs(mq.x2 - mq.x1) : 0, mH = mq ? Math.abs(mq.y2 - mq.y1) : 0;
+
+    const tasksView = this.state.taskOrder.map((id, idx) => {
+      const t = TASKS.find(x => x.id === id);
+      const topic = TOPIC_GROUPS.find(x => x.id === t.topicId);
+      const col = COLOR_MAP[topic.color];
+      const done = !!this.state.tasksDone[id];
+      return {
+        key: id, priority: idx + 1, text: t.text, estimate: t.estimate,
+        bucketLabel: topic.label, chipBg: col.bg, chipColor: col.chip,
+        textColor: done ? 'var(--text-tertiary)' : 'var(--text-primary)',
+        strike: done ? 'line-through' : 'none', rowOpacity: done ? 0.6 : 1,
+        checkBorder: done ? 'var(--accent)' : 'var(--border-strong)',
+        checkBg: done ? 'var(--accent)' : 'transparent',
+        checkIcon: done ? taskIcon('check', 12) : '',
+        onToggle: e => { if (e && e.stopPropagation) e.stopPropagation(); this.toggleDone(id); },
+        onClick: () => this.highlightTopic(t.topicId),
+        onDragStart: () => { this.dragTaskIdx = idx; },
+        onDragOver: e => { e.preventDefault(); this.reorderLive(idx); },
+        onDragEnd: () => { this.dragTaskIdx = null; }
+      };
+    });
+
+    let tLastTimelineX = 300;
+    const timelineRows = (() => {
+      const rows = this.state.taskOrder
+        .map(id => TASKS.find(t => t.id === id))
+        .filter(t => this.state.timelineRangeDays === null || t.dueDays <= this.state.timelineRangeDays)
+        .sort((a, b) => a.dueDays - b.dueDays);
+      const scale = this.state.timelineScale;
+      const MIN_GAP = 190;
+      let lastX = -Infinity;
+      const mapped = rows.map(t => {
+        const topic = TOPIC_GROUPS.find(x => x.id === t.topicId);
+        const col = COLOR_MAP[topic.color];
+        const dateLabel = t.dueDays < 0 ? ('Overdue by ' + (-t.dueDays) + 'd') : t.dueDays === 0 ? 'Due today' : ('Due in ' + t.dueDays + 'd');
+        const relatedNotes = tNotes.filter(n => n.topicId === t.topicId).map(n => ({ key: n.id, title: n.title, body: n.body }));
+        let x = 100 + t.dueDays * scale;
+        if (x - lastX < MIN_GAP) x = lastX + MIN_GAP;
+        lastX = x;
+        return {
+          key: t.id, text: t.text, dateLabel, x: x + 'px',
+          dotColor: t.dueDays < 0 ? 'var(--danger)' : col.border,
+          bucketLabel: topic.label, chipBg: col.bg, chipColor: col.chip,
+          expanded: !!this.state.expandedTaskIds[t.id],
+          onToggle: this.toggleTaskExpanded(t.id),
+          notes: relatedNotes
+        };
+      });
+      tLastTimelineX = lastX === -Infinity ? 300 : lastX;
+      return mapped;
+    })();
 
     const messageThreadViews = this.state.messageThreads.map(t => {
       const contact = MESSAGE_CONTACTS.find(c => c.id === t.contactId) || { name: 'Unknown', avatar: '?', color: 'var(--border-strong)' };
@@ -1941,9 +2602,78 @@ class Component extends DCLogic {
       showDashboard: !this.state.showBugReport,
       showAnalyticsBody,
       showMessagesBody,
+      showTasksBody,
+      // view mode + header toggles
+      isCanvasView: this.state.taskViewMode === 'canvas',
+      isTimelineView: this.state.taskViewMode === 'timeline',
+      setCanvasView: this.setTaskViewMode('canvas'),
+      setTimelineView: this.setTaskViewMode('timeline'),
+      canvasToggleBg: this.state.taskViewMode === 'canvas' ? 'var(--bg-surface-2)' : 'transparent',
+      canvasToggleColor: this.state.taskViewMode === 'canvas' ? 'var(--text-primary)' : 'var(--text-tertiary)',
+      timelineToggleBg: this.state.taskViewMode === 'timeline' ? 'var(--bg-surface-2)' : 'transparent',
+      timelineToggleColor: this.state.taskViewMode === 'timeline' ? 'var(--text-primary)' : 'var(--text-tertiary)',
+      taskCount: TASKS.length,
+      collapsePanel: this.collapsePanel,
+      // canvas zoom / range / grouping toolbar
+      taskMinusIcon: taskIcon('minus', 14), taskPlusIcon: taskIcon('plus', 14), taskMaximizeIcon: taskIcon('maximize', 14),
+      taskChevronDownIcon: taskIcon('chevronDown', 14), taskChevronRightIcon: taskIcon('chevronRight', 16),
+      taskGripIcon: taskIcon('grip', 16), taskCloseIcon: taskIcon('close', 10), taskGroupIcon: taskIcon('group', 13),
+      taskSparkleIcon: taskSparkle(14),
+      zoomLabel: Math.round(this.state.pan.scale * 100) + '%',
+      zoomIn: this.zoomIn, zoomOut: this.zoomOut, resetView: this.resetView,
+      aiGroup: this.aiGroup, selectedCount: tSelectedCount,
+      rangeMenuOpen: this.state.rangeMenuOpen, toggleRangeMenu: this.toggleRangeMenu,
+      rangeLabel: (TASK_RANGE_OPTIONS.find(r => r.days === this.state.rangeDays) || TASK_RANGE_OPTIONS[0]).label,
+      rangeOptions: TASK_RANGE_OPTIONS.map(r => ({
+        label: r.label,
+        bg: r.days === this.state.rangeDays ? 'var(--bg-surface-2)' : 'transparent',
+        color: r.days === this.state.rangeDays ? 'var(--accent)' : 'var(--text-primary)',
+        onClick: this.setRange(r.days)
+      })),
+      // timeline toolbar
+      timelineRangeMenuOpen: this.state.timelineRangeMenuOpen, toggleTimelineRangeMenu: this.toggleTimelineRangeMenu,
+      timelineRangeLabel: (TIMELINE_RANGE_OPTIONS.find(r => r.days === this.state.timelineRangeDays) || TIMELINE_RANGE_OPTIONS[3]).label,
+      timelineRangeOptions: TIMELINE_RANGE_OPTIONS.map(r => ({
+        label: r.label,
+        bg: r.days === this.state.timelineRangeDays ? 'var(--bg-surface-2)' : 'transparent',
+        color: r.days === this.state.timelineRangeDays ? 'var(--accent)' : 'var(--text-primary)',
+        onClick: this.setTimelineRange(r.days)
+      })),
+      zoomInTimeline: this.zoomInTimeline, zoomOutTimeline: this.zoomOutTimeline,
+      timelineRows, timelineTrackWidth: tLastTimelineX + 260,
+      timelineAlign: Object.values(this.state.expandedTaskIds).some(Boolean) ? 'flex-start' : 'center',
+      // canvas viewport
+      viewportRef: this.viewportRef, canvasContainerRef: this.canvasContainerRef,
+      startPan: this.startPan, onCanvasContextMenu: this.onCanvasContextMenu,
+      viewportCursor: this.spaceDown ? 'grab' : 'crosshair',
+      gridBg: 'linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px) 0 0/' + GRID + 'px ' + GRID + 'px, linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px) 0 0/' + GRID + 'px ' + GRID + 'px',
+      panXpx: this.state.pan.x + 'px', panYpx: this.state.pan.y + 'px', scale: this.state.pan.scale,
+      canvasTransition: this.state.smoothPan ? 'transform 550ms cubic-bezier(0.22,1,0.36,1)' : 'none',
+      bucketsView, notesView,
+      marqueeVisible: tMarqueeVisible, marqueeLeft: mLeft + 'px', marqueeTop: mTop + 'px', marqueeWidth: mW + 'px', marqueeHeight: mH + 'px',
+      // context menu
+      contextMenuVisible: !!this.state.contextMenu,
+      contextMenuLeft: (this.state.contextMenu ? this.state.contextMenu.left : 0) + 'px',
+      contextMenuTop: (this.state.contextMenu ? this.state.contextMenu.top : 0) + 'px',
+      menuGroupDisabled: tSelectedCount < 2,
+      menuGroupColor: tSelectedCount < 2 ? 'var(--text-tertiary)' : 'var(--text-primary)',
+      menuGroupCursor: tSelectedCount < 2 ? 'not-allowed' : 'pointer',
+      menuGroupCountLabel: tSelectedCount >= 2 ? (' (' + tSelectedCount + ')') : '',
+      menuGroupSelected: this.groupSelected,
+      menuShowUngroup: !!(this.state.contextMenu && this.state.contextMenu.noteId && tNotes.find(n => n.id === this.state.contextMenu.noteId && n.groupId)),
+      menuUngroup: () => this.state.contextMenu && this.ungroupNote(this.state.contextMenu.noteId),
+      menuAiGroup: this.aiGroup,
+      menuAiGroupColor: tSelectedCount < 2 ? 'var(--text-tertiary)' : 'var(--accent)',
+      aiToolbarOpacity: tSelectedCount < 2 ? 0.4 : 1,
+      // task plan panel
+      tasksView, preventDefaultDrag: e => e.preventDefault(),
+      panelColWidth: this.state.panelCollapsed ? '0px' : '340px',
+      panelColPad: this.state.panelCollapsed ? '0px' : '0 0 0 16px',
+      taskHeaderBtnGroupDir: this.state.taskHeaderNarrow ? 'column' : 'row',
+      taskHeaderBtnGroupAlign: this.state.taskHeaderNarrow ? 'flex-end' : 'center',
       headerTitle,
-      showNavPlaceholder: this.state.nav === 'tasks',
-      navPlaceholderTitle: 'My Task',
+      showNavPlaceholder: false,
+      navPlaceholderTitle: 'My Tasks',
       navPlaceholderBody: 'Task triage for Stardew Valley will live here. Switch back to Dashboard for analytics.',
       messageThreadViews,
       activeThreadName: activeContact.name || '',
