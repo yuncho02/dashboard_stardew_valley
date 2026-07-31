@@ -139,7 +139,7 @@
       justify-content: center;
       gap: 0;
     }
-    .sidebar-shell.is-collapsed .sidebar-profile > span:last-child {
+    .sidebar-shell.is-collapsed .sidebar-profile .sidebar-settings-btn {
       display: none;
     }
     .sidebar-footer {
@@ -331,6 +331,25 @@
     .sidebar-shell.is-collapsed .project-menu {
       display: none;
     }
+    .settings-menu {
+      position: absolute;
+      right: 0;
+      bottom: calc(100% + 8px);
+      min-width: 148px;
+      padding: 6px;
+      border-radius: 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      box-shadow: var(--shadow-md, 0 8px 24px rgba(0,0,0,0.35));
+      z-index: 40;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .sidebar-shell.is-collapsed .settings-menu {
+      right: 50%;
+      transform: translateX(50%);
+    }
   </style>
 </helmet>
 <div class="dash-shell" style="display:flex;height:100vh;width:100%" data-screen-label="Data analytics">
@@ -458,15 +477,20 @@
         </div>
       </div>
       <div class="sidebar-footer">
-        <div class="sidebar-profile">
-          <div style="display:flex;align-items:center;gap:12px;min-width:0;overflow:hidden">
+        <div class="sidebar-profile" style="position:relative">
+          <div onClick="{{ toggleSettingsMenu }}" style="display:flex;align-items:center;gap:12px;min-width:0;overflow:hidden;cursor:pointer">
             <img src="assets/june-cho-avatar.jpg" alt="June Cho" style="width:40px;height:40px;border-radius:var(--radius-md);object-fit:cover;flex-shrink:0">
             <div class="sidebar-label" style="display:flex;flex-direction:column;min-width:0">
               <span style="font:600 14px/20px var(--font-body);color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">June Cho</span>
               <span style="font:500 14px/20px var(--font-body);color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Game Developer</span>
             </div>
           </div>
-          <span style="color:var(--text-tertiary);flex-shrink:0;cursor:pointer">{{ settingsIcon }}</span>
+          <span onClick="{{ toggleSettingsMenu }}" class="sidebar-settings-btn" style="color:var(--text-tertiary);flex-shrink:0;display:flex;cursor:pointer" aria-label="Settings">{{ settingsIcon }}</span>
+          <sc-if value="{{ showSettingsMenu }}" hint-placeholder-val="{{ false }}">
+            <div class="settings-menu">
+              <div onClick="{{ logout }}" style="padding:10px 12px;border-radius:8px;cursor:pointer;font:500 13px/18px var(--font-body);color:var(--text-primary);white-space:nowrap">Log out</div>
+            </div>
+          </sc-if>
         </div>
       </div>
     </div>
@@ -1935,6 +1959,7 @@ class Component extends DCLogic {
     showNotif: false,
     notifUnread: true,
     showProjectMenu: false,
+    showSettingsMenu: false,
     toastMessage: '',
     toastUntil: 0,
     showBugReport: false,
@@ -2268,10 +2293,18 @@ class Component extends DCLogic {
 
   selectNav = (value) => {
     if (value === 'player') {
-      this.setState({ nav: value, showBugReport: true, analyzedExpanded: false, playerLogExpanded: false, showNotif: false, showProjectMenu: false });
+      this.setState({ nav: value, showBugReport: true, analyzedExpanded: false, playerLogExpanded: false, showNotif: false, showProjectMenu: false, showSettingsMenu: false });
       return;
     }
-    this.setState({ nav: value, showBugReport: false, showNotif: false, showProjectMenu: false });
+    this.setState({ nav: value, showBugReport: false, showNotif: false, showProjectMenu: false, showSettingsMenu: false });
+  };
+
+  toggleSettingsMenu = () => {
+    this.setState(s => ({ showSettingsMenu: !s.showSettingsMenu, showProjectMenu: false, showNotif: false }));
+  };
+
+  logout = () => {
+    window.location.href = 'Ghost AI Onboarding.html';
   };
 
   selectThread = (id) => {
@@ -2508,10 +2541,13 @@ class Component extends DCLogic {
       collapsed: this.state.collapsed,
       notCollapsed: !this.state.collapsed,
       sidebarCollapsedClass: this.state.collapsed ? 'is-collapsed' : '',
-      toggleCollapsed: () => this.setState({ collapsed: !this.state.collapsed, showProjectMenu: false }),
+      toggleCollapsed: () => this.setState({ collapsed: !this.state.collapsed, showProjectMenu: false, showSettingsMenu: false }),
       sidebarWidthPx: (this.state.collapsed ? 72 : 290) + 'px',
       ghostIcon: navIcon('ghost', 20, false),
       settingsIcon: navIcon('settings', 20, false),
+      showSettingsMenu: this.state.showSettingsMenu,
+      toggleSettingsMenu: this.toggleSettingsMenu,
+      logout: this.logout,
       arrowBarRightIcon: navIcon('arrowBarRight', 18, false),
       navDisplayItems: NAV_ITEMS.map(it => {
         const active = it.value === this.state.nav;
@@ -2536,7 +2572,7 @@ class Component extends DCLogic {
       }, navIcon('refresh', 16, false)),
       projectLabel: (GAME_OPTIONS.find(g => g.value === this.state.game) || {}).label || 'Stardew Valley',
       showProjectMenu: this.state.showProjectMenu && !this.state.collapsed,
-      toggleProjectMenu: () => this.setState(s => ({ showProjectMenu: !s.showProjectMenu, showNotif: false })),
+      toggleProjectMenu: () => this.setState(s => ({ showProjectMenu: !s.showProjectMenu, showNotif: false, showSettingsMenu: false })),
       projectMenuItems: GAME_OPTIONS.map(g => ({
         label: g.label,
         logo: 'assets/stardew-valley-logo.png',
@@ -2577,7 +2613,7 @@ class Component extends DCLogic {
       exportDashboard: this.exportCsv,
       showNotif: this.state.showNotif,
       hasUnreadNotif: this.state.notifUnread,
-      toggleNotif: () => this.setState(s => ({ showNotif: !s.showNotif, showProjectMenu: false })),
+      toggleNotif: () => this.setState(s => ({ showNotif: !s.showNotif, showProjectMenu: false, showSettingsMenu: false })),
       markNotifRead: () => this.setState({ notifUnread: false, showNotif: false }),
       notifications: [
         { title: '1.6 CCU peak still leading', body: '236,614 remains the all-time concurrent record.' },
