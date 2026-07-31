@@ -169,6 +169,25 @@
     .dash-panel-body {
       background: #171717;
     }
+    /* My Tasks canvas surfaces — theme-aware via design-system tokens */
+    .task-canvas-shell {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+    }
+    .canvas-note { cursor: grab; }
+    .canvas-note:active { cursor: grabbing; }
+    .task-canvas-viewport {
+      background:
+        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px) 0 0 / 24px 24px,
+        linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px) 0 0 / 24px 24px,
+        var(--bg-canvas);
+    }
+    :root[data-theme="light"] .task-canvas-viewport {
+      background:
+        linear-gradient(rgba(9,9,11,0.05) 1px, transparent 1px) 0 0 / 24px 24px,
+        linear-gradient(90deg, rgba(9,9,11,0.05) 1px, transparent 1px) 0 0 / 24px 24px,
+        var(--bg-canvas);
+    }
     .dash-sidebar {
       background: #000;
       border-right: 1px solid transparent;
@@ -535,7 +554,7 @@
 
       <sc-if value="{{ showTasksBody }}" hint-placeholder-val="{{ false }}">
         <div style="display:flex;align-items:stretch;height:calc(100vh - 150px);min-height:520px;box-sizing:border-box">
-          <div data-canvas-container="" ref="{{ canvasContainerRef }}" style="flex:1;min-width:0;border-radius:18px;background:#171717;display:flex;flex-direction:column;position:relative;overflow:hidden">
+          <div data-canvas-container="" ref="{{ canvasContainerRef }}" class="task-canvas-shell" style="flex:1;min-width:0;border-radius:18px;display:flex;flex-direction:column;position:relative;overflow:hidden">
 
             <div style="flex-shrink:0;display:flex;flex-direction:column;gap:10px;padding:16px 18px 14px">
               <sc-if value="{{ isCanvasView }}" hint-placeholder-val="{{ true }}">
@@ -582,7 +601,7 @@
             </div>
 
             <sc-if value="{{ isCanvasView }}" hint-placeholder-val="{{ true }}">
-            <div ref="{{ viewportRef }}" onMouseDown="{{ startPan }}" onContextMenu="{{ onCanvasContextMenu }}" style="flex:1;min-height:0;position:relative;overflow:hidden;cursor:{{ viewportCursor }};background:{{ gridBg }} #121212">
+            <div ref="{{ viewportRef }}" onMouseDown="{{ startPan }}" onContextMenu="{{ onCanvasContextMenu }}" class="task-canvas-viewport" style="flex:1;min-height:0;position:relative;overflow:hidden;cursor:{{ viewportCursor }}">
               <div style="position:absolute;left:0;top:0;width:2820px;height:1720px;transform:translate({{ panXpx }}, {{ panYpx }}) scale({{ scale }});transform-origin:0 0;transition:{{ canvasTransition }}">
 
                 <sc-for list="{{ bucketsView }}" as="b" hint-placeholder-count="0">
@@ -598,8 +617,8 @@
                 </sc-if>
 
                 <sc-for list="{{ notesView }}" as="n" hint-placeholder-count="22">
-                  <div onMouseDown="{{ n.onMouseDown }}" onContextMenu="{{ n.onContextMenu }}" style="position:absolute;left:{{ n.left }};top:{{ n.top }};width:190px;padding:14px 14px 16px;border-radius:10px;background:{{ n.bg }};border-left:3px solid {{ n.accent }};box-shadow:{{ n.shadow }};transform:rotate({{ n.rot }});opacity:{{ n.opacity }};pointer-events:{{ n.pointerEvents }};box-sizing:border-box">
-                    <div style="font:600 12.5px/17px var(--font-body);color:#fff;margin-bottom:6px">{{ n.title }}</div>
+                  <div onMouseDown="{{ n.onMouseDown }}" onContextMenu="{{ n.onContextMenu }}" class="canvas-note" style="position:absolute;left:{{ n.left }};top:{{ n.top }};width:190px;padding:14px 14px 16px;border-radius:10px;background:{{ n.bg }};border:1px solid var(--border-default);border-left:3px solid {{ n.accent }};box-shadow:{{ n.shadow }};transform:rotate({{ n.rot }});opacity:{{ n.opacity }};pointer-events:{{ n.pointerEvents }};box-sizing:border-box">
+                    <div style="font:600 12.5px/17px var(--font-body);color:var(--text-primary);margin-bottom:6px">{{ n.title }}</div>
                     <div style="font:400 12px/16px var(--font-body);color:var(--text-secondary)">{{ n.body }}</div>
                   </div>
                 </sc-for>
@@ -614,7 +633,7 @@
                 <div style="position:absolute;top:70px;left:0;right:0;height:2px;background:var(--border-default)"></div>
                 <sc-for list="{{ timelineRows }}" as="tr" hint-placeholder-count="8">
                   <div style="position:absolute;top:70px;left:{{ tr.x }};transform:translate(-50%,0);width:170px;display:flex;flex-direction:column;align-items:center">
-                    <div onClick="{{ tr.onToggle }}" style="width:14px;height:14px;margin-top:-7px;border-radius:50%;background:{{ tr.dotColor }};box-shadow:0 0 0 4px #171717;cursor:pointer"></div>
+                    <div onClick="{{ tr.onToggle }}" style="width:14px;height:14px;margin-top:-7px;border-radius:50%;background:{{ tr.dotColor }};box-shadow:0 0 0 4px var(--bg-surface);cursor:pointer"></div>
                     <div onClick="{{ tr.onToggle }}" style="cursor:pointer;margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center">
                       <span style="font:var(--text-caption);color:var(--text-tertiary)">{{ tr.dateLabel }}</span>
                       <span style="font:600 13px/18px var(--font-body)">{{ tr.text }}</span>
@@ -625,7 +644,7 @@
                         <span style="font:var(--text-caption);color:var(--text-tertiary);letter-spacing:0.04em">BACKING DATA</span>
                         <sc-for list="{{ tr.notes }}" as="nt" hint-placeholder-count="3">
                           <div style="display:flex;flex-direction:column;gap:2px">
-                            <span style="font:600 12.5px/17px var(--font-body);color:#fff">{{ nt.title }}</span>
+                            <span style="font:600 12.5px/17px var(--font-body);color:var(--text-primary)">{{ nt.title }}</span>
                             <span style="font:400 12px/16px var(--font-body);color:var(--text-secondary)">{{ nt.body }}</span>
                           </div>
                         </sc-for>
@@ -2369,7 +2388,7 @@ class Component extends DCLogic {
         borderWidth: g.significant ? '2px' : '1.5px',
         glow: (g.significant || isHi) ? ('0 0 60px 8px ' + col.bg) : 'none',
         labelLeft: (box.minX + 16) + 'px', labelTop: (box.minY - 14) + 'px',
-        chipBg: '#171717', chipColor: col.chip, label: g.label,
+        chipBg: 'var(--bg-surface)', chipColor: col.chip, label: g.label,
         stop: this.stopProp, onUngroup: this.ungroup(g.id)
       };
     }).filter(Boolean);
@@ -2382,8 +2401,8 @@ class Component extends DCLogic {
       const rot = ((i * 37) % 7) - 3;
       return {
         left: n.x + 'px', top: n.y + 'px', rot: rot + 'deg',
-        bg: 'var(--bg-surface-2)', accent,
-        shadow: selected ? '0 0 0 2px var(--accent), 0 6px 16px rgba(0,0,0,0.35)' : '0 6px 16px rgba(0,0,0,0.35)',
+        bg: 'var(--bg-surface-raised)', accent,
+        shadow: selected ? '0 0 0 2px var(--accent), var(--shadow-md)' : 'var(--shadow-md)',
         opacity: inRange ? 1 : 0.18,
         pointerEvents: inRange ? 'auto' : 'none',
         title: n.title, body: n.body,
