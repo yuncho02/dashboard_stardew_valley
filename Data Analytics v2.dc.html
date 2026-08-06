@@ -4625,7 +4625,9 @@ class Component extends DCLogic {
       viewportCursor: this.spaceDown ? 'grab' : 'crosshair',
       // The grid lives on the untransformed viewport, so track the canvas
       // transform by hand: cells scale with zoom, origin follows the pan.
-      gridSize: (GRID * this.state.pan.scale) + 'px',
+      // Both axes: a single value leaves height `auto`, which for a gradient
+      // means 100% of the viewport and wipes out the horizontal lines.
+      gridSize: (GRID * this.state.pan.scale) + 'px ' + (GRID * this.state.pan.scale) + 'px',
       gridPos: this.state.pan.x + 'px ' + this.state.pan.y + 'px',
       gridBg: 'linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px) 0 0/' + GRID + 'px ' + GRID + 'px, linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px) 0 0/' + GRID + 'px ' + GRID + 'px',
       panXpx: this.state.pan.x + 'px', panYpx: this.state.pan.y + 'px', scale: this.state.pan.scale,
