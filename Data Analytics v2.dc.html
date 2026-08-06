@@ -1626,7 +1626,7 @@
             </div>
 
             <sc-if value="{{ isCanvasView }}" hint-placeholder-val="{{ true }}">
-            <div ref="{{ viewportRef }}" onMouseDown="{{ startPan }}" onContextMenu="{{ onCanvasContextMenu }}" class="task-canvas-viewport" style="flex:1;min-height:0;position:relative;overflow:hidden;cursor:{{ viewportCursor }}">
+            <div ref="{{ viewportRef }}" onMouseDown="{{ startPan }}" onContextMenu="{{ onCanvasContextMenu }}" class="task-canvas-viewport" style="flex:1;min-height:0;position:relative;overflow:hidden;cursor:{{ viewportCursor }};background-size:{{ gridSize }};background-position:{{ gridPos }}">
               <div style="position:absolute;left:0;top:0;width:2820px;height:1720px;transform:translate({{ panXpx }}, {{ panYpx }}) scale({{ scale }});transform-origin:0 0;transition:{{ canvasTransition }}">
 
                 <sc-for list="{{ bucketsView }}" as="b" hint-placeholder-count="0">
@@ -4623,6 +4623,10 @@ class Component extends DCLogic {
       viewportRef: this.viewportRef, canvasContainerRef: this.canvasContainerRef,
       startPan: this.startPan, onCanvasContextMenu: this.onCanvasContextMenu,
       viewportCursor: this.spaceDown ? 'grab' : 'crosshair',
+      // The grid lives on the untransformed viewport, so track the canvas
+      // transform by hand: cells scale with zoom, origin follows the pan.
+      gridSize: (GRID * this.state.pan.scale) + 'px',
+      gridPos: this.state.pan.x + 'px ' + this.state.pan.y + 'px',
       gridBg: 'linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px) 0 0/' + GRID + 'px ' + GRID + 'px, linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px) 0 0/' + GRID + 'px ' + GRID + 'px',
       panXpx: this.state.pan.x + 'px', panYpx: this.state.pan.y + 'px', scale: this.state.pan.scale,
       canvasTransition: this.state.smoothPan ? 'transform 550ms cubic-bezier(0.22,1,0.36,1)' : 'none',
