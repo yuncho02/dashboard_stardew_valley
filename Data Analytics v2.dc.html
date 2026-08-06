@@ -3550,7 +3550,9 @@ class Component extends DCLogic {
     return {
       groupConfidence: pct,
       taskGroups: groups,
-      taskNotes: s.taskNotes.map(n => ({ ...n, groupId: live[n.topicId] ? n.topicId : null }))
+      taskNotes: s.taskNotes.map(n => n.manualGroupId !== undefined
+        ? { ...n, groupId: live[n.manualGroupId] ? n.manualGroupId : null }
+        : { ...n, groupId: live[n.topicId] ? n.topicId : null })
     };
   };
   // Live off the slider, so the board regroups as the bar moves. No toast —
@@ -3585,6 +3587,29 @@ class Component extends DCLogic {
   zoomOutTimeline = () => this.setState(s => ({ timelineScale: Math.max(2, s.timelineScale - 2) }));
   toggleTaskExpanded = id => () => this.setState(s => ({ expandedTaskIds: { ...s.expandedTaskIds, [id]: !s.expandedTaskIds[id] } }));
 
+  // Which bucket a dropped note lands in. Boxes are derived from member
+  // positions, so the notes in flight are excluded — otherwise a note's own
+  // bucket stretches along with it and always wins the hit test.
+  dropTargetsFor = (notes, groups, draggedIds) => {
+    const rest = notes.filter(n => draggedIds.indexOf(n.id) === -1);
+    return groups
+      .map(g => ({ id: g.id, box: bucketBox(rest, g.id) }))
+      .filter(b => b.box);
+  };
+  bucketUnder = (boxes, n) => {
+    const cx = n.x + NOTE_W / 2, cy = n.y + NOTE_H / 2;
+    const hit = boxes.find(b => cx >= b.box.minX && cx <= b.box.minX + b.box.w &&
+      cy >= b.box.minY && cy <= b.box.minY + b.box.h);
+    return hit ? hit.id : null;
+  };
+  // Glow the bucket the pointer is over so the drop is predictable.
+  previewDropTarget = ids => {
+    const boxes = this.dropTargetsFor(this.state.taskNotes, this.state.taskGroups, ids);
+    const lead = this.state.taskNotes.find(n => n.id === ids[0]);
+    const target = lead ? this.bucketUnder(boxes, lead) : null;
+    if (target !== this.state.highlightedGroup) this.setState({ highlightedGroup: target });
+  };
+
   handleTaskMouseMove = e => {
     if (!this._drag) return;
     if (this._drag.type === 'pan') {
@@ -3595,6 +3620,7 @@ class Component extends DCLogic {
       const scale = this.state.pan.scale;
       const nx = snap(this._drag.origX + dx / scale), ny = snap(this._drag.origY + dy / scale);
       this.setState(s => ({ taskNotes: s.taskNotes.map(n => n.id === this._drag.id ? { ...n, x: nx, y: ny } : n) }));
+      this.previewDropTarget([this._drag.id]);
     } else if (this._drag.type === 'group' || this._drag.type === 'multi') {
       // Same movement for a bucket and for a multi-note selection: both carry
       // the members they started with.
@@ -3605,6 +3631,7 @@ class Component extends DCLogic {
       const moved = {};
       this._drag.members.forEach(m => { moved[m.id] = { x: m.x + sdx, y: m.y + sdy }; });
       this.setState(s => ({ taskNotes: s.taskNotes.map(n => moved[n.id] ? { ...n, ...moved[n.id] } : n) }));
+      if (this._drag.type === 'multi') this.previewDropTarget(this._drag.members.map(m => m.id));
     } else if (this._drag.type === 'marquee') {
       const p = this.toCanvasCoords(e.clientX, e.clientY);
       this._drag.x2 = p.x; this._drag.y2 = p.y;
@@ -3620,6 +3647,28 @@ class Component extends DCLogic {
         if (n.x < maxX && n.x + NOTE_W > minX && n.y < maxY && n.y + NOTE_H > minY) sel[n.id] = true;
       });
       this.setState({ selectedIds: sel, marqueeRect: null });
+    }
+    // Dropping a note re-homes it: into whichever bucket it landed in, or out
+    // of every bucket if it was dropped on bare canvas.
+    if (this._drag && (this._drag.type === 'note' || this._drag.type === 'multi')) {
+      const ids = this._drag.type === 'note'
+        ? [this._drag.id]
+        : this._drag.members.map(m => m.id);
+      this.setState(s => {
+        const boxes = this.dropTargetsFor(s.taskNotes, s.taskGroups, ids);
+        let changed = false;
+        const taskNotes = s.taskNotes.map(n => {
+          if (ids.indexOf(n.id) === -1) return n;
+          const target = this.bucketUnder(boxes, n);
+          if (target === n.groupId && n.manualGroupId === target) return n;
+          changed = true;
+          // Remember the choice, so moving the score bar can't quietly undo it.
+          return { ...n, groupId: target, manualGroupId: target };
+        });
+        return changed
+          ? { taskNotes, highlightedGroup: null }
+          : { highlightedGroup: null };
+      });
     }
     this._drag = null;
   };
