@@ -189,6 +189,10 @@
     .canvas-note { cursor: grab; }
     .canvas-note:active { cursor: grabbing; }
     .task-canvas-viewport {
+      /* Marquee-dragging across notes would otherwise highlight their text
+         mid-drag, since the drag handlers don't preventDefault. */
+      -webkit-user-select: none;
+      user-select: none;
       background:
         linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px) 0 0 / 24px 24px,
         linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px) 0 0 / 24px 24px,
