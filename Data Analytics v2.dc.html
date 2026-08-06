@@ -1620,9 +1620,6 @@
                     </div>
                   </sc-if>
                 </div>
-                <button type="button" onClick="{{ aiGroup }}" title="Auto-group selected notes" aria-label="Auto-group selected notes" disabled="{{ menuGroupDisabled }}" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;flex-shrink:0;border:none;border-radius:var(--radius-full);background:var(--accent);color:#09090b;cursor:{{ menuGroupCursor }};box-sizing:border-box;opacity:{{ aiToolbarOpacity }}">
-                  <span style="display:flex;color:#09090b">{{ taskSparkleIcon }}</span>
-                </button>
               </div>
               </sc-if>
               <sc-if value="{{ isTimelineView }}" hint-placeholder-val="{{ false }}">
@@ -4697,7 +4694,6 @@ class Component extends DCLogic {
       taskSearching: tQuery !== '',
       taskSearchCount: tQuery ? (tMatchCount + ' of ' + tNotes.length) : '',
       zoomIn: this.zoomIn, zoomOut: this.zoomOut, resetView: this.resetView,
-      aiGroup: this.aiGroup, selectedCount: tSelectedCount,
       // auto-group confidence threshold
       confidenceLabel: this.state.groupConfidence + '%',
       confidenceValue: this.state.groupConfidence,
@@ -4769,7 +4765,6 @@ class Component extends DCLogic {
       menuUngroup: () => this.state.contextMenu && this.ungroupNote(this.state.contextMenu.noteId),
       menuAiGroup: this.aiGroup,
       menuAiGroupColor: tSelectedCount < 2 ? 'var(--text-tertiary)' : 'var(--accent)',
-      aiToolbarOpacity: tSelectedCount < 2 ? 0.4 : 1,
       // task plan panel
       tasksView, preventDefaultDrag: e => e.preventDefault(),
       panelColWidth: this.state.panelCollapsed ? '0px' : '340px',
