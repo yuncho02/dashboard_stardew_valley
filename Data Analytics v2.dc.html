@@ -1593,6 +1593,17 @@
                     </div>
                   </sc-if>
                 </div>
+                <div style="position:relative;flex-shrink:0">
+                  <button type="button" onClick="{{ toggleConfidenceMenu }}" title="Only auto-group when the AI is at least this sure" aria-label="Auto-group confidence threshold" style="display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-surface-2);color:var(--text-primary);font:500 13px/1 var(--font-body);cursor:pointer;white-space:nowrap;flex-shrink:0;justify-content:center">{{ confidenceLabel }}{{ taskChevronDownIcon }}</button>
+                  <sc-if value="{{ confidenceMenuOpen }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;top:42px;right:0;z-index:25;min-width:210px;padding:6px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface);box-shadow:var(--shadow-lg,0 20px 40px rgba(0,0,0,0.4));display:flex;flex-direction:column;gap:1px">
+                      <div style="padding:6px 10px 6px;font:var(--text-caption);color:var(--text-tertiary);white-space:nowrap">Auto-group when sure at least</div>
+                      <sc-for list="{{ confidenceOptions }}" as="c" hint-placeholder-count="5">
+                        <button type="button" onClick="{{ c.onClick }}" style="display:flex;align-items:center;justify-content:space-between;gap:16px;height:32px;padding:0 10px;border:none;border-radius:var(--radius-sm);background:{{ c.bg }};color:{{ c.color }};font:500 13px/1 var(--font-body);cursor:pointer;text-align:left">{{ c.label }}<span style="font:var(--text-mono-sm);color:var(--text-tertiary)">{{ c.hint }}</span></button>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
                 <button type="button" onClick="{{ aiGroup }}" title="Auto-group selected notes" aria-label="Auto-group selected notes" disabled="{{ menuGroupDisabled }}" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;flex-shrink:0;border:none;border-radius:var(--radius-full);background:var(--accent);color:#09090b;cursor:{{ menuGroupCursor }};box-sizing:border-box;opacity:{{ aiToolbarOpacity }}">
                   <span style="display:flex;color:#09090b">{{ taskSparkleIcon }}</span>
                 </button>
@@ -2129,16 +2140,26 @@ const COLOR_MAP = {
   accent: { border: 'var(--accent)', bg: 'var(--accent-muted)', chip: 'var(--accent)' },
   neutral: { border: 'var(--border-strong)', bg: 'var(--bg-surface-2)', chip: 'var(--text-secondary)' }
 };
+// `confidence` is how sure the model is that these notes belong in one bucket.
+// Tight, single-subject clusters score high; the platform-mix pair overlaps in
+// meaning, so the model is less certain they should stand apart.
 const TOPIC_GROUPS = [
-  { id: 'growth', label: 'Launch & early growth', color: 'info', significant: false, x: 90, y: 90 },
-  { id: 'spike', label: '1.6 update spike', color: 'accent', significant: true, x: 560, y: 60 },
-  { id: 'retention', label: 'Current standing vs. peak', color: 'warning', significant: true, x: 1030, y: 90 },
-  { id: 'bug', label: 'Bug report — farmhouse collision', color: 'danger', significant: true, x: 1500, y: 60 },
-  { id: 'platformPc', label: 'Platform mix — PC dominance', color: 'info', significant: false, x: 110, y: 490 },
-  { id: 'platformSwitch', label: 'Platform mix — Switch & console/mobile', color: 'success', significant: false, x: 580, y: 510 },
-  { id: 'revenue', label: 'Revenue & lifetime sales', color: 'accent', significant: false, x: 1050, y: 490 },
-  { id: 'reviews', label: 'Steam reviews & sentiment', color: 'success', significant: false, x: 1520, y: 510 }
+  { id: 'growth', label: 'Launch & early growth', color: 'info', significant: false, x: 90, y: 90, confidence: 86 },
+  { id: 'spike', label: '1.6 update spike', color: 'accent', significant: true, x: 560, y: 60, confidence: 94 },
+  { id: 'retention', label: 'Current standing vs. peak', color: 'warning', significant: true, x: 1030, y: 90, confidence: 81 },
+  { id: 'bug', label: 'Bug report — farmhouse collision', color: 'danger', significant: true, x: 1500, y: 60, confidence: 97 },
+  { id: 'platformPc', label: 'Platform mix — PC dominance', color: 'info', significant: false, x: 110, y: 490, confidence: 74 },
+  { id: 'platformSwitch', label: 'Platform mix — Switch & console/mobile', color: 'success', significant: false, x: 580, y: 510, confidence: 68 },
+  { id: 'revenue', label: 'Revenue & lifetime sales', color: 'accent', significant: false, x: 1050, y: 490, confidence: 88 },
+  { id: 'reviews', label: 'Steam reviews & sentiment', color: 'success', significant: false, x: 1520, y: 510, confidence: 79 }
 ];
+// Groups the model is confident enough to form on its own. Marked `auto` so
+// raising or lowering the bar only churns these, never a hand-made group.
+const CONFIDENCE_DEFAULT = 80;
+const CONFIDENCE_OPTIONS = [60, 70, 80, 90, 95];
+const autoGroupsFor = threshold => TOPIC_GROUPS
+  .filter(t => t.confidence >= threshold)
+  .map(t => ({ id: t.id, label: t.label, color: t.color, significant: t.significant, confidence: t.confidence, auto: true }));
 const NEW_GROUP_COLORS = ['info', 'warning', 'danger', 'success', 'accent'];
 const TASK_RANGE_OPTIONS = [
   { id: 'all', label: 'All time', days: null },
@@ -3301,8 +3322,11 @@ class Component extends DCLogic {
     messageDraft: '',
     // --- My Tasks view state (canvas/timeline/task plan) ---
     taskHeaderNarrow: false,
-    taskNotes: NOTES.map(n => ({ ...n, x: snap(TOPIC_GROUPS.find(b => b.id === n.topicId).x + n.dx), y: snap(TOPIC_GROUPS.find(b => b.id === n.topicId).y + n.dy), groupId: null, daysAgo: DAYS_AGO[n.id] })),
-    taskGroups: [],
+    // Confident groups are already formed when the board opens.
+    taskNotes: NOTES.map(n => ({ ...n, x: snap(TOPIC_GROUPS.find(b => b.id === n.topicId).x + n.dx), y: snap(TOPIC_GROUPS.find(b => b.id === n.topicId).y + n.dy), groupId: TOPIC_GROUPS.find(b => b.id === n.topicId).confidence >= CONFIDENCE_DEFAULT ? n.topicId : null, daysAgo: DAYS_AGO[n.id] })),
+    taskGroups: autoGroupsFor(CONFIDENCE_DEFAULT),
+    groupConfidence: CONFIDENCE_DEFAULT,
+    confidenceMenuOpen: false,
     selectedIds: {},
     marqueeRect: null,
     contextMenu: null,
@@ -3407,7 +3431,7 @@ class Component extends DCLogic {
   };
 
   startPan = e => {
-    if (this.state.contextMenu || this.state.rangeMenuOpen || this.state.timelineRangeMenuOpen) this.setState({ contextMenu: null, rangeMenuOpen: false, timelineRangeMenuOpen: false });
+    if (this.state.contextMenu || this.state.rangeMenuOpen || this.state.timelineRangeMenuOpen || this.state.confidenceMenuOpen) this.setState({ contextMenu: null, rangeMenuOpen: false, timelineRangeMenuOpen: false, confidenceMenuOpen: false });
     if (this.spaceDown || e.button === 1) {
       if (Object.keys(this.state.selectedIds).length) this.setState({ selectedIds: {} });
       this._drag = { type: 'pan', startX: e.clientX, startY: e.clientY, origX: this.state.pan.x, origY: this.state.pan.y };
@@ -3475,10 +3499,28 @@ class Component extends DCLogic {
   };
   closeContextMenu = () => this.setState({ contextMenu: null });
 
-  toggleRangeMenu = () => this.setState(s => ({ rangeMenuOpen: !s.rangeMenuOpen, timelineRangeMenuOpen: false }));
+  toggleRangeMenu = () => this.setState(s => ({ rangeMenuOpen: !s.rangeMenuOpen, timelineRangeMenuOpen: false, confidenceMenuOpen: false }));
   setRange = days => () => this.setState({ rangeDays: days, rangeMenuOpen: false });
-  setTaskViewMode = mode => () => this.setState({ taskViewMode: mode, contextMenu: null, rangeMenuOpen: false, timelineRangeMenuOpen: false });
+  setTaskViewMode = mode => () => this.setState({ taskViewMode: mode, contextMenu: null, rangeMenuOpen: false, timelineRangeMenuOpen: false, confidenceMenuOpen: false });
   toggleTimelineRangeMenu = () => this.setState(s => ({ timelineRangeMenuOpen: !s.timelineRangeMenuOpen, rangeMenuOpen: false }));
+  toggleConfidenceMenu = () => this.setState(s => ({ confidenceMenuOpen: !s.confidenceMenuOpen, rangeMenuOpen: false, timelineRangeMenuOpen: false }));
+  setGroupConfidence = pct => () => {
+    this.setState(s => {
+      // Hand-made groups outrank the threshold, so only the auto ones are rebuilt.
+      const manual = s.taskGroups.filter(g => !g.auto);
+      const groups = manual.concat(autoGroupsFor(pct).filter(a => !manual.some(m => m.id === a.id)));
+      const live = {};
+      groups.forEach(g => { live[g.id] = true; });
+      return {
+        groupConfidence: pct,
+        confidenceMenuOpen: false,
+        taskGroups: groups,
+        taskNotes: s.taskNotes.map(n => ({ ...n, groupId: live[n.topicId] ? n.topicId : null }))
+      };
+    });
+    const n = TOPIC_GROUPS.filter(t => t.confidence >= pct).length;
+    this.showToast('Auto-grouping at ' + pct + '% confidence — ' + n + (n === 1 ? ' group' : ' groups'));
+  };
   setTimelineRange = days => () => this.setState({ timelineRangeDays: days, timelineRangeMenuOpen: false });
   zoomInTimeline = () => this.setState(s => ({ timelineScale: Math.min(24, s.timelineScale + 2) }));
   zoomOutTimeline = () => this.setState(s => ({ timelineScale: Math.max(2, s.timelineScale - 2) }));
@@ -4599,6 +4641,20 @@ class Component extends DCLogic {
       taskSearchCount: tQuery ? (tMatchCount + ' of ' + tNotes.length) : '',
       zoomIn: this.zoomIn, zoomOut: this.zoomOut, resetView: this.resetView,
       aiGroup: this.aiGroup, selectedCount: tSelectedCount,
+      // auto-group confidence threshold
+      confidenceLabel: 'AI ≥ ' + this.state.groupConfidence + '%',
+      confidenceMenuOpen: this.state.confidenceMenuOpen,
+      toggleConfidenceMenu: this.toggleConfidenceMenu,
+      confidenceOptions: CONFIDENCE_OPTIONS.map(pct => {
+        const n = TOPIC_GROUPS.filter(t => t.confidence >= pct).length;
+        return {
+          label: pct + '%',
+          hint: n + (n === 1 ? ' group' : ' groups'),
+          bg: pct === this.state.groupConfidence ? 'var(--bg-surface-2)' : 'transparent',
+          color: pct === this.state.groupConfidence ? 'var(--accent)' : 'var(--text-primary)',
+          onClick: this.setGroupConfidence(pct)
+        };
+      }),
       rangeMenuOpen: this.state.rangeMenuOpen, toggleRangeMenu: this.toggleRangeMenu,
       rangeLabel: (TASK_RANGE_OPTIONS.find(r => r.days === this.state.rangeDays) || TASK_RANGE_OPTIONS[0]).label,
       rangeOptions: TASK_RANGE_OPTIONS.map(r => ({
