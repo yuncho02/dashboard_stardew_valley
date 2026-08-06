@@ -2157,14 +2157,14 @@ const COLOR_MAP = {
 // Tight, single-subject clusters score high; the platform-mix pair overlaps in
 // meaning, so the model is less certain they should stand apart.
 const TOPIC_GROUPS = [
-  { id: 'growth', label: 'Launch & early growth', color: 'info', significant: false, x: 90, y: 90, confidence: 86 },
-  { id: 'spike', label: '1.6 update spike', color: 'accent', significant: true, x: 560, y: 60, confidence: 94 },
-  { id: 'retention', label: 'Current standing vs. peak', color: 'warning', significant: true, x: 1030, y: 90, confidence: 81 },
+  { id: 'coop', label: 'Co-op desync on day rollover', color: 'info', significant: false, x: 90, y: 90, confidence: 86 },
+  { id: 'crashes', label: 'Crash reports — 1.6.4', color: 'accent', significant: true, x: 560, y: 60, confidence: 94 },
+  { id: 'perf', label: 'Late-game farm frame drops', color: 'warning', significant: true, x: 1030, y: 90, confidence: 81 },
   { id: 'bug', label: 'Bug report — farmhouse collision', color: 'danger', significant: true, x: 1500, y: 60, confidence: 97 },
-  { id: 'platformPc', label: 'Platform mix — PC dominance', color: 'info', significant: false, x: 110, y: 490, confidence: 74 },
-  { id: 'platformSwitch', label: 'Platform mix — Switch & console/mobile', color: 'success', significant: false, x: 580, y: 510, confidence: 68 },
-  { id: 'revenue', label: 'Revenue & lifetime sales', color: 'accent', significant: false, x: 1050, y: 490, confidence: 88 },
-  { id: 'reviews', label: 'Steam reviews & sentiment', color: 'success', significant: false, x: 1520, y: 510, confidence: 79 }
+  { id: 'input', label: 'Controller & input bindings', color: 'info', significant: false, x: 110, y: 490, confidence: 74 },
+  { id: 'locale', label: 'Localization defects', color: 'success', significant: false, x: 580, y: 510, confidence: 68 },
+  { id: 'saves', label: 'Save corruption on sleep', color: 'accent', significant: false, x: 1050, y: 490, confidence: 88 },
+  { id: 'mods', label: 'SMAPI mod breakage', color: 'success', significant: false, x: 1520, y: 510, confidence: 79 }
 ];
 // Groups the model is confident enough to form on its own. Marked `auto` so
 // raising or lowering the bar only churns these, never a hand-made group.
@@ -2191,47 +2191,49 @@ const TIMELINE_RANGE_OPTIONS = [
   { id: 'ty', label: 'Next year', days: 365 },
   { id: 'tall', label: 'All upcoming', days: null }
 ];
+// Roughly when each finding landed, so the range filter has a real spread:
+// the P0 and the post-patch crash cluster are fresh, polish items are stale.
 const DAYS_AGO = {
-  n1: 3800, n2: 2050, n3: 2020, n4: 860, n5: 855, n6: 860,
-  n7: 0, n8: 0, n9: 0, n10: 16, n11: 16, n12: 16,
-  n13: 200, n14: 200, n15: 200, n16: 200, n17: 600, n18: 600, n19: 600,
-  n20: 5, n21: 5, n22: 5
+  n1: 6, n2: 6, n3: 9, n4: 2, n5: 2, n6: 3,
+  n7: 24, n8: 24, n9: 30, n10: 1, n11: 1, n12: 2,
+  n13: 48, n14: 55, n15: 96, n16: 110,
+  n17: 5, n18: 5, n19: 8, n20: 4, n21: 4, n22: 6
 };
 const NOTES = [
-  { id: 'n1', topicId: 'growth', dx: 0, dy: 0, title: '2016 launch peak', body: '64,427 CCU at Steam launch, Feb 26, 2016' },
-  { id: 'n2', topicId: 'growth', dx: 200, dy: 40, title: '1.5 update peak', body: '89,807 CCU on Dec 27, 2020 — +39% over launch' },
-  { id: 'n3', topicId: 'growth', dx: 70, dy: 170, title: '1.5 tail record', body: '94,879 CCU set Jan 2021, held until 1.6' },
-  { id: 'n4', topicId: 'spike', dx: 0, dy: 0, title: '1.6 day-1 CCU', body: '146,159 concurrent players, Mar 19, 2024' },
-  { id: 'n5', topicId: 'spike', dx: 200, dy: 40, title: 'All-time peak', body: '236,614 CCU on Mar 24, 2024 — +149% over prior record' },
-  { id: 'n6', topicId: 'spike', dx: 70, dy: 170, title: 'Largest patch ever', body: "1.6 is the biggest content update in the game's history" },
-  { id: 'n7', topicId: 'retention', dx: 0, dy: 0, title: "Today's CCU", body: '113,287 — down 52% from the Mar 2024 peak' },
-  { id: 'n8', topicId: 'retention', dx: 200, dy: 40, title: 'Vs. launch-day retention', body: "77% of 1.6's own day-1 count (146,159) still retained" },
-  { id: 'n9', topicId: 'retention', dx: 70, dy: 170, title: 'Live right now', body: '69,266 concurrent players (SteamDB, 2026)' },
+  { id: 'n1', topicId: 'coop', dx: 0, dy: 0, title: 'Desync at 2am sleep', body: 'Host and client farm state diverge on day rollover' },
+  { id: 'n2', topicId: 'coop', dx: 200, dy: 40, title: 'Affected sessions', body: '1,284 co-op sessions dropped mid-day since 1.6.4' },
+  { id: 'n3', topicId: 'coop', dx: 70, dy: 170, title: 'Repro rate', body: '6 of 10 runs with 3+ players on the same LAN' },
+  { id: 'n4', topicId: 'crashes', dx: 0, dy: 0, title: 'Crash rate — 1.6.4', body: '0.42% of sessions, up from 0.11% on 1.6.3' },
+  { id: 'n5', topicId: 'crashes', dx: 200, dy: 40, title: 'Top stack', body: 'NullReference in NPCScheduler::advanceTo() on festival load' },
+  { id: 'n6', topicId: 'crashes', dx: 70, dy: 170, title: 'Platform split', body: '78% Windows, 14% Steam Deck, 8% macOS' },
+  { id: 'n7', topicId: 'perf', dx: 0, dy: 0, title: 'Late-game frame time', body: '38ms median on 500+ object farms — target is 16ms' },
+  { id: 'n8', topicId: 'perf', dx: 200, dy: 40, title: 'Worst offender', body: 'Sprinkler update loop scales O(n²) with placed machines' },
+  { id: 'n9', topicId: 'perf', dx: 70, dy: 170, title: 'Steam Deck', body: 'Drops to 24fps in the Ginger Island greenhouse' },
   { id: 'n10', topicId: 'bug', dx: 0, dy: 0, title: '#BUG-47248 · P0', body: 'Axe equipped + door interact → character stuck in oak tree' },
   { id: 'n11', topicId: 'bug', dx: 200, dy: 40, title: 'Root cause', body: 'Collision/interaction ordering: FarmhouseDoor::tryEnter() races TreeCollider::resolveOverlap()' },
   { id: 'n12', topicId: 'bug', dx: 70, dy: 170, title: 'Reported by', body: 'Player BerniceSun02, Jul 14 2026 — replay clip attached' },
-  { id: 'n13', topicId: 'platformPc', dx: 0, dy: 0, title: 'PC share', body: '26M copies · 63% of lifetime sales' },
-  { id: 'n14', topicId: 'platformPc', dx: 200, dy: 40, title: 'Primary platform', body: 'PC has led sales since the 2016 launch' },
-  { id: 'n15', topicId: 'platformSwitch', dx: 0, dy: 0, title: 'Switch sales', body: '7.9M copies · 19% share — ported 2017' },
-  { id: 'n16', topicId: 'platformSwitch', dx: 200, dy: 40, title: 'Console & mobile', body: '7.1M copies · 17% share (PS, Xbox, iOS, Android)' },
-  { id: 'n17', topicId: 'revenue', dx: 0, dy: 0, title: 'Gross revenue', body: '$518M lifetime, across all platforms' },
-  { id: 'n18', topicId: 'revenue', dx: 200, dy: 40, title: 'Net revenue (est.)', body: '$152.8M after platform cuts, discounts, tax' },
-  { id: 'n19', topicId: 'revenue', dx: 70, dy: 170, title: 'Lifetime copies', body: '41.3M sold as of Dec 2024' },
-  { id: 'n20', topicId: 'reviews', dx: 0, dy: 0, title: 'Review score', body: '98/100 — Overwhelmingly Positive' },
-  { id: 'n21', topicId: 'reviews', dx: 200, dy: 40, title: 'Total reviews', body: '1,010,577 Steam reviews' },
-  { id: 'n22', topicId: 'reviews', dx: 70, dy: 170, title: 'Community hub', body: '1,029,383 followers' }
+  { id: 'n13', topicId: 'input', dx: 0, dy: 0, title: 'Bindings reset', body: 'Custom controller mappings lost after alt-tab on Windows' },
+  { id: 'n14', topicId: 'input', dx: 200, dy: 40, title: 'Deck defaults', body: 'Right stick unmapped in the default Steam Deck profile' },
+  { id: 'n15', topicId: 'locale', dx: 0, dy: 0, title: 'Truncated strings', body: 'German shop UI overflows on 3 of 12 vendor screens' },
+  { id: 'n16', topicId: 'locale', dx: 200, dy: 40, title: 'Missing keys', body: '17 strings added in 1.6.4 are untranslated in every locale' },
+  { id: 'n17', topicId: 'saves', dx: 0, dy: 0, title: 'Save loss on sleep', body: '412 reports of a lost day when sleeping during autosave' },
+  { id: 'n18', topicId: 'saves', dx: 200, dy: 40, title: 'Trigger window', body: 'Only when the day-end write overlaps a cloud sync' },
+  { id: 'n19', topicId: 'saves', dx: 70, dy: 170, title: 'Recovery path', body: '.bak restores cleanly in 9 of 10 submitted saves' },
+  { id: 'n20', topicId: 'mods', dx: 0, dy: 0, title: 'Mods broken by 1.6.4', body: '23 of the top 100 Nexus mods fail to load' },
+  { id: 'n21', topicId: 'mods', dx: 200, dy: 40, title: 'Common cause', body: 'Farmer.currentLocation was renamed with no compatibility shim' },
+  { id: 'n22', topicId: 'mods', dx: 70, dy: 170, title: 'Modded reports', body: '31% of new bug reports come from modded saves' }
 ];
 const TASKS = [
   { id: 't1', text: 'Fix farmhouse door + axe collision bug (#BUG-47248)', topicId: 'bug', dueDays: 2, estimate: '4 hrs' },
-  { id: 't2', text: 'Investigate root cause of 52% CCU drop since 1.6 peak', topicId: 'retention', dueDays: 5, estimate: '2 days' },
-  { id: 't3', text: 'Plan next major update to replicate 1.6-scale engagement spike', topicId: 'spike', dueDays: 45, estimate: '3 weeks' },
-  { id: 't4', text: 'Expand Switch-specific content — 7.9M unit demand', topicId: 'platformSwitch', dueDays: 21, estimate: '2 weeks' },
-  { id: 't5', text: 'Grow console & mobile share, currently 17% of sales', topicId: 'platformSwitch', dueDays: 60, estimate: '1 month' },
-  { id: 't6', text: 'Source first-party regional sales data — not currently published', topicId: 'platformPc', dueDays: 14, estimate: '3 days' },
-  { id: 't7', text: 'Get platform-level revenue breakdown beyond total gross', topicId: 'revenue', dueDays: 30, estimate: '1 week' },
-  { id: 't8', text: 'Leverage 98/100 Steam sentiment score in store marketing', topicId: 'reviews', dueDays: 10, estimate: '1 day' },
-  { id: 't9', text: 'Set up recurring retention tracking after each patch', topicId: 'retention', dueDays: 7, estimate: '2 days' },
-  { id: 't10', text: 'Refresh raw data pull — last updated manually in 2026', topicId: 'growth', dueDays: -3, estimate: '1 hr' }
+  { id: 't2', text: 'Patch the NPCScheduler null deref crashing festival loads', topicId: 'crashes', dueDays: 1, estimate: '1 day' },
+  { id: 't3', text: 'Guard the day-end save write against overlapping cloud sync', topicId: 'saves', dueDays: 4, estimate: '3 days' },
+  { id: 't4', text: 'Reconcile host and client farm state on day rollover', topicId: 'coop', dueDays: 9, estimate: '1 week' },
+  { id: 't5', text: 'Profile and flatten the O(n²) sprinkler update loop', topicId: 'perf', dueDays: 14, estimate: '4 days' },
+  { id: 't6', text: 'Ship a compatibility shim for the renamed currentLocation field', topicId: 'mods', dueDays: 7, estimate: '2 days' },
+  { id: 't7', text: 'Restore controller bindings across alt-tab', topicId: 'input', dueDays: 21, estimate: '1 day' },
+  { id: 't8', text: 'Fix German shop overflow and land the 17 missing strings', topicId: 'locale', dueDays: 30, estimate: '2 days' },
+  { id: 't9', text: 'Add a crash-rate regression gate to the release build', topicId: 'crashes', dueDays: 45, estimate: '3 days' },
+  { id: 't10', text: 'Cut the 1.6.5 hotfix branch off main', topicId: 'bug', dueDays: -3, estimate: '1 hr' }
 ];
 const NOTE_W = 190, NOTE_H = 110, PAD = 46, GRID = 24;
 const snap = v => Math.round(v / GRID) * GRID;
