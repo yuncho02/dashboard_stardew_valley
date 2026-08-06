@@ -190,6 +190,9 @@
     .canvas-note:active { cursor: grabbing; }
     /* Notes are painted after buckets, so a note wins the hit test and the
        bucket only picks up drags on the empty space around them. */
+    .conf-input { border: 1px solid transparent; }
+    .conf-input:hover { border-color: var(--border-default); }
+    .conf-input:focus { border-color: var(--accent-border); background: var(--bg-surface-2); }
     .canvas-bucket { cursor: grab; }
     .canvas-bucket:active { cursor: grabbing; }
     .task-canvas-viewport {
@@ -1599,8 +1602,11 @@
                     <div onMouseDown="{{ stopProp }}" style="position:absolute;top:42px;right:0;z-index:25;width:250px;padding:12px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface);box-shadow:var(--shadow-lg,0 20px 40px rgba(0,0,0,0.4))">
                       <div style="font:var(--text-body-sm);color:var(--text-secondary);margin-bottom:10px">Confidence score</div>
                       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                        <input type="range" min="50" max="99" step="1" value="{{ confidenceValue }}" onChange="{{ setConfidence }}" aria-label="Confidence score" style="flex:1;min-width:0;accent-color:var(--accent);cursor:pointer">
-                        <span style="font:500 14px/1 var(--font-body);color:var(--text-primary);font-variant-numeric:tabular-nums;min-width:38px;text-align:right">{{ confidenceLabel }}</span>
+                        <input type="range" min="{{ confidenceMin }}" max="{{ confidenceMax }}" step="1" value="{{ confidenceValue }}" onChange="{{ setConfidence }}" aria-label="Confidence score" style="flex:1;min-width:0;accent-color:var(--accent);cursor:pointer">
+                        <span style="display:flex;align-items:center;gap:1px;flex-shrink:0">
+                          <input ref="{{ confInputRef }}" type="text" inputmode="numeric" maxlength="2" value="{{ confidenceText }}" onChange="{{ setConfidenceText }}" onKeyDown="{{ confidenceKeyDown }}" aria-label="Confidence score value" class="conf-input" style="width:28px;padding:2px 3px;border-radius:var(--radius-sm);background:transparent;color:var(--text-primary);font:500 14px/1 var(--font-body);font-variant-numeric:tabular-nums;text-align:right;outline:none">
+                          <span style="font:500 14px/1 var(--font-body);color:var(--text-primary)">%</span>
+                        </span>
                       </div>
                       <div style="display:flex;align-items:center;justify-content:space-between;padding-top:9px;border-top:1px solid var(--border-default)">
                         <span style="font:var(--text-caption);color:var(--text-tertiary)">Would group</span>
@@ -2166,6 +2172,7 @@ const TOPIC_GROUPS = [
 // Groups the model is confident enough to form on its own. Marked `auto` so
 // raising or lowering the bar only churns these, never a hand-made group.
 const CONFIDENCE_DEFAULT = 80;
+const CONFIDENCE_MIN = 50, CONFIDENCE_MAX = 99;
 const autoGroupsFor = threshold => TOPIC_GROUPS
   .filter(t => t.confidence >= threshold)
   .map(t => ({ id: t.id, label: t.label, color: t.color, significant: t.significant, confidence: t.confidence, auto: true }));
@@ -3336,6 +3343,7 @@ class Component extends DCLogic {
     taskGroups: autoGroupsFor(CONFIDENCE_DEFAULT),
     groupConfidence: CONFIDENCE_DEFAULT,
     confidenceMenuOpen: false,
+    confidenceDraft: null,
     selectedIds: {},
     marqueeRect: null,
     contextMenu: null,
@@ -3357,11 +3365,13 @@ class Component extends DCLogic {
 
   viewportRef = React.createRef();
   canvasContainerRef = React.createRef();
+  confInputRef = React.createRef();
   dragTaskIdx = null;
   _drag = null;
   spaceDown = false;
   _wheelEl = null;
   _roEl = null;
+  _blurEl = null;
 
   _toastTimer = null;
   _ghostTimer = null;
@@ -3391,6 +3401,7 @@ class Component extends DCLogic {
     document.removeEventListener('keydown', this.handleTaskKeyDown);
     document.removeEventListener('keyup', this.handleTaskKeyUp);
     if (this._headerRO) this._headerRO.disconnect();
+    if (this._blurEl) this._blurEl.removeEventListener('blur', this.commitConfidenceText);
   }
 
   // Bind the wheel listener (onWheel isn't a template-bindable event here) and a
@@ -3403,6 +3414,14 @@ class Component extends DCLogic {
       this._wheelEl = vp;
     } else if (!vp && this._wheelEl) {
       this._wheelEl = null;
+    }
+    // onBlur isn't template-bindable either, so the typed score commits via a
+    // native listener while the popover is mounted.
+    const ci = this.confInputRef.current;
+    if (ci !== this._blurEl) {
+      if (this._blurEl) this._blurEl.removeEventListener('blur', this.commitConfidenceText);
+      if (ci) ci.addEventListener('blur', this.commitConfidenceText);
+      this._blurEl = ci;
     }
     const cc = this.canvasContainerRef.current;
     if (cc && this._roEl !== cc) {
@@ -3440,7 +3459,10 @@ class Component extends DCLogic {
   };
 
   startPan = e => {
-    if (this.state.contextMenu || this.state.rangeMenuOpen || this.state.timelineRangeMenuOpen || this.state.confidenceMenuOpen) this.setState({ contextMenu: null, rangeMenuOpen: false, timelineRangeMenuOpen: false, confidenceMenuOpen: false });
+    if (this.state.contextMenu || this.state.rangeMenuOpen || this.state.timelineRangeMenuOpen || this.state.confidenceMenuOpen) {
+      if (this.state.confidenceMenuOpen) this.commitConfidenceText();
+      this.setState({ contextMenu: null, rangeMenuOpen: false, timelineRangeMenuOpen: false, confidenceMenuOpen: false });
+    }
     if (this.spaceDown || e.button === 1) {
       if (Object.keys(this.state.selectedIds).length) this.setState({ selectedIds: {} });
       this._drag = { type: 'pan', startX: e.clientX, startY: e.clientY, origX: this.state.pan.x, origY: this.state.pan.y };
@@ -3512,23 +3534,49 @@ class Component extends DCLogic {
   setRange = days => () => this.setState({ rangeDays: days, rangeMenuOpen: false });
   setTaskViewMode = mode => () => this.setState({ taskViewMode: mode, contextMenu: null, rangeMenuOpen: false, timelineRangeMenuOpen: false, confidenceMenuOpen: false });
   toggleTimelineRangeMenu = () => this.setState(s => ({ timelineRangeMenuOpen: !s.timelineRangeMenuOpen, rangeMenuOpen: false }));
-  toggleConfidenceMenu = () => this.setState(s => ({ confidenceMenuOpen: !s.confidenceMenuOpen, rangeMenuOpen: false, timelineRangeMenuOpen: false }));
+  toggleConfidenceMenu = () => {
+    if (this.state.confidenceMenuOpen) this.commitConfidenceText();
+    this.setState(s => ({ confidenceMenuOpen: !s.confidenceMenuOpen, rangeMenuOpen: false, timelineRangeMenuOpen: false }));
+  };
+  // Shared by the slider and the typed field. Hand-made groups outrank the
+  // score, so only the auto ones are rebuilt.
+  confidencePatch = (s, pct) => {
+    const manual = s.taskGroups.filter(g => !g.auto);
+    const groups = manual.concat(autoGroupsFor(pct).filter(a => !manual.some(m => m.id === a.id)));
+    const live = {};
+    groups.forEach(g => { live[g.id] = true; });
+    return {
+      groupConfidence: pct,
+      taskGroups: groups,
+      taskNotes: s.taskNotes.map(n => ({ ...n, groupId: live[n.topicId] ? n.topicId : null }))
+    };
+  };
   // Live off the slider, so the board regroups as the bar moves. No toast —
   // the readout in the popover already reports the count.
   setConfidence = e => {
     const pct = Number(e.target.value);
+    this.setState(s => Object.assign({ confidenceDraft: null }, this.confidencePatch(s, pct)));
+  };
+  // Typing keeps a draft so a half-finished number stays on screen. It only
+  // reaches the board once it's in range — otherwise typing "9" on the way to
+  // "95" would snap everything to the minimum.
+  setConfidenceText = e => {
+    const raw = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
+    const pct = Number(raw);
+    const usable = raw !== '' && pct >= CONFIDENCE_MIN && pct <= CONFIDENCE_MAX;
+    this.setState(s => Object.assign({ confidenceDraft: raw }, usable ? this.confidencePatch(s, pct) : null));
+  };
+  // Leaving the field resolves whatever is left: blank reverts, out-of-range clamps.
+  commitConfidenceText = () => {
     this.setState(s => {
-      // Hand-made groups outrank the threshold, so only the auto ones are rebuilt.
-      const manual = s.taskGroups.filter(g => !g.auto);
-      const groups = manual.concat(autoGroupsFor(pct).filter(a => !manual.some(m => m.id === a.id)));
-      const live = {};
-      groups.forEach(g => { live[g.id] = true; });
-      return {
-        groupConfidence: pct,
-        taskGroups: groups,
-        taskNotes: s.taskNotes.map(n => ({ ...n, groupId: live[n.topicId] ? n.topicId : null }))
-      };
+      if (s.confidenceDraft === null) return null;
+      if (s.confidenceDraft === '') return { confidenceDraft: null };
+      const pct = Math.min(CONFIDENCE_MAX, Math.max(CONFIDENCE_MIN, Number(s.confidenceDraft)));
+      return Object.assign({ confidenceDraft: null }, this.confidencePatch(s, pct));
     });
+  };
+  confidenceKeyDown = e => {
+    if (e.key === 'Enter') { this.commitConfidenceText(); if (e.target && e.target.blur) e.target.blur(); }
   };
   setTimelineRange = days => () => this.setState({ timelineRangeDays: days, timelineRangeMenuOpen: false });
   zoomInTimeline = () => this.setState(s => ({ timelineScale: Math.min(24, s.timelineScale + 2) }));
@@ -4653,9 +4701,17 @@ class Component extends DCLogic {
       // auto-group confidence threshold
       confidenceLabel: this.state.groupConfidence + '%',
       confidenceValue: this.state.groupConfidence,
+      confidenceMin: CONFIDENCE_MIN, confidenceMax: CONFIDENCE_MAX,
+      // While typing, show the draft verbatim; otherwise mirror the committed score.
+      confidenceText: this.state.confidenceDraft === null
+        ? String(this.state.groupConfidence)
+        : this.state.confidenceDraft,
       confidenceMenuOpen: this.state.confidenceMenuOpen,
       toggleConfidenceMenu: this.toggleConfidenceMenu,
       setConfidence: this.setConfidence,
+      setConfidenceText: this.setConfidenceText,
+      confInputRef: this.confInputRef,
+      confidenceKeyDown: this.confidenceKeyDown,
       confidenceMatchLabel: TOPIC_GROUPS.filter(t => t.confidence >= this.state.groupConfidence).length +
         ' of ' + TOPIC_GROUPS.length,
       // One tick per topic, strongest first, so the run of lit ticks reads as a meter.
