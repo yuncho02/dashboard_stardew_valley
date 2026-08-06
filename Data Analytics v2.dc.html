@@ -3574,17 +3574,42 @@ class Component extends DCLogic {
     this.showToast('Auto-grouped selected notes by theme');
   };
 
+  // Scale about a fixed point instead of the canvas origin, so whatever sits
+  // under (vx, vy) — viewport-local px — stays put. A canvas point maps to
+  // v = pan + c * scale, so holding v still means pan' = v - (v - pan) * s'/s.
+  // The delta is applied inside the updater so rapid wheel events can't race.
+  zoomAt = (delta, vx, vy) => {
+    this.setState(s => {
+      const from = s.pan.scale;
+      const to = Math.min(1.6, Math.max(0.35, from + delta));
+      if (to === from) return null;
+      const k = to / from;
+      return { pan: { x: vx - (vx - s.pan.x) * k, y: vy - (vy - s.pan.y) * k, scale: to } };
+    });
+  };
+  viewportPoint = e => {
+    const vp = this.viewportRef.current;
+    const r = vp ? vp.getBoundingClientRect() : { left: 0, top: 0 };
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  };
   onWheel = e => {
     e.preventDefault();
     if (e.ctrlKey) {
-      const delta = e.deltaY > 0 ? -0.04 : 0.04;
-      this.setState(s => ({ pan: { ...s.pan, scale: Math.min(1.6, Math.max(0.35, s.pan.scale + delta)) } }));
+      const p = this.viewportPoint(e);
+      this.zoomAt(e.deltaY > 0 ? -0.04 : 0.04, p.x, p.y);
     } else {
       this.setState(s => ({ pan: { ...s.pan, x: s.pan.x - e.deltaX, y: s.pan.y - e.deltaY } }));
     }
   };
-  zoomIn = () => this.setState(s => ({ pan: { ...s.pan, scale: Math.min(1.6, s.pan.scale + 0.1) } }));
-  zoomOut = () => this.setState(s => ({ pan: { ...s.pan, scale: Math.max(0.35, s.pan.scale - 0.1) } }));
+  // The pointer is on the button, not the canvas, so these anchor on the
+  // viewport centre — the closest thing to "where you're looking".
+  zoomButton = delta => {
+    const vp = this.viewportRef.current;
+    const r = vp ? vp.getBoundingClientRect() : { width: 0, height: 0 };
+    this.zoomAt(delta, r.width / 2, r.height / 2);
+  };
+  zoomIn = () => this.zoomButton(0.1);
+  zoomOut = () => this.zoomButton(-0.1);
   resetView = () => this.setState({ pan: { x: -60, y: -40, scale: 0.62 }, smoothPan: true }, () => setTimeout(() => this.setState({ smoothPan: false }), 550));
 
   toggleDone = id => this.setState(s => ({ tasksDone: { ...s.tasksDone, [id]: !s.tasksDone[id] } }));
