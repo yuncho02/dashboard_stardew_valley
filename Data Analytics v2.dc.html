@@ -3428,6 +3428,16 @@ class Component extends DCLogic {
       });
       return;
     }
+    // Dragging one of several selected notes moves the whole selection;
+    // dragging an unselected note moves just that note.
+    const sel = this.state.selectedIds;
+    if (sel[note.id] && Object.keys(sel).length > 1) {
+      const members = this.state.taskNotes
+        .filter(n => sel[n.id])
+        .map(n => ({ id: n.id, x: n.x, y: n.y }));
+      this._drag = { type: 'multi', startX: e.clientX, startY: e.clientY, members };
+      return;
+    }
     this._drag = { type: 'note', id: note.id, startX: e.clientX, startY: e.clientY, origX: note.x, origY: note.y };
   };
   startGroupDrag = groupId => e => {
@@ -3484,7 +3494,9 @@ class Component extends DCLogic {
       const scale = this.state.pan.scale;
       const nx = snap(this._drag.origX + dx / scale), ny = snap(this._drag.origY + dy / scale);
       this.setState(s => ({ taskNotes: s.taskNotes.map(n => n.id === this._drag.id ? { ...n, x: nx, y: ny } : n) }));
-    } else if (this._drag.type === 'group') {
+    } else if (this._drag.type === 'group' || this._drag.type === 'multi') {
+      // Same movement for a bucket and for a multi-note selection: both carry
+      // the members they started with.
       const dx = e.clientX - this._drag.startX, dy = e.clientY - this._drag.startY;
       const scale = this.state.pan.scale;
       // Snap the delta rather than each note, so the cluster keeps its spacing.
