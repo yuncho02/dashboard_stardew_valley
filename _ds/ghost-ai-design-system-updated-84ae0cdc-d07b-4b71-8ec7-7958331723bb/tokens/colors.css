@@ -121,6 +121,10 @@
   --muted-foreground: var(--zinc-500);
   --accent-foreground: #ffffff;
   --destructive: var(--red-500);
+  /* Figma mode → sidebar: light #FFFFFF / dark #000000 (shell uses pure black) */
+  --sidebar: #000000;
+  --sidebar-foreground: #ffffff;
+  --sidebar-border: var(--zinc-800);
 }
 
 /* ---- light theme override ---- */
@@ -174,4 +178,8 @@
   --muted-foreground: var(--zinc-400);
   --accent-foreground: var(--zinc-900);
   --destructive: var(--red-600);
+  /* Figma mode → sidebar: #FFFFFF in light */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #000000;
+  --sidebar-border: var(--zinc-200);
 }

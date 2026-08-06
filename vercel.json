@@ -5,6 +5,7 @@
   "outputDirectory": ".",
   "cleanUrls": false,
   "rewrites": [
-    { "source": "/", "destination": "/Data Analytics v2.dc.html" }
+    { "source": "/playerreport", "destination": "/Data%20Analytics%20v2.dc.html" },
+    { "source": "/playerreport/", "destination": "/Data%20Analytics%20v2.dc.html" }
   ]
 }

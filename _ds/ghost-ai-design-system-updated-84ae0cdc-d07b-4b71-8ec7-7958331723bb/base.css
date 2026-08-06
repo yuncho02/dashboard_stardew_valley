@@ -12,7 +12,7 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: var(--radius-full); }
-:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+:focus-visible { outline: 1px solid var(--accent); outline-offset: 0; box-shadow: none; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
 }

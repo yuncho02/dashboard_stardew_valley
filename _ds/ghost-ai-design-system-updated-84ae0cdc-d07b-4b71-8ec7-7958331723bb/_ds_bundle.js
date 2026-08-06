@@ -1785,9 +1785,9 @@ function Input({
       borderRadius: 'var(--radius-md)',
       font: 'var(--text-body)',
       outline: 'none',
-      boxShadow: focus ? 'var(--shadow-focus)' : 'none',
+      boxShadow: 'none',
       opacity: disabled ? 0.5 : 1,
-      transition: 'border-color 120ms ease, box-shadow 120ms ease'
+      transition: 'border-color 120ms ease'
     }
   }));
 }
@@ -2419,7 +2419,7 @@ function Textarea({
       font: 'var(--text-body)',
       outline: 'none',
       resize: 'vertical',
-      boxShadow: focus ? 'var(--shadow-focus)' : 'none',
+      boxShadow: 'none',
       opacity: disabled ? 0.5 : 1,
       cursor: disabled ? 'not-allowed' : 'text',
       ...style

@@ -62,6 +62,15 @@
     }
     .sidebar-shell.is-collapsed .sidebar-header {
       padding: 0 10px;
+      justify-content: center;
+    }
+    .sidebar-brand-icon {
+      display: flex;
+      flex-shrink: 0;
+      color: var(--accent);
+    }
+    .sidebar-shell.is-collapsed .sidebar-brand-icon {
+      display: none;
     }
     .sidebar-nav-item {
       height: 52px;
@@ -136,11 +145,14 @@
         justify-content 320ms cubic-bezier(0.22, 1, 0.36, 1);
     }
     .sidebar-shell.is-collapsed .sidebar-profile {
+      flex-direction: column;
       justify-content: center;
-      gap: 0;
+      align-items: center;
+      gap: 10px;
     }
     .sidebar-shell.is-collapsed .sidebar-profile .sidebar-settings-btn {
-      display: none;
+      display: flex;
+      order: -1;
     }
     .sidebar-footer {
       padding: 16px 24px 20px;
@@ -189,11 +201,12 @@
         var(--bg-canvas);
     }
     .dash-sidebar {
-      background: #000;
-      border-right: 1px solid transparent;
+      background: var(--sidebar, #000000);
+      border-right: none;
     }
     .theme-thumb {
-      background: #fff;
+      background: #09090b;
+      color: var(--accent);
     }
     :root[data-theme="light"] .dash-shell {
       background: #ffffff;
@@ -209,12 +222,12 @@
       background: #fafafa;
     }
     :root[data-theme="light"] .dash-sidebar {
-      background: #fafafa;
-      border-right: 1px solid var(--border-default);
+      background: var(--sidebar, #ffffff);
+      border-right: none;
     }
     :root[data-theme="light"] .theme-thumb {
-      background: #09090b;
-      color: var(--accent);
+      background: #ffffff;
+      color: #09090b;
     }
     :root[data-theme="light"] .dash-kpi {
       background: var(--muted, #fafafa);
@@ -265,6 +278,16 @@
     .dash-kpi-selected .kpi-arrow {
       color: #000 !important;
     }
+    .dash-header-row {
+      flex-wrap: wrap;
+      row-gap: 12px;
+    }
+    .dash-header-actions {
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      row-gap: 8px;
+      min-width: 0;
+    }
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -275,15 +298,791 @@
       display: flex;
       flex-direction: column;
       gap: 16px;
-      padding: 12px;
-      border: 1px solid var(--border-default);
-      border-radius: var(--radius-2xl);
-      background: var(--bg-surface);
       box-sizing: border-box;
     }
-    :root[data-theme="light"] .kpi-section {
+    /* ===== Feedback Report (Player Report) table — Figma node 211:20825 ===== */
+    .fb-table {
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-2xl);
+      background: #000000;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    :root[data-theme="light"] .fb-table {
       background: #ffffff;
       border-color: #f4f4f5;
+    }
+    .fb-scroll {
+      width: 100%;
+      overflow-x: auto;
+    }
+    .fb-row {
+      display: flex;
+      align-items: center;
+      box-sizing: border-box;
+    }
+    /* Header sits on the raised surface so the 16 dense rows read as a block below it. */
+    .fb-row-head {
+      min-height: 44px;
+      background: var(--bg-surface-2);
+      border-bottom: 1px solid var(--border-default);
+    }
+    .fb-row-body {
+      min-height: 52px;
+      border-bottom: 1px solid var(--border-hairline);
+      cursor: pointer;
+      transition: background-color 120ms ease;
+    }
+    .fb-row-body:hover {
+      background: var(--bg-surface-2);
+    }
+    .fb-row-body:last-child {
+      border-bottom: none;
+    }
+    .fb-row-selected {
+      background: var(--accent-muted);
+      box-shadow: inset 2px 0 0 var(--accent);
+    }
+    .fb-row-selected:hover {
+      background: var(--accent-muted);
+    }
+    .fb-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+    .fb-c-check { width: 38px; flex-shrink: 0; padding: 12px 0 12px 14px; }
+    .fb-c-urgency { width: 25px; flex-shrink: 0; padding: 12px 0; }
+    .fb-c-ticket { width: 145px; flex-shrink: 0; }
+    .fb-c-subject { flex: 1; min-width: 200px; }
+    .fb-c-tags { width: 165px; flex-shrink: 0; justify-content: flex-end; gap: 6px; }
+    .fb-c-reporter { width: 200px; flex-shrink: 0; }
+    .fb-c-assignee { width: 108px; flex-shrink: 0; justify-content: flex-end; gap: 6px; }
+    .fb-c-date { width: 115px; flex-shrink: 0; justify-content: flex-end; }
+    .fb-head-label {
+      font: 500 13px/18px var(--font-body);
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+    .fb-head-sort {
+      cursor: pointer;
+      display: flex;
+      flex-shrink: 0;
+      opacity: 0.8;
+      transition: opacity 120ms ease;
+    }
+    .fb-head-sort:hover {
+      opacity: 1;
+    }
+    .fb-text {
+      font: 400 14px/20px var(--font-body);
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* Reporter / date are supporting metadata — recede so ticket + subject lead. */
+    .fb-text-muted {
+      font: 400 13px/20px var(--font-body);
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .fb-ticket {
+      font: var(--text-mono-sm);
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+    .fb-check {
+      width: 16px;
+      height: 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-strong);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      box-sizing: border-box;
+      transition: border-color 120ms ease, background-color 120ms ease;
+    }
+    .fb-check:hover {
+      border-color: var(--accent);
+    }
+    .fb-check-on {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--text-on-accent);
+    }
+    /* Three-bar urgency meter (low / medium / high) */
+    .fb-urgency {
+      display: flex;
+      gap: 2px;
+      width: 17px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+    .fb-urgency span {
+      flex: 1;
+      border-radius: 1px;
+      background: var(--border-default);
+    }
+    /* Tag / clip badges — Figma Badge (padding 2×6, 24px, black + #27272A) */
+    .fb-badge {
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      padding: 2px 6px;
+      gap: 4px;
+      height: 24px;
+      background: #000000;
+      border: 1px solid #27272A;
+      border-radius: 8px;
+      font: 500 12px/16px var(--font-body);
+      color: var(--text-secondary);
+      white-space: nowrap;
+      flex: none;
+      flex-grow: 0;
+      flex-shrink: 0;
+    }
+    :root[data-theme="light"] .fb-badge {
+      background: #ffffff;
+      border-color: #e4e4e7;
+    }
+    .fb-badge-plain {
+      display: inline-flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      height: 24px;
+      border: none;
+      border-radius: 8px;
+      background: #262626;
+      font: 500 12px/16px var(--font-body);
+      color: #fafafa;
+      box-sizing: border-box;
+    }
+    :root[data-theme="light"] .fb-badge-plain {
+      background: var(--neutral-100, #f5f5f5);
+      color: var(--neutral-900, #171717);
+    }
+    .dc-menu-section {
+      padding: 8px 8px 4px 32px;
+      font: 600 10px/14px var(--font-body);
+      letter-spacing: var(--tracking-caps);
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+    }
+    .fb-menu-icon {
+      display: flex;
+      flex-shrink: 0;
+      margin-right: 6px;
+    }
+    .fb-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 32px;
+      padding: 0 14px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-default);
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      font: 500 12px/16px var(--font-body);
+      cursor: pointer;
+      flex-shrink: 0;
+      white-space: nowrap;
+      transition: background-color 120ms ease, color 120ms ease;
+    }
+    .fb-pill:hover {
+      background: var(--bg-surface-2);
+      color: var(--text-primary);
+    }
+    .fb-pill-active,
+    .fb-pill-active:hover {
+      background: var(--text-primary);
+      border-color: transparent;
+      color: var(--bg-canvas);
+    }
+    .fb-pill-sparkle {
+      display: flex;
+      flex-shrink: 0;
+      color: var(--primary-btn);
+    }
+    .fb-avatar {
+      width: 20px;
+      height: 20px;
+      border-radius: var(--radius-full);
+      object-fit: cover;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 2px var(--bg-surface);
+    }
+    /* Monogram fallback keeps the assignee column consistent without stock photos. */
+    .fb-avatar-mono {
+      width: 20px;
+      height: 20px;
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font: 600 9px/1 var(--font-body);
+      color: #09090b;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 2px var(--bg-surface);
+    }
+    .fb-avatar-stack {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .fb-avatar-stack > * + * {
+      margin-left: -6px;
+    }
+    .fb-row-body:hover .fb-avatar,
+    .fb-row-body:hover .fb-avatar-mono {
+      box-shadow: 0 0 0 2px var(--bg-surface-2);
+    }
+    /* Group-by-topic header — Figma node 212:23149 */
+    .fb-group-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 12px;
+      background: var(--primary-foreground-btn);
+      border-bottom: 1px solid var(--border-default);
+      box-sizing: border-box;
+      width: 100%;
+    }
+    .fb-group-count-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 20px;
+      padding: 2px 6px;
+      border-radius: var(--radius-full);
+      background: var(--primary-btn);
+      color: var(--text-always-dark, #0a0a0a);
+      font: 500 12px/16px var(--font-body);
+      box-sizing: border-box;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .fb-group-prefix {
+      font: 400 14px/20px var(--font-body);
+      color: var(--foreground, var(--text-primary));
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .fb-group-summary {
+      font: 400 14px/20px var(--font-body);
+      color: var(--foreground, var(--text-primary));
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+    .fb-group-link {
+      margin: 0;
+      padding: 0 4px;
+      border: none;
+      background: none;
+      font: 500 14px/20px var(--font-body);
+      color: var(--lime-600);
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .fb-group-link:hover {
+      color: var(--lime-500);
+    }
+    /* Ungrouped singles — neutral strip so they don’t look like the last topic cluster */
+    .fb-group-head.is-general {
+      background: var(--zinc-900, #18181b);
+    }
+    .fb-group-head.is-general .fb-group-count-badge {
+      background: var(--zinc-600, #52525b);
+      color: var(--zinc-50, #fafafa);
+    }
+    .fb-group-head.is-general .fb-group-prefix,
+    .fb-group-head.is-general .fb-group-summary {
+      color: var(--text-secondary);
+    }
+    :root[data-theme="light"] .fb-group-head.is-general {
+      background: var(--zinc-100, #f4f4f5);
+    }
+    :root[data-theme="light"] .fb-group-head.is-general .fb-group-count-badge {
+      background: var(--zinc-400, #a1a1aa);
+      color: var(--zinc-950, #09090b);
+    }
+    /* KPI cards reflow instead of squeezing into four fixed columns on narrow panes.
+       Scoped to this page — the dashboard's chart row relies on kpi-grid staying 4-up. */
+    .fb-kpi-grid {
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    }
+    /* The source design is 1920 wide. Below that, shed the lowest-priority columns
+       (date -> assignee -> reporter) rather than letting every cell collapse. */
+    @media (max-width: 1330px) {
+      .fb-c-date { display: none; }
+    }
+    @media (max-width: 1215px) {
+      .fb-c-assignee { display: none; }
+    }
+    @media (max-width: 1120px) {
+      .fb-c-reporter { display: none; }
+      .fb-c-ticket { width: 118px; }
+      .fb-c-subject { min-width: 220px; }
+      .fb-c-tags { width: 100px; }
+      .fb-cell { padding: 12px 10px; }
+      /* Reclaim width for the subject: type badge is redundant, clip goes icon-only. */
+      .fb-tag-type { display: none; }
+      .fb-clip-label { display: none; }
+      .fb-clip { padding: 4px 5px; }
+    }
+    /* Feedback Report KPI cards: muted label, full-contrast value (Figma 218:22552). */
+    .fb-kpi .kpi-value,
+    .fb-kpi .kpi-arrow {
+      color: var(--text-primary);
+    }
+    :root[data-theme="light"] .fb-kpi .kpi-value,
+    :root[data-theme="light"] .fb-kpi .kpi-arrow {
+      color: var(--text-primary);
+    }
+    /* These cards are display-only — no hover wash (unlike dashboard KPIs). */
+    .dash-kpi.fb-kpi {
+      transition: none;
+      cursor: default;
+    }
+    .dash-kpi.fb-kpi:hover {
+      background: var(--bg-canvas);
+    }
+    :root[data-theme="light"] .dash-kpi.fb-kpi:hover {
+      background: var(--muted, #fafafa);
+    }
+    /* ===== Ask Ghost AI side panel — Figma node 237:24158 (374px, sidebar collapses) ===== */
+    .ghost-panel-slot {
+      width: 0;
+      flex-shrink: 0;
+      align-self: stretch;
+      overflow: hidden;
+      transition: width 560ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .ghost-panel-slot.is-open {
+      width: 374px;
+    }
+    @media (max-width: 1200px) { .ghost-panel-slot.is-open { width: 322px; } }
+    @media (max-width: 980px) { .ghost-panel-slot.is-open { width: 286px; } }
+    .ghost-panel {
+      position: relative;
+      width: 374px;
+      height: 100%;
+      padding: 36px 24px 0 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 24px;
+      box-sizing: border-box;
+      min-height: 0;
+      transform: translateX(32px);
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform 560ms cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 420ms ease;
+    }
+    .ghost-panel-slot.is-open .ghost-panel {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    @media (max-width: 1200px) { .ghost-panel { width: 322px; } }
+    @media (max-width: 980px) { .ghost-panel { width: 286px; } }
+    @media (prefers-reduced-motion: reduce) {
+      .ghost-panel-slot,
+      .ghost-panel {
+        transition: none;
+      }
+    }
+    .ghost-panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .ghost-panel-title {
+      font: 600 18px/28px var(--font-body);
+      color: var(--text-primary);
+    }
+    .ghost-panel-reset {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border: none;
+      background: transparent;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      flex-shrink: 0;
+      padding: 0;
+      transition: color 120ms ease;
+    }
+    .ghost-panel-reset:hover {
+      color: var(--text-primary);
+    }
+    .ghost-refresh-confirm {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.55);
+      box-sizing: border-box;
+    }
+    .ghost-refresh-card {
+      width: 100%;
+      max-width: 280px;
+      padding: 16px;
+      border-radius: var(--radius-xl);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .ghost-refresh-title {
+      font: 600 14px/20px var(--font-body);
+      color: var(--text-primary);
+    }
+    .ghost-refresh-body {
+      font: 400 13px/18px var(--font-body);
+      color: var(--text-secondary);
+    }
+    .ghost-refresh-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .ghost-refresh-btn {
+      height: 32px;
+      padding: 0 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-default);
+      background: transparent;
+      color: var(--text-primary);
+      font: 500 13px/18px var(--font-body);
+      cursor: pointer;
+    }
+    .ghost-refresh-btn:hover {
+      background: var(--bg-surface-2);
+    }
+    .ghost-refresh-btn.is-primary {
+      border-color: transparent;
+      background: var(--primary-btn);
+      color: var(--text-always-dark, #0a0a0a);
+    }
+    .ghost-refresh-btn.is-primary:hover {
+      background: var(--lime-300, #bef264);
+    }
+    /* Empty state sits centred between the header and the composer. */
+    .ghost-empty {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      justify-content: center;
+      flex: 1;
+      min-height: 0;
+    }
+    .ghost-greeting-icon {
+      display: flex;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .ghost-greeting {
+      font: 500 24px/32px var(--font-body);
+      color: var(--text-primary);
+    }
+    .ghost-greeting-detail {
+      font: 400 14px/20px var(--font-body);
+      color: var(--text-secondary);
+    }
+    .ghost-starters {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
+    .ghost-starter {
+      display: inline-flex;
+      align-items: center;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-default);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-primary);
+      font: 400 14px/20px var(--font-body);
+      text-align: left;
+      cursor: pointer;
+      max-width: 100%;
+      transition: background-color 120ms ease, border-color 120ms ease;
+    }
+    .ghost-starter:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--accent-border);
+    }
+    :root[data-theme="light"] .ghost-starter {
+      background: var(--gray-100, #f3f4f6);
+    }
+    :root[data-theme="light"] .ghost-starter:hover {
+      background: var(--zinc-100, #f4f4f5);
+    }
+    /* Conversation replaces the empty state once there's a turn on record. */
+    .ghost-thread {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding-right: 2px;
+    }
+    .ghost-msg-user {
+      align-self: flex-end;
+      max-width: 90%;
+      padding: 10px 12px;
+      border-radius: var(--radius-lg, 10px);
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+      font: 400 14px/20px var(--font-body);
+    }
+    :root[data-theme="light"] .ghost-msg-user {
+      background: var(--gray-100, #f3f4f6);
+    }
+    .ghost-msg-ai {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .ghost-msg-ai-body {
+      font: 400 14px/21px var(--font-body);
+      color: var(--text-primary);
+      white-space: pre-wrap;
+    }
+    .ghost-ticket-link {
+      display: inline;
+      padding: 0;
+      margin: 0;
+      border: none;
+      background: none;
+      color: var(--accent);
+      font: inherit;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .ghost-ticket-link:hover {
+      color: var(--accent-hover, var(--accent));
+    }
+    .ghost-msg-feedback {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 2px;
+    }
+    .ghost-fb-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: none;
+      border-radius: var(--radius-md);
+      background: transparent;
+      color: var(--muted-foreground);
+      cursor: pointer;
+      transition: color 120ms ease, background-color 120ms ease;
+    }
+    .ghost-fb-btn:hover {
+      color: var(--text-primary);
+      background: var(--bg-surface-2);
+    }
+    .ghost-fb-btn.is-active {
+      color: var(--accent);
+    }
+    .ghost-thinking {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-sizing: border-box;
+    }
+    .ghost-thinking-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font: 500 13px/18px var(--font-body);
+      color: var(--text-secondary);
+    }
+    .ghost-thinking-pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+      animation: ghost-pulse 1.1s ease-in-out infinite;
+    }
+    @keyframes ghost-pulse {
+      0%, 100% { opacity: 0.35; transform: scale(0.85); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+    .ghost-thinking-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .ghost-thinking-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font: 400 13px/18px var(--font-body);
+      color: var(--text-tertiary);
+      animation: ghost-step-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .ghost-thinking-step.is-done {
+      color: var(--text-secondary);
+    }
+    .ghost-thinking-step.is-active {
+      color: var(--text-primary);
+    }
+    .ghost-thinking-mark {
+      width: 14px;
+      flex-shrink: 0;
+      text-align: center;
+      font: 500 12px/18px var(--font-mono, var(--font-body));
+      color: var(--accent);
+    }
+    @keyframes ghost-step-in {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .ghost-thinking-pulse,
+      .ghost-thinking-step {
+        animation: none;
+      }
+    }
+    /* Figma "With Button" composer — 36px row, 8px gap, input = white-15 */
+    .ghost-composer {
+      flex-shrink: 0;
+      align-self: stretch;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+      height: 36px;
+      padding: 0 0 48px;
+      box-sizing: content-box;
+    }
+    .ghost-input {
+      flex: 1 1 auto;
+      min-width: 0;
+      height: 36px;
+      padding: 0 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-default);
+      background: rgba(255, 255, 255, 0.15);
+      color: var(--text-primary);
+      font: 400 14px/20px var(--font-body);
+      outline: none;
+      box-sizing: border-box;
+    }
+    :root[data-theme="light"] .ghost-input {
+      background: var(--gray-100, #f3f4f6);
+    }
+    .ghost-input::placeholder {
+      color: var(--muted-foreground);
+    }
+    .ghost-send {
+      width: 36px;
+      height: 36px;
+      flex: none;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-lg, 10px);
+      border: 1px solid var(--border-default);
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--muted-foreground);
+      cursor: not-allowed;
+      opacity: 0.7;
+      transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, opacity 160ms ease;
+    }
+    :root[data-theme="light"] .ghost-send {
+      background: var(--gray-100, #f3f4f6);
+    }
+    .ghost-send.is-active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--text-on-accent, #0a0a0a);
+      cursor: pointer;
+      opacity: 1;
+    }
+    .ghost-send.is-active:hover {
+      background: var(--accent-hover, var(--accent));
+    }
+    .ghost-input:focus,
+    .ghost-input:focus-visible {
+      border-color: var(--accent);
+      outline: none;
+      box-shadow: none;
+    }
+    /* Ask Ghost AI reads as pressed while its panel is open — single accent border. */
+    .fb-ask-btn-active {
+      box-shadow: inset 0 0 0 1px var(--accent-border, var(--accent));
+    }
+    .fb-ask-btn:focus-visible {
+      outline: 1px solid var(--accent);
+      outline-offset: 2px;
+      box-shadow: none;
+    }
+    /* Panel open steals ~160px net from the table (rail collapses, panel takes 374). */
+    @media (max-width: 1490px) { .has-ghost .fb-c-date { display: none; } }
+    @media (max-width: 1375px) { .has-ghost .fb-c-assignee { display: none; } }
+    @media (max-width: 1280px) {
+      .has-ghost .fb-c-reporter { display: none; }
+      .has-ghost .fb-tag-type { display: none; }
+      .has-ghost .fb-clip-label { display: none; }
+      .has-ghost .fb-clip { padding: 4px 5px; }
+    }
+    .fb-ask-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 36px;
+      padding: 0 14px;
+      border: none;
+      border-radius: var(--radius-lg, 10px);
+      background: var(--primary-btn, #bef264);
+      color: var(--text-always-dark, #0a0a0a);
+      font: 500 14px/20px var(--font-body);
+      cursor: pointer;
+      flex-shrink: 0;
+      white-space: nowrap;
     }
     .dash-toast {
       position: fixed;
@@ -298,6 +1097,58 @@
       font: var(--text-body-sm);
       color: var(--text-primary);
       max-width: 320px;
+    }
+    /* Dropdown menu — matches the Figma popover spec (radius 10, 4px inset,
+       32px rows with a 32px check gutter, shadow-md). */
+    .dc-menu {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 6px);
+      width: 224px;
+      padding: 4px;
+      border-radius: var(--radius-xl);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      box-shadow: var(--shadow-md);
+      z-index: 40;
+      box-sizing: border-box;
+    }
+    .dc-menu-label {
+      padding: 6px 8px;
+      font: 500 14px/20px var(--font-body);
+      color: var(--text-primary);
+    }
+    .dc-menu-divider {
+      height: 1px;
+      margin: 4px -4px;
+      background: var(--border-default);
+    }
+    .dc-menu-item {
+      position: relative;
+      display: flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 6px 8px 6px 32px;
+      border-radius: var(--radius-sm);
+      font: 400 14px/20px var(--font-body);
+      color: var(--text-primary);
+      cursor: pointer;
+      box-sizing: border-box;
+      transition: background-color 120ms ease;
+    }
+    .dc-menu-item:hover {
+      background: var(--bg-surface-2);
+    }
+    .dc-menu-check {
+      position: absolute;
+      left: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .notif-panel {
       position: absolute;
@@ -352,7 +1203,7 @@
     }
   </style>
 </helmet>
-<div class="dash-shell" style="display:flex;height:100vh;width:100%" data-screen-label="Data analytics">
+<div class="dash-shell {{ ghostShellClass }}" style="display:flex;height:100vh;height:100dvh;width:100%" data-screen-label="Data analytics">
   <sc-if value="{{ showBugReport }}" hint-placeholder-val="{{ false }}">
     <div style="display:flex;height:100%;width:100%;min-height:0">
       <div style="flex:1;min-width:0;padding:24px;box-sizing:border-box;display:flex">
@@ -370,7 +1221,7 @@
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid var(--border-default)">
             <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
               <span style="font:500 13px/15.6px var(--font-body);color:var(--lime-300,#bef264)">#BUG-47248</span>
-              <span style="font:500 12px/16.2px var(--font-body);color:var(--text-secondary)">Reported: July 14, 2026</span>
+              <span style="font:500 12px/16.2px var(--font-body);color:var(--text-secondary)">Reported: Aug 3, 2026</span>
             </div>
             <span style="font:500 12px/12px var(--font-body);color:var(--danger);background:var(--danger-muted);padding:4px 8px;border-radius:4px;flex-shrink:0">P0</span>
           </div>
@@ -445,7 +1296,7 @@
       <div style="display:flex;flex-direction:column;gap:24px">
         <div class="sidebar-header">
           <div style="display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden">
-            <span style="color:var(--accent);display:flex;flex-shrink:0">{{ ghostIcon }}</span>
+            <span class="sidebar-brand-icon">{{ ghostIcon }}</span>
             <span class="sidebar-label" style="font:600 20px/20px var(--font-body);color:var(--text-primary)">Ghost AI</span>
           </div>
           <span onClick="{{ toggleCollapsed }}" class="sidebar-collapse-btn" style="color:var(--text-tertiary);display:flex;cursor:pointer;flex-shrink:0">{{ arrowBarRightIcon }}</span>
@@ -500,21 +1351,31 @@
     <div class="dash-panel" style="flex:1;min-width:0;border-radius:18px;overflow:auto">
       <div class="dash-panel-body" style="width:100%;padding:16px 14px 40px;display:flex;flex-direction:column;gap:16px;box-sizing:border-box">
 
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+      <div class="dash-header-row" style="display:flex;align-items:center;justify-content:space-between;gap:16px">
         <span style="font:var(--text-h1);letter-spacing:var(--tracking-tight)">{{ headerTitle }}</span>
-        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+        <div class="dash-header-actions" style="display:flex;align-items:center;gap:10px;flex-shrink:0">
           <button type="button" onClick="{{ toggleTheme }}" aria-label="Toggle light mode" aria-pressed="{{ isLight }}" style="width:44px;height:24px;border-radius:var(--radius-full);border:none;box-shadow:inset 0 0 0 1px var(--border-strong);padding:2px;display:flex;align-items:center;position:relative;background:var(--bg-surface-2);cursor:pointer;flex-shrink:0;box-sizing:border-box">
-            <span class="theme-thumb" style="width:20px;height:20px;border-radius:var(--radius-full);box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;color:var(--accent);transition:transform 180ms cubic-bezier(0.22, 1, 0.36, 1);transform:{{ thumbTransform }};flex-shrink:0">{{ currentIcon }}</span>
+            <span class="theme-thumb" style="width:20px;height:20px;border-radius:var(--radius-full);box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;transition:transform 180ms cubic-bezier(0.22, 1, 0.36, 1);transform:{{ thumbTransform }};flex-shrink:0">{{ currentIcon }}</span>
           </button>
-          <sc-if value="{{ showAnalyticsBody }}" hint-placeholder-val="{{ true }}">
-          <div style="position:relative;display:inline-flex;align-items:center;height:36px;padding:0 28px 0 36px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface-2)">
-            <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-tertiary);display:flex;pointer-events:none">{{ calendarIcon }}</span>
-            <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--text-tertiary);display:flex;pointer-events:none">{{ chevronDownIcon }}</span>
-            <select value="{{ dateRange }}" onChange="{{ setDateRangeNative }}" style="border:none;background:transparent;outline:none;color:var(--text-primary);font:var(--text-label);appearance:none;-webkit-appearance:none;width:150px;cursor:pointer">
-              <sc-for list="{{ dateRangeOptions }}" as="opt" hint-placeholder-count="4">
-                <option value="{{ opt.value }}">{{ opt.label }}</option>
-              </sc-for>
-            </select>
+          <sc-if value="{{ showReportControls }}" hint-placeholder-val="{{ true }}">
+          <div style="position:relative;flex-shrink:0">
+            <button type="button" onClick="{{ toggleDateMenu }}" aria-haspopup="listbox" aria-expanded="{{ showDateMenu }}" style="position:relative;display:inline-flex;align-items:center;height:36px;padding:0 28px 0 36px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface-2);cursor:pointer">
+              <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-tertiary);display:flex;pointer-events:none">{{ calendarIcon }}</span>
+              <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--text-tertiary);display:flex;pointer-events:none">{{ chevronDownIcon }}</span>
+              <span style="width:150px;text-align:left;color:var(--text-primary);font:var(--text-label)">{{ dateRangeLabel }}</span>
+            </button>
+            <sc-if value="{{ showDateMenu }}" hint-placeholder-val="{{ false }}">
+              <div class="dc-menu">
+                <div class="dc-menu-label">Date range</div>
+                <div class="dc-menu-divider"></div>
+                <sc-for list="{{ dateRangeMenuItems }}" as="opt" hint-placeholder-count="4">
+                  <div onClick="{{ opt.onClick }}" class="dc-menu-item">
+                    <span class="dc-menu-check">{{ opt.checkIcon }}</span>
+                    {{ opt.label }}
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
           </div>
           <button type="button" onClick="{{ exportDashboard }}" style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface-2);color:var(--text-primary);font:var(--text-label);cursor:pointer">{{ downloadIcon }}Export</button>
           </sc-if>
@@ -561,11 +1422,128 @@
               </div>
             </sc-if>
           </div>
+          <sc-if value="{{ showPlayerBody }}" hint-placeholder-val="{{ false }}">
+            <button type="button" onClick="{{ askGhostAi }}" class="{{ askGhostBtnClass }}">{{ ghostSmIcon }}<span>Ask Ghost AI</span></button>
+          </sc-if>
         </div>
       </div>
 
       <sc-if value="{{ showAnalyticsBody }}" hint-placeholder-val="{{ true }}">
       <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.Tabs" tabs="{{ tabItems }}" value="{{ tab }}" on-change="{{ setTab }}" hint-size="100%,42px"></x-import>
+      </sc-if>
+
+      <!-- ===== Feedback Report (Player Report) — Figma node 211:20825 ===== -->
+      <sc-if value="{{ showPlayerBody }}" hint-placeholder-val="{{ false }}">
+      <div class="kpi-section">
+        <div class="kpi-grid fb-kpi-grid">
+          <sc-for list="{{ feedbackKpis }}" as="k" hint-placeholder-count="4">
+            <div class="dash-kpi fb-kpi" style="display:flex;flex-direction:column;justify-content:space-between;gap:10px;min-width:0">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span class="kpi-icon" style="display:flex;flex-shrink:0">{{ k.iconEl }}</span>
+                <span class="kpi-label" style="font:500 14px/20px var(--font-body)">{{ k.label }}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span class="kpi-value" style="font:600 24px/32px var(--font-body);letter-spacing:var(--tracking-tight)">{{ k.value }}</span>
+                <span class="kpi-arrow" style="display:flex;align-items:center;flex-shrink:0">{{ k.arrowEl }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <button type="button" onClick="{{ setFbTotal }}" class="{{ fbTotalPillClass }}">Total</button>
+        <button type="button" onClick="{{ setFbGrouped }}" class="{{ fbGroupPillClass }}">{{ fbSparkleIcon }}Group by topic</button>
+      </div>
+
+      <div class="fb-table">
+        <div class="fb-scroll">
+          <div class="fb-row fb-row-head">
+            <div class="fb-cell fb-c-check"><span onClick="{{ toggleFbAll }}" class="{{ fbAllCheckClass }}">{{ fbAllCheckIcon }}</span></div>
+            <div class="fb-cell fb-c-urgency"></div>
+            <div class="fb-cell fb-c-ticket"><span class="fb-head-label">Ticket ID</span><span onClick="{{ sortFbTicket }}" class="fb-head-sort">{{ fbTicketSortIcon }}</span></div>
+            <div class="fb-cell fb-c-subject"><span class="fb-head-label">Subject</span></div>
+            <div class="fb-cell fb-c-tags" style="position:relative">
+              <span class="fb-head-label">Tags</span>
+              <span onClick="{{ toggleFbTagMenu }}" class="fb-head-sort">{{ fbFilterIcon }}</span>
+              <sc-if value="{{ showFbTagMenu }}" hint-placeholder-val="{{ false }}">
+                <div class="dc-menu">
+                  <div class="dc-menu-label">Filter by tag</div>
+                  <div class="dc-menu-divider"></div>
+                  <sc-for list="{{ fbTagFilterItems }}" as="t" hint-placeholder-count="6">
+                    <sc-if value="{{ t.isSection }}" hint-placeholder-val="{{ false }}">
+                      <div class="dc-menu-section">{{ t.label }}</div>
+                    </sc-if>
+                    <sc-if value="{{ t.isOption }}" hint-placeholder-val="{{ true }}">
+                      <div onClick="{{ t.onClick }}" class="dc-menu-item"><span class="dc-menu-check">{{ t.checkIcon }}</span><span class="fb-menu-icon">{{ t.iconEl }}</span>{{ t.label }}</div>
+                    </sc-if>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+            <div class="fb-cell fb-c-reporter"><span class="fb-head-label">Reporter</span><span onClick="{{ sortFbReporter }}" class="fb-head-sort">{{ fbReporterSortIcon }}</span></div>
+            <div class="fb-cell fb-c-assignee" style="position:relative">
+              <span class="fb-head-label">Assignee</span>
+              <span onClick="{{ toggleFbAssigneeMenu }}" class="fb-head-sort">{{ fbAssigneeFilterIcon }}</span>
+              <sc-if value="{{ showFbAssigneeMenu }}" hint-placeholder-val="{{ false }}">
+                <div class="dc-menu">
+                  <div class="dc-menu-label">Filter by assignee</div>
+                  <div class="dc-menu-divider"></div>
+                  <sc-for list="{{ fbAssigneeFilterItems }}" as="a" hint-placeholder-count="4">
+                    <div onClick="{{ a.onClick }}" class="dc-menu-item"><span class="dc-menu-check">{{ a.checkIcon }}</span><span class="fb-menu-icon">{{ a.iconEl }}</span>{{ a.label }}</div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+            <div class="fb-cell fb-c-date"><span class="fb-head-label">Date</span><span onClick="{{ sortFbDate }}" class="fb-head-sort">{{ fbDateSortIcon }}</span></div>
+          </div>
+
+          <sc-for list="{{ feedbackRows }}" as="r" hint-placeholder-count="8">
+            <sc-if value="{{ r.isGroupHeader }}" hint-placeholder-val="{{ false }}">
+              <div class="{{ r.groupHeadClass }}">
+                <span class="fb-group-count-badge">{{ r.groupCount }}</span>
+                <span class="fb-group-prefix">{{ r.groupPrefix }}</span>
+                <span class="fb-group-summary">{{ r.groupSummary }}</span>
+                <sc-if value="{{ r.hasLinkCode }}" hint-placeholder-val="{{ true }}">
+                  <button type="button" onClick="{{ r.onLinkCode }}" class="fb-group-link">Link to code</button>
+                </sc-if>
+              </div>
+            </sc-if>
+            <sc-if value="{{ r.isTicket }}" hint-placeholder-val="{{ true }}">
+              <div onClick="{{ r.onOpen }}" class="{{ r.rowClass }}" data-fb-ticket="{{ r.rowId }}">
+                <div class="fb-cell fb-c-check"><span onClick="{{ r.onToggle }}" class="{{ r.checkClass }}">{{ r.checkIcon }}</span></div>
+                <div class="fb-cell fb-c-urgency">
+                  <span class="fb-urgency" title="{{ r.urgencyLabel }}"><span style="background:{{ r.u1 }}"></span><span style="background:{{ r.u2 }}"></span><span style="background:{{ r.u3 }}"></span></span>
+                </div>
+                <div class="fb-cell fb-c-ticket"><span class="fb-ticket">{{ r.ticket }}</span></div>
+                <div class="fb-cell fb-c-subject">
+                  <span class="fb-text">{{ r.subject }}</span>
+                  <sc-if value="{{ r.hasClip }}" hint-placeholder-val="{{ false }}">
+                    <span class="fb-badge fb-clip">{{ r.clipIcon }}<span class="fb-clip-label">Clip recorded</span></span>
+                  </sc-if>
+                </div>
+                <div class="fb-cell fb-c-tags">
+                  <sc-for list="{{ r.tags }}" as="t" hint-placeholder-count="1">
+                    <span class="{{ t.cls }}">{{ t.iconEl }}{{ t.label }}</span>
+                  </sc-for>
+                </div>
+                <div class="fb-cell fb-c-reporter">
+                  <span class="fb-text" style="color:var(--foreground, var(--text-primary))">{{ r.reporter }}</span>
+                  <sc-if value="{{ r.hasRole }}" hint-placeholder-val="{{ false }}">
+                    <span class="fb-badge fb-badge-plain">{{ r.role }}</span>
+                  </sc-if>
+                </div>
+                <div class="fb-cell fb-c-assignee">{{ r.assigneeEl }}</div>
+                <div class="fb-cell fb-c-date"><span class="fb-text-muted">{{ r.date }}</span></div>
+              </div>
+            </sc-if>
+          </sc-for>
+
+          <sc-if value="{{ fbEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:32px;text-align:center;font:var(--text-body-sm);color:var(--text-tertiary)">No tickets match the selected tags.</div>
+          </sc-if>
+        </div>
+      </div>
       </sc-if>
 
       <sc-if value="{{ showNavPlaceholder }}" hint-placeholder-val="{{ false }}">
@@ -797,7 +1775,7 @@
                 <span style="color:var(--accent);display:flex">{{ sparkleSm }}</span>
                 <span style="font:var(--text-label);color:var(--accent)">Summary</span>
               </div>
-              <span style="font:var(--text-base);color:var(--text-secondary);line-height:1.55;flex:1;opacity:{{ summaryOpacity }};transition:opacity 220ms ease">{{ ghostSummaryEl }}</span>
+              <span style="font:var(--text-sm);color:var(--text-secondary);line-height:1.55;flex:1;opacity:{{ summaryOpacity }};transition:opacity 220ms ease">{{ ghostSummaryEl }}</span>
               <span style="font:var(--text-caption);color:var(--text-tertiary)">{{ generatedAt }}</span>
               <div style="display:flex;justify-content:flex-end;margin-top:auto">
                 <button type="button" onClick="{{ regenerateSummary }}" disabled="{{ regenerating }}" style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface-2);color:var(--text-primary);font:var(--text-label);cursor:pointer;opacity:{{ regenOpacity }};transition:opacity 220ms ease">{{ refreshIcon }}{{ regenLabel }}</button>
@@ -993,6 +1971,89 @@
     </div>
   </div>
   </div>
+
+  <!-- ===== Ask Ghost AI side panel — Figma node 237:24158 ===== -->
+  <sc-if value="{{ showGhostPanelSlot }}" hint-placeholder-val="{{ false }}">
+    <div class="{{ ghostPanelSlotClass }}">
+    <div class="ghost-panel">
+      <div class="ghost-panel-head">
+        <span class="ghost-panel-title">Ghost AI</span>
+        <button type="button" onClick="{{ requestGhostRefresh }}" class="ghost-panel-reset" aria-label="Start a new conversation">{{ ghostResetIcon }}</button>
+      </div>
+
+      <sc-if value="{{ showGhostRefreshConfirm }}" hint-placeholder-val="{{ false }}">
+        <div class="ghost-refresh-confirm" role="alertdialog" aria-modal="true" aria-labelledby="ghost-refresh-title">
+          <div class="ghost-refresh-card">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <span id="ghost-refresh-title" class="ghost-refresh-title">Refresh the chat?</span>
+              <span class="ghost-refresh-body">This clears the current conversation and starts fresh.</span>
+            </div>
+            <div class="ghost-refresh-actions">
+              <button type="button" onClick="{{ cancelGhostRefresh }}" class="ghost-refresh-btn">Cancel</button>
+              <button type="button" onClick="{{ confirmGhostRefresh }}" class="ghost-refresh-btn is-primary">Refresh</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ ghostIsEmpty }}" hint-placeholder-val="{{ true }}">
+        <div class="ghost-empty">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span class="ghost-greeting-icon">{{ ghostLgIcon }}</span>
+            <span class="ghost-greeting">{{ ghostGreeting }}</span>
+            <span class="ghost-greeting-detail">Ask anything about the report on screen, or pick a starter below.</span>
+          </div>
+          <div class="ghost-starters">
+            <sc-for list="{{ ghostStarters }}" as="p" hint-placeholder-count="3">
+              <button type="button" onClick="{{ p.onClick }}" class="ghost-starter">{{ p.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ ghostHasThread }}" hint-placeholder-val="{{ false }}">
+        <div class="ghost-thread">
+          <sc-for list="{{ ghostMessages }}" as="m" hint-placeholder-count="2">
+            <sc-if value="{{ m.isUser }}" hint-placeholder-val="{{ false }}">
+              <div class="ghost-msg-user">{{ m.text }}</div>
+            </sc-if>
+            <sc-if value="{{ m.isAi }}" hint-placeholder-val="{{ true }}">
+              <div class="ghost-msg-ai">
+                <span class="ghost-greeting-icon">{{ ghostSmallIcon }}</span>
+                {{ m.bodyEl }}
+                <div class="ghost-msg-feedback">
+                  <button type="button" onClick="{{ m.onUp }}" class="{{ m.upClass }}" aria-label="Helpful" aria-pressed="{{ m.upPressed }}">{{ ghostThumbUpIcon }}</button>
+                  <button type="button" onClick="{{ m.onDown }}" class="{{ m.downClass }}" aria-label="Not helpful" aria-pressed="{{ m.downPressed }}">{{ ghostThumbDownIcon }}</button>
+                </div>
+              </div>
+            </sc-if>
+          </sc-for>
+          <sc-if value="{{ ghostThinking }}" hint-placeholder-val="{{ false }}">
+            <div class="ghost-thinking">
+              <div class="ghost-thinking-head">
+                <span class="ghost-thinking-pulse"></span>
+                <span>{{ ghostThinkingLabel }}</span>
+              </div>
+              <div class="ghost-thinking-steps">
+                <sc-for list="{{ ghostReasoningSteps }}" as="step" hint-placeholder-count="3">
+                  <div class="{{ step.cls }}">
+                    <span class="ghost-thinking-mark">{{ step.mark }}</span>
+                    <span>{{ step.label }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <div class="ghost-composer">
+        <input value="{{ ghostDraft }}" onChange="{{ updateGhostDraft }}" onKeyDown="{{ handleGhostKeyDown }}" placeholder="Ask ghost about the report" class="ghost-input">
+        <button type="button" onClick="{{ sendGhostMessage }}" class="{{ ghostSendClass }}" disabled="{{ ghostSendDisabled }}" aria-label="Send">{{ ghostSendIcon }}</button>
+      </div>
+    </div>
+    </div>
+  </sc-if>
   </sc-if>
 
   <sc-if value="{{ showToast }}" hint-placeholder-val="{{ false }}">
@@ -1853,6 +2914,14 @@ const MESSAGE_THREADS_SEED = [
 ];
 
 const ASSET_ICON_DATA = {
+  // Feedback Report badge / filter icons (Tabler outline, materialized from assets/Icons).
+  'bug': { viewBox: '0 0 24 24', body: `<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9v-1a3 3 0 0 1 6 0v1"/><path d="M8 9h8a6 6 0 0 1 1 3v3a5 5 0 0 1 -10 0v-3a6 6 0 0 1 1 -3"/><path d="M3 13l4 0"/><path d="M17 13l4 0"/><path d="M12 20l0 -6"/><path d="M4 19l3.35 -2"/><path d="M20 19l-3.35 -2"/><path d="M4 7l3.75 2.4"/><path d="M20 7l-3.75 2.4"/></g>` },
+  'video': { viewBox: '0 0 24 24', body: `<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553 -2.276a1 1 0 0 1 1.447 .894v6.764a1 1 0 0 1 -1.447 .894l-4.553 -2.276v-4"/><path d="M3 8a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2l0 -8"/></g>` },
+  'brand-discord': { viewBox: '0 0 24 24', body: `<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"/><path d="M14 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"/><path d="M15.5 17c0 1 1.5 3 2 3c1.5 0 2.833 -1.667 3.5 -3c.667 -1.667 .5 -5.833 -1.5 -11.5c-1.457 -1.015 -3 -1.34 -4.5 -1.5l-.972 1.923a11.913 11.913 0 0 0 -4.053 0l-.975 -1.923c-1.5 .16 -3.043 .485 -4.5 1.5c-2 5.667 -2.167 9.833 -1.5 11.5c.667 1.333 2 3 3.5 3c.5 0 2 -2 2 -3"/><path d="M7 16.5c3.5 1 6.5 1 10 0"/></g>` },
+  'brand-steam': { viewBox: '0 0 24 24', body: `<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 5a4.5 4.5 0 1 1 -.653 8.953l-4.347 3.009l0 .038a3 3 0 0 1 -2.824 3l-.176 0a3 3 0 0 1 -2.94 -2.402l-2.56 -1.098v-3.5l3.51 1.755a2.989 2.989 0 0 1 2.834 -.635l2.727 -3.818a4.5 4.5 0 0 1 4.429 -5.302"/><path d="M15.5 9.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" fill="currentColor"/></g>` },
+  'brand-reddit': { viewBox: '0 0 24 24', body: `<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8c2.648 0 5.028 .826 6.675 2.14a2.5 2.5 0 0 1 2.326 4.36c0 3.59 -4.03 6.5 -9 6.5c-4.875 0 -8.845 -2.8 -9 -6.294l-1 -.206a2.5 2.5 0 0 1 2.326 -4.36c1.646 -1.313 4.026 -2.14 6.674 -2.14l.999 0"/><path d="M12 8l1 -5l6 1"/><path d="M18 4a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M8.5 13a.5 .5 0 1 0 1 0a.5 .5 0 1 0 -1 0" fill="currentColor"/><path d="M14.5 13a.5 .5 0 1 0 1 0a.5 .5 0 1 0 -1 0" fill="currentColor"/><path d="M10 17c.667 .333 1.333 .5 2 .5s1.333 -.167 2 -.5"/></g>` },
+  'message-2': { viewBox: '0 0 24 24', body: `<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9h8"/><path d="M8 13h6"/><path d="M9 18h-3a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-3l-3 3l-3 -3"/></g>` },
+  'filter-2': { viewBox: '0 0 24 24', body: `<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M6 12h12"/><path d="M9 18h6"/></g>` },
   'device-gamepad-2': { viewBox: '0 0 20 20', body: `<path d="M10 4.16675H12.9167C14.0218 4.16675 15.0816 4.60573 15.863 5.38714C16.6444 6.16854 17.0834 7.22835 17.0834 8.33341C17.0834 9.43848 16.6444 10.4983 15.863 11.2797C15.0816 12.0611 14.0218 12.5001 12.9167 12.5001H8.33337L4.98754 16.0226C4.70134 16.3239 4.32495 16.524 3.91511 16.5928C3.50526 16.6616 3.08416 16.5954 2.71526 16.404C2.34635 16.2126 2.04964 15.9066 1.86984 15.5319C1.69003 15.1572 1.63687 14.7343 1.71837 14.3267L3.08004 7.51591C3.26905 6.5713 3.77953 5.72136 4.52462 5.11073C5.26971 4.5001 6.20337 4.16652 7.16671 4.16675H10Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M11.6667 12.5L15.0584 16.07C15.344 16.3706 15.7194 16.5704 16.1283 16.6395C16.5371 16.7086 16.9573 16.6433 17.3259 16.4533C17.6944 16.2634 17.9914 15.959 18.1723 15.5859C18.3532 15.2129 18.4083 14.7912 18.3292 14.3842L16.9959 7.52417" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M6.66675 7.5V9.16667" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M5.83325 8.33325H7.49992" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> <path d="M11.6667 8.33325H13.3334" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>` },
   'shopping-bag-heart': { viewBox: '0 0 20 20', body: `<path d="M9.58325 17.5001H7.14492C6.54775 17.5001 5.97032 17.2863 5.51711 16.8974C5.0639 16.5086 4.76486 15.9703 4.67409 15.3801L3.62825 8.58675C3.59173 8.34923 3.60699 8.10663 3.67301 7.87557C3.73902 7.64451 3.85422 7.43045 4.01071 7.24808C4.16719 7.06571 4.36127 6.91934 4.57962 6.819C4.79798 6.71866 5.03545 6.66672 5.27575 6.66675H14.7249C14.9652 6.66672 15.2027 6.71866 15.4211 6.819C15.6394 6.91934 15.8335 7.06571 15.99 7.24808C16.1465 7.43045 16.2617 7.64451 16.3277 7.87557C16.3937 8.10663 16.4089 8.34923 16.3724 8.58675C16.3249 8.89341 16.2891 9.12341 16.2666 9.27675" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M7.5 9.16667V5C7.5 4.33696 7.76339 3.70107 8.23223 3.23223C8.70107 2.76339 9.33696 2.5 10 2.5C10.663 2.5 11.2989 2.76339 11.7678 3.23223C12.2366 3.70107 12.5 4.33696 12.5 5V9.16667" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M14.9999 18.3333L17.7916 15.5966C17.9628 15.4305 18.099 15.2317 18.1921 15.0121C18.2852 14.7925 18.3334 14.5564 18.3338 14.3179C18.3342 14.0793 18.2868 13.8431 18.1944 13.6232C18.102 13.4033 17.9664 13.2041 17.7958 13.0374C17.4475 12.6969 16.9801 12.5058 16.493 12.5048C16.006 12.5039 15.5378 12.6932 15.1883 13.0324L15.0016 13.2158L14.8158 13.0324C14.4676 12.6921 14.0003 12.5012 13.5135 12.5002C13.0266 12.4993 12.5586 12.6885 12.2091 13.0274C12.0379 13.1935 11.9016 13.3922 11.8084 13.6118C11.7152 13.8314 11.667 14.0674 11.6665 14.306C11.666 14.5445 11.7134 14.7807 11.8057 15.0007C11.898 15.2206 12.0335 15.4199 12.2041 15.5866L14.9999 18.3333Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>` },
   'users': { viewBox: '0 0 20 20', body: `<path d="M4.16663 5.83333C4.16663 6.71739 4.51782 7.56523 5.14294 8.19036C5.76806 8.81548 6.6159 9.16667 7.49996 9.16667C8.38401 9.16667 9.23186 8.81548 9.85698 8.19036C10.4821 7.56523 10.8333 6.71739 10.8333 5.83333C10.8333 4.94928 10.4821 4.10143 9.85698 3.47631C9.23186 2.85119 8.38401 2.5 7.49996 2.5C6.6159 2.5 5.76806 2.85119 5.14294 3.47631C4.51782 4.10143 4.16663 4.94928 4.16663 5.83333Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M2.5 17.5V15.8333C2.5 14.9493 2.85119 14.1014 3.47631 13.4763C4.10143 12.8512 4.94928 12.5 5.83333 12.5H9.16667C10.0507 12.5 10.8986 12.8512 11.5237 13.4763C12.1488 14.1014 12.5 14.9493 12.5 15.8333V17.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M13.3334 2.6084C14.0504 2.79198 14.6859 3.20898 15.1397 3.79366C15.5936 4.37833 15.8399 5.09742 15.8399 5.83757C15.8399 6.57771 15.5936 7.2968 15.1397 7.88147C14.6859 8.46615 14.0504 8.88315 13.3334 9.06673" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/> <path d="M17.5 17.5V15.8333C17.4958 15.0976 17.2483 14.384 16.7961 13.8037C16.3439 13.2233 15.7124 12.8089 15 12.625" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>` },
@@ -1865,6 +2934,8 @@ const ASSET_ICON_DATA = {
   'calendar': { viewBox: '0 0 16 16', body: `<path d="M5.33333 1.33325V3.99992M10.6667 1.33325V3.99992M2 6.66658H14M3.33333 2.66659H12.6667C13.403 2.66659 14 3.26354 14 3.99992V13.3333C14 14.0696 13.403 14.6666 12.6667 14.6666H3.33333C2.59695 14.6666 2 14.0696 2 13.3333V3.99992C2 3.26354 2.59695 2.66659 3.33333 2.66659Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>` },
   'moon': { viewBox: '0 0 12 12', body: `<path d="M6.00001 1.50009C6.06601 1.50009 6.13151 1.50009 6.19651 1.50009C5.55418 2.09695 5.14131 2.90002 5.02966 3.7697C4.91801 4.63939 5.11464 5.52071 5.58538 6.26046C6.05612 7.00021 6.7712 7.55161 7.60631 7.81883C8.44143 8.08604 9.34378 8.05217 10.1565 7.72309C9.84388 8.47534 9.33291 9.12861 8.67811 9.61322C8.02331 10.0978 7.24924 10.3956 6.43847 10.4748C5.6277 10.554 4.81064 10.4116 4.07446 10.0628C3.33827 9.71402 2.71057 9.17194 2.25831 8.49439C1.80605 7.81684 1.54619 7.02923 1.50646 6.21558C1.46672 5.40192 1.6486 4.59274 2.0327 3.87435C2.41679 3.15596 2.98869 2.55531 3.68739 2.13646C4.3861 1.71762 5.18539 1.49629 6.00001 1.49609V1.50009Z" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>` },
   'sparkles': { viewBox: '0 0 20 20', body: `<path d="M16.6667 2.50004V5.83337M18.3334 4.16671H15.0001M3.33341 14.1667V15.8334M4.16675 15H2.50008M8.28086 12.9167C8.20647 12.6283 8.05615 12.3651 7.84555 12.1545C7.63494 11.9439 7.37176 11.7936 7.08336 11.7192L1.97086 10.4009C1.88364 10.3761 1.80687 10.3236 1.75221 10.2512C1.69754 10.1789 1.66797 10.0907 1.66797 10C1.66797 9.90938 1.69754 9.82118 1.75221 9.74884C1.80687 9.6765 1.88364 9.62397 1.97086 9.59921L7.08336 8.28005C7.37166 8.20572 7.63477 8.05552 7.84537 7.84508C8.05596 7.63463 8.20634 7.37162 8.28086 7.08338L9.5992 1.97088C9.6237 1.88331 9.67618 1.80616 9.74863 1.75121C9.82108 1.69625 9.90951 1.6665 10.0004 1.6665C10.0914 1.6665 10.1798 1.69625 10.2523 1.75121C10.3247 1.80616 10.3772 1.88331 10.4017 1.97088L11.7192 7.08338C11.7936 7.37177 11.9439 7.63496 12.1545 7.84556C12.3651 8.05616 12.6283 8.20648 12.9167 8.28088L18.0292 9.59838C18.1171 9.62263 18.1946 9.67505 18.2499 9.74761C18.3052 9.82017 18.3351 9.90885 18.3351 10C18.3351 10.0912 18.3052 10.1799 18.2499 10.2525C18.1946 10.325 18.1171 10.3775 18.0292 10.4017L12.9167 11.7192C12.6283 11.7936 12.3651 11.9439 12.1545 12.1545C11.9439 12.3651 11.7936 12.6283 11.7192 12.9167L10.4009 18.0292C10.3764 18.1168 10.3239 18.1939 10.2514 18.2489C10.179 18.3038 10.0905 18.3336 9.99961 18.3336C9.90868 18.3336 9.82025 18.3038 9.7478 18.2489C9.67535 18.1939 9.62287 18.1168 9.59836 18.0292L8.28086 12.9167Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>` },
+  'thumb-up': { viewBox: '0 0 24 24', body: `<path d="M7 11V19C7 19.2652 6.89464 19.5196 6.70711 19.7071C6.51957 19.8946 6.26522 20 6 20H4C3.73478 20 3.48043 19.8946 3.29289 19.7071C3.10536 19.5196 3 19.2652 3 19V12C3 11.7348 3.10536 11.4804 3.29289 11.2929C3.48043 11.1054 3.73478 11 4 11H7ZM7 11C8.06087 11 9.07828 10.5786 9.82843 9.82843C10.5786 9.07828 11 8.06087 11 7V6C11 5.46957 11.2107 4.96086 11.5858 4.58579C11.9609 4.21071 12.4696 4 13 4C13.5304 4 14.0391 4.21071 14.4142 4.58579C14.7893 4.96086 15 5.46957 15 6V11H18C18.5304 11 19.0391 11.2107 19.4142 11.5858C19.7893 11.9609 20 12.4696 20 13L19 18C18.8562 18.6135 18.5834 19.1402 18.2227 19.501C17.8619 19.8617 17.4328 20.0368 17 20H10C9.20435 20 8.44129 19.6839 7.87868 19.1213C7.31607 18.5587 7 17.7956 7 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>` },
+  'thumb-down': { viewBox: '0 0 24 24', body: `<path d="M7 12.9999V4.99993C7 4.73472 6.89464 4.48036 6.70711 4.29283C6.51957 4.10529 6.26522 3.99993 6 3.99993H4C3.73478 3.99993 3.48043 4.10529 3.29289 4.29283C3.10536 4.48036 3 4.73472 3 4.99993V11.9999C3 12.2651 3.10536 12.5195 3.29289 12.707C3.48043 12.8946 3.73478 12.9999 4 12.9999H7ZM7 12.9999C8.06087 12.9999 9.07828 13.4214 9.82843 14.1715C10.5786 14.9217 11 15.9391 11 16.9999V17.9999C11 18.5304 11.2107 19.0391 11.5858 19.4141C11.9609 19.7892 12.4696 19.9999 13 19.9999C13.5304 19.9999 14.0391 19.7892 14.4142 19.4141C14.7893 19.0391 15 18.5304 15 17.9999V12.9999H18C18.5304 12.9999 19.0391 12.7892 19.4142 12.4141C19.7893 12.0391 20 11.5304 20 10.9999L19 5.99993C18.8562 5.38646 18.5834 4.85969 18.2227 4.49897C17.8619 4.13825 17.4328 3.96311 17 3.99993H10C9.20435 3.99993 8.44129 4.316 7.87868 4.87861C7.31607 5.44122 7 6.20428 7 6.99993" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>` },
 };
 
 function assetIcon(name, size) {
@@ -1948,9 +3019,244 @@ function navIcon(value, size, centered) {
   return centered ? React.createElement('div', { style: { display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center' } }, svg) : svg;
 }
 
+// ===== Feedback Report (Player Report) =====
+// KPI row, tag badges, urgency meter and ticket rows materialized from Figma node 211:20825.
+// KPI tiles for a triage queue — derived from FEEDBACK_ROWS so they can't drift.
+// (The dashboard keeps its sales KPIs; those belong there, not on a bug list.)
+function feedbackKpiTiles() {
+  const bugs = FEEDBACK_ROWS.filter(r => r.type === 'bug').length;
+  const blocking = FEEDBACK_ROWS.filter(r => r.urgency === 'high').length;
+  const feedback = FEEDBACK_ROWS.filter(r => r.type === 'feedback').length;
+  const clips = FEEDBACK_ROWS.filter(r => r.clip).length;
+  return [
+    { icon: 'bug', label: 'Open bug reports', value: String(bugs), dir: 'up' },
+    { icon: 'text-scan-2', label: 'P0 blocking', value: String(blocking), dir: 'up' },
+    { icon: 'message-2', label: 'Player feedback', value: String(feedback), dir: 'flat' },
+    { icon: 'video', label: 'Reports with clips', value: String(clips), dir: 'flat' }
+  ];
+}
+
+// Tags carry two things at once: what the ticket IS (bug / feedback) and where it
+// CAME FROM (the in-game reporter, Discord, Steam, Reddit).
+const FEEDBACK_TAGS = {
+  bug: { label: 'Bug', icon: 'bug', color: 'var(--red-400)' },
+  feedback: { label: 'Feedback', icon: 'message-2', color: 'var(--lime-400)' },
+  ingame: { label: 'In-game', icon: 'device-gamepad-2', color: 'var(--amber-400)' },
+  discord: { label: 'Discord', icon: 'brand-discord', color: 'var(--blue-400)' },
+  steam: { label: 'Steam', icon: 'brand-steam', color: 'var(--info)' },
+  reddit: { label: 'Reddit', icon: 'brand-reddit', color: 'var(--red-500)' }
+};
+
+// Three-bar urgency meter: filled bars carry the severity colour, the rest stay hairline.
+const FEEDBACK_URGENCY = {
+  high: ['var(--red-500)', 'var(--red-500)', 'var(--red-500)'],
+  medium: ['var(--amber-500)', 'var(--amber-500)', 'var(--border-default)'],
+  low: ['var(--zinc-600)', 'var(--border-default)', 'var(--border-default)']
+};
+
+const FEEDBACK_URGENCY_LABEL = { high: 'P0 — blocking', medium: 'P1 — major', low: 'P2 — minor' };
+
+// The people tickets get assigned to. `photo` wins; the monogram fallback below is
+// kept for any assignee added later without a headshot.
+const FB_ASSIGNEES = [
+  { id: 'june', name: 'June Cho', photo: 'assets/june-cho-avatar.jpg' },
+  { id: 'bernice', name: 'Bernice', photo: 'assets/Bernice.jpg' },
+  { id: 'charlotte', name: 'Charlotte', photo: 'assets/Charlotte.jpg' },
+  { id: 'angela', name: 'Angela', photo: 'assets/Angela.jpg' }
+];
+
+// Triage queue: bug reports and player feedback funnelled from the in-game reporter and
+// the community channels into one list. `topic` is what "Group by topic" clusters on.
+// Row 1 is the ticket the impersonation view drills into — keep them in sync.
+const FEEDBACK_ROWS = [
+  { id: 1, urgency: 'high', type: 'bug', ticket: '#BUG-47248', subject: 'Character clips into oak tree when entering farmhouse with axe equipped', topic: 'Collision & interaction', channel: 'ingame', clip: true, reporter: 'BerniceSun02', role: 'player', assignees: [1], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
+  { id: 2, urgency: 'high', type: 'bug', ticket: '#BUG-47251', subject: 'Save file corrupts after sleeping on Winter 28 of year 3', topic: 'Save & progression', channel: 'steam', clip: false, reporter: 'mossy_ancientfruit', role: null, assignees: [3, 1], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
+  { id: 3, urgency: 'high', type: 'bug', ticket: '#BUG-47249', subject: 'Fishing minigame bar freezes on Switch after ~30 consecutive casts', topic: 'Fishing & minigames', channel: 'ingame', clip: true, reporter: 'SwitchTessa', role: 'player', assignees: [1], date: 'Aug 2, 2026', dateSort: '2026-08-02' },
+  { id: 4, urgency: 'high', type: 'bug', ticket: '#BUG-47246', subject: 'Co-op guest loses full inventory when host exits to title during a festival', topic: 'Multiplayer & co-op', channel: 'discord', clip: false, reporter: 'coop_calla', role: 'modder', assignees: [1, 0], date: 'Aug 2, 2026', dateSort: '2026-08-02' },
+  { id: 5, urgency: 'medium', type: 'bug', ticket: '#BUG-47244', subject: 'Greenhouse sprinklers stop watering the back two rows after 1.6.9', topic: 'Farm systems', channel: 'steam', clip: false, reporter: 'valleyfarmer_kt', role: null, assignees: [0], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
+  { id: 6, urgency: 'medium', type: 'bug', ticket: '#BUG-47241', subject: 'Junimo Hut skips crops planted on tilled beach sand', topic: 'Farm systems', channel: 'discord', clip: false, reporter: 'junimo_jules', role: null, assignees: [1], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
+  { id: 7, urgency: 'medium', type: 'bug', ticket: '#BUG-47238', subject: 'Iridium Sprinkler duplicates via shipping bin on day rollover', topic: 'Exploits & balance', channel: 'ingame', clip: true, reporter: 'ironpickaxe', role: 'player', assignees: [3], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
+  { id: 8, urgency: 'medium', type: 'bug', ticket: '#BUG-47235', subject: 'Mine ladder spawns inside a rock cluster, blocking descent on floor 47', topic: 'Collision & interaction', channel: 'ingame', clip: true, reporter: 'deckhand_rui', role: null, assignees: [1], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
+  { id: 9, urgency: 'medium', type: 'feedback', ticket: '#FBK-1092', subject: 'Mod loader breaks on 1.6.9 — community asking for a stable API surface', topic: 'Mods & API', channel: 'reddit', clip: false, reporter: 'ridgeside_wren', role: 'modder', assignees: [3, 0], date: 'Jul 30, 2026', dateSort: '2026-07-30' },
+  { id: 10, urgency: 'low', type: 'bug', ticket: '#BUG-47230', subject: 'Controller rumble keeps running after quitting on Steam Deck', topic: 'Performance & input', channel: 'steam', clip: false, reporter: 'pelicanpete', role: null, assignees: [2], date: 'Jul 30, 2026', dateSort: '2026-07-30' },
+  { id: 11, urgency: 'low', type: 'bug', ticket: '#BUG-47228', subject: 'Museum donation counter resets to 0 in the collections tab', topic: 'UI & accessibility', channel: 'discord', clip: false, reporter: 'JojaHater99', role: 'player', assignees: [0], date: 'Jul 29, 2026', dateSort: '2026-07-29' },
+  { id: 12, urgency: 'low', type: 'bug', ticket: '#BUG-47225', subject: 'Community Center restoration cutscene plays its audio track twice', topic: 'Audio & cutscenes', channel: 'ingame', clip: true, reporter: 'lulu_starfruit', role: null, assignees: [1], date: 'Jul 29, 2026', dateSort: '2026-07-29' },
+  { id: 13, urgency: 'low', type: 'bug', ticket: '#BUG-47221', subject: 'Spouse repeats the same 10-heart dialogue line every morning', topic: 'NPCs & dialogue', channel: 'discord', clip: false, reporter: 'emily_stan_4ever', role: 'player', assignees: [2], date: 'Jul 28, 2026', dateSort: '2026-07-28' },
+  { id: 14, urgency: 'low', type: 'feedback', ticket: '#FBK-1088', subject: 'Requesting a search field in the crafting menu — 200+ recipes is unscannable', topic: 'UI & accessibility', channel: 'reddit', clip: false, reporter: 'saltwater_sam', role: null, assignees: [0], date: 'Jul 28, 2026', dateSort: '2026-07-28' },
+  { id: 15, urgency: 'low', type: 'feedback', ticket: '#FBK-1085', subject: 'Fishing bite indicator is unreadable for red-green colourblind players', topic: 'UI & accessibility', channel: 'discord', clip: false, reporter: 'harveys_clinic', role: 'creator', assignees: [0, 2], date: 'Jul 27, 2026', dateSort: '2026-07-27' },
+  { id: 16, urgency: 'low', type: 'feedback', ticket: '#FBK-1081', subject: 'Late-game money loop feels trivial once you pass 100 kegs', topic: 'Exploits & balance', channel: 'steam', clip: false, reporter: 'winterstar_gwen', role: null, assignees: [3], date: 'Jul 27, 2026', dateSort: '2026-07-27' },
+  { id: 17, urgency: 'low', type: 'feedback', ticket: '#FBK-1079', subject: 'Bundle hints are too vague for first-time players', topic: 'Onboarding', channel: 'steam', clip: false, reporter: 'firstyear_fran', role: null, assignees: [2], date: 'Jul 26, 2026', dateSort: '2026-07-26' },
+  { id: 18, urgency: 'low', type: 'feedback', ticket: '#FBK-1076', subject: 'Love the new pet options — can we rename a pet after adoption?', topic: 'Quality of life', channel: 'discord', clip: false, reporter: 'barn_owl_bee', role: 'player', assignees: [2], date: 'Jul 26, 2026', dateSort: '2026-07-26' }
+];
+
+const FB_TAG_ORDER = ['bug', 'feedback', 'ingame', 'discord', 'steam', 'reddit'];
+
+// Narrative summaries shown in "Group by topic" headers (Figma 212:23149).
+const FEEDBACK_TOPIC_SUMMARIES = {
+  'Collision & interaction': 'In the farmhouse entry, the player keeps clipping into world geometry',
+  'Save & progression': 'Save files corrupt on season-end sleep during late-game years',
+  'Fishing & minigames': 'Fishing minigame freezes after long consecutive cast sessions',
+  'Multiplayer & co-op': 'Co-op guests lose inventory when the host exits mid-festival',
+  'Farm systems': 'Sprinklers and Junimo Huts skip crops on edge or beach tiles',
+  'Exploits & balance': 'Shipping and keg loops are duplicating items or trivializing late-game money',
+  'Mods & API': 'Mod loaders break on 1.6.9 — community asking for a stable API surface',
+  'Performance & input': 'Controller rumble keeps running after quitting on handheld builds',
+  'UI & accessibility': 'Menus and indicators are hard to scan or unreadable for colourblind players',
+  'Audio & cutscenes': 'Community Center restoration cutscene plays its audio track twice',
+  'NPCs & dialogue': 'Spouse repeats the same 10-heart dialogue line every morning',
+  'Onboarding': 'Bundle hints are too vague for first-time players',
+  'Quality of life': 'Players want to rename pets after adoption'
+};
+
+// A ticket is tagged with its kind first, then the channel it arrived on.
+const fbRowTags = r => [r.type, r.channel];
+
+// Ask Ghost AI panel. Answers are generated from FEEDBACK_ROWS so the panel can never
+// contradict the table it is summarising.
+const PROFILE_FIRST_NAME = 'June';
+
+const GHOST_STARTERS = [
+  { id: 'urgent', label: 'What is the most urgent task?' },
+  { id: 'cluster', label: 'Which reports share a root cause?' },
+  { id: 'players', label: 'What are players asking for?' }
+];
+
+function ghostTopicCounts(rows) {
+  const byTopic = {};
+  rows.forEach(r => { byTopic[r.topic] = (byTopic[r.topic] || 0) + 1; });
+  return Object.keys(byTopic)
+    .map(t => ({ topic: t, count: byTopic[t] }))
+    .sort((a, b) => b.count - a.count);
+}
+
+function ghostAnswer(id) {
+  const rows = FEEDBACK_ROWS;
+  const bugs = rows.filter(r => r.type === 'bug');
+  const feedback = rows.filter(r => r.type === 'feedback');
+  const blocking = rows.filter(r => r.urgency === 'high');
+  const clips = rows.filter(r => r.clip);
+
+  if (id === 'urgent') {
+    const list = blocking.map(r => `\u2022 ${r.ticket} \u2014 ${r.subject}`).join('\n');
+    return `${blocking.length} tickets are sitting at P0.\n\n${list}\n\nI\u2019d start with the save corruption: it destroys a full playthrough and there\u2019s no workaround, while the other three are recoverable by restarting the session.`;
+  }
+  if (id === 'cluster') {
+    const top = ghostTopicCounts(rows).slice(0, 3)
+      .map(t => `\u2022 ${t.topic} \u2014 ${t.count} ticket${t.count === 1 ? '' : 's'}`).join('\n');
+    return `Grouped by what they touch, the queue clusters like this:\n\n${top}\n\nThe two collision reports (#BUG-47248 and #BUG-47235) look like one defect, not two \u2014 both are interaction/collision ordering, and both have a clip attached. Worth fixing together.`;
+  }
+  if (id === 'players') {
+    const themes = ghostTopicCounts(feedback)
+      .map(t => `\u2022 ${t.topic} \u2014 ${t.count}`).join('\n');
+    return `${feedback.length} of the ${rows.length} tickets are feedback rather than defects:\n\n${themes}\n\nThe loudest single thread is the mod API request on Reddit (#FBK-1092) \u2014 it came from a modder and is blocking the community\u2019s 1.6.9 updates.`;
+  }
+  return `Here\u2019s the shape of this week: ${rows.length} open tickets \u2014 ${bugs.length} bugs and ${feedback.length} pieces of feedback. ${blocking.length} are P0, and ${clips.length} arrived with a recorded clip you can replay.\n\nAsk me about a specific ticket, a channel, or a topic and I\u2019ll dig in.`;
+}
+
+// Turn #BUG- / #FBK- ids in Ghost replies into clickable ticket links.
+function linkifyGhostText(text, onTicketClick) {
+  const re = /#(BUG|FBK)-\d+/g;
+  const nodes = [];
+  let last = 0;
+  let match;
+  let key = 0;
+  while ((match = re.exec(text))) {
+    if (match.index > last) nodes.push(text.slice(last, match.index));
+    const ticket = match[0];
+    const known = FEEDBACK_ROWS.some(r => r.ticket === ticket);
+    nodes.push(known
+      ? React.createElement('button', {
+          type: 'button',
+          key: 't' + (key++),
+          className: 'ghost-ticket-link',
+          onClick: (e) => {
+            if (e && e.stopPropagation) e.stopPropagation();
+            onTicketClick(ticket);
+          }
+        }, ticket)
+      : ticket);
+    last = match.index + ticket.length;
+  }
+  if (last < text.length) nodes.push(text.slice(last));
+  return React.createElement('span', { className: 'ghost-msg-ai-body' }, nodes);
+}
+
+// Staged "reasoning" copy shown while Ghost thinks (~3s), Cursor/ChatGPT style.
+function ghostReasoningPlan(id) {
+  const n = FEEDBACK_ROWS.length;
+  const plans = {
+    urgent: [
+      `Scanning ${n} tickets in the current queue`,
+      'Filtering for P0 / blocking severity',
+      'Comparing impact vs. recoverable workarounds',
+      'Ranking what to fix first'
+    ],
+    cluster: [
+      `Reading subjects across ${n} reports`,
+      'Grouping by topic and shared systems',
+      'Checking clip evidence for duplicate defects',
+      'Merging likely single-root-cause tickets'
+    ],
+    players: [
+      `Separating bugs from player feedback (${n} total)`,
+      'Tallying requests by topic and channel',
+      'Weighing modder vs. player signal',
+      'Summarizing what the community wants next'
+    ],
+    overview: [
+      `Ingesting ${n} open tickets from the report`,
+      'Counting bugs, feedback, P0s, and clips',
+      'Sketching the week\u2019s shape',
+      'Preparing a concise brief'
+    ]
+  };
+  return plans[id] || plans.overview;
+}
+
+// The Player Report lives on its own URL so it can be linked and reloaded directly.
+// Both the local preview server and vercel.json rewrite /playerreport onto this document.
+const PLAYER_REPORT_PATH = '/playerreport';
+const isPlayerReportPath = () => /\/playerreport\/?$/.test(window.location.pathname);
+const canUseHistoryApi = () => {
+  try {
+    const proto = window.location.protocol;
+    return !!(window.history && window.history.pushState) &&
+      (proto === 'http:' || proto === 'https:') &&
+      window === window.top;
+  } catch (_) {
+    return false;
+  }
+};
+const dashboardEntryPath = () => {
+  if (isPlayerReportPath()) return '/Data%20Analytics%20v2.dc.html';
+  const path = window.location.pathname + window.location.search;
+  // Keep embedded / unknown preview hosts on their current document URL.
+  if (path === '/' || /Data(?:%20| )Analytics(?:%20| )v2\.dc\.html/i.test(path)) return path;
+  return path;
+};
+
 class Component extends DCLogic {
   state = {
-    tab: 'overview', nav: 'analytics', game: 'stardew', range: 'all', segment: 'all', collapsed: false, theme: 'dark',
+    tab: 'overview', nav: isPlayerReportPath() ? 'player' : 'analytics', game: 'stardew', range: 'all', segment: 'all', collapsed: false, theme: 'dark',
+    // --- Feedback Report (Player Report) view state ---
+    fbGroupByTopic: false,
+    fbSelectedIds: {},
+    fbSortKey: null,
+    fbSortDir: null,
+    fbTagFilter: [],
+    showFbTagMenu: false,
+    fbAssigneeFilter: [],
+    showFbAssigneeMenu: false,
+    // --- Ask Ghost AI panel ---
+    showGhostPanel: false,
+    ghostPanelMounted: false,
+    ghostMessages: [],
+    ghostDraft: '',
+    ghostThinking: false,
+    ghostReasoning: [],
+    ghostReasoningIndex: 0,
+    railWasCollapsed: false,
+    showGhostRefreshConfirm: false,
     dateRange: 'last7', rawSearch: '', rawSortKey: null, rawSortDir: null, selectedRawId: 6, rawPage: 0, rawDetailExpanded: false,
     selectedKpi: 'Lifetime copies sold',
     summaryVariant: 0,
@@ -1960,6 +3266,7 @@ class Component extends DCLogic {
     notifUnread: true,
     showProjectMenu: false,
     showSettingsMenu: false,
+    showDateMenu: false,
     toastMessage: '',
     toastUntil: 0,
     showBugReport: false,
@@ -2000,9 +3307,14 @@ class Component extends DCLogic {
   _roEl = null;
 
   _toastTimer = null;
+  _ghostTimer = null;
+  _ghostReasonTimer = null;
+  _ghostCloseTimer = null;
 
   componentDidMount() {
     document.documentElement.setAttribute('data-theme', this.state.theme);
+    this.syncUrl(this.state.nav, true);
+    window.addEventListener('popstate', this.handlePopState);
     document.addEventListener('mousemove', this.handleTaskMouseMove);
     document.addEventListener('mouseup', this.handleTaskMouseUp);
     document.addEventListener('keydown', this.handleTaskKeyDown);
@@ -2013,6 +3325,10 @@ class Component extends DCLogic {
     this.attachTaskObservers();
   }
   componentWillUnmount() {
+    if (this._ghostTimer) clearTimeout(this._ghostTimer);
+    if (this._ghostReasonTimer) clearInterval(this._ghostReasonTimer);
+    if (this._ghostCloseTimer) clearTimeout(this._ghostCloseTimer);
+    window.removeEventListener('popstate', this.handlePopState);
     document.removeEventListener('mousemove', this.handleTaskMouseMove);
     document.removeEventListener('mouseup', this.handleTaskMouseUp);
     document.removeEventListener('keydown', this.handleTaskKeyDown);
@@ -2278,6 +3594,22 @@ class Component extends DCLogic {
     this.showToast('Exported stardew-valley-raw-data.csv');
   };
 
+  exportFeedbackCsv = () => {
+    const cols = ['ticket', 'urgency', 'type', 'channel', 'topic', 'subject', 'reporter', 'clip', 'date'];
+    const rows = this.visibleFeedbackRows();
+    const csv = [cols.join(',')].concat(
+      rows.map(r => cols.map(c => `"${String(r[c]).replace(/"/g, '""')}"`).join(','))
+    ).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'stardew-valley-feedback-report.csv';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    this.showToast(`Exported ${rows.length} tickets`);
+  };
+
   regenerateSummary = () => {
     if (this.state.regenerating) return;
     this.setState({ regenerating: true });
@@ -2292,11 +3624,255 @@ class Component extends DCLogic {
   };
 
   selectNav = (value) => {
-    if (value === 'player') {
-      this.setState({ nav: value, showBugReport: true, analyzedExpanded: false, playerLogExpanded: false, showNotif: false, showProjectMenu: false, showSettingsMenu: false });
+    // 'player' lands on the Feedback Report list; a ticket row drills into the bug report.
+    if (this._ghostCloseTimer) clearTimeout(this._ghostCloseTimer);
+    this.setState(s => ({
+      nav: value, showBugReport: false, showNotif: false, showProjectMenu: false,
+      showSettingsMenu: false, showFbTagMenu: false, showFbAssigneeMenu: false,
+      showGhostPanel: false,
+      ghostPanelMounted: false,
+      collapsed: s.showGhostPanel || s.ghostPanelMounted ? s.railWasCollapsed : s.collapsed
+    }));
+    this.syncUrl(value);
+  };
+
+  // Keep the address bar in step with the active nav item: /playerreport for the
+  // Player Report, the document's own path for everything else.
+  // Skip history writes in file://, sandboxed, or nested preview iframes — those
+  // throw SecurityError and blank the Cursor / Design Canvas preview.
+  syncUrl = (nav, replace) => {
+    if (!canUseHistoryApi()) return;
+    try {
+      const next = nav === 'player' ? PLAYER_REPORT_PATH : dashboardEntryPath();
+      if (window.location.pathname + window.location.search === next) return;
+      if (replace) window.history.replaceState({ nav }, '', next);
+      else window.history.pushState({ nav }, '', next);
+    } catch (_) { /* preview hosts may disallow history mutation */ }
+  };
+
+  handlePopState = () => {
+    const nav = isPlayerReportPath() ? 'player' : 'analytics';
+    if (nav !== this.state.nav) this.setState({ nav, showBugReport: false, showFbTagMenu: false, showFbAssigneeMenu: false });
+  };
+
+  // ---- Feedback Report interactions ----
+  toggleFbRow = id => (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    this.setState(s => {
+      const next = { ...s.fbSelectedIds };
+      if (next[id]) delete next[id]; else next[id] = true;
+      return { fbSelectedIds: next };
+    });
+  };
+
+  toggleFbAll = () => {
+    this.setState(s => {
+      const visible = this.visibleFeedbackRows(s);
+      const allOn = visible.length > 0 && visible.every(r => s.fbSelectedIds[r.id]);
+      if (allOn) return { fbSelectedIds: {} };
+      const next = {};
+      visible.forEach(r => { next[r.id] = true; });
+      return { fbSelectedIds: next };
+    });
+  };
+
+  toggleFbSort = key => () => {
+    this.setState(s => s.fbSortKey === key
+      ? (s.fbSortDir === 'asc' ? { fbSortDir: 'desc' } : { fbSortKey: null, fbSortDir: null })
+      : { fbSortKey: key, fbSortDir: 'asc' });
+  };
+
+  toggleFbTag = tag => (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    this.setState(s => ({
+      fbTagFilter: s.fbTagFilter.includes(tag)
+        ? s.fbTagFilter.filter(t => t !== tag)
+        : [...s.fbTagFilter, tag]
+    }));
+  };
+
+  toggleFbAssignee = idx => (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    this.setState(s => ({
+      fbAssigneeFilter: s.fbAssigneeFilter.includes(idx)
+        ? s.fbAssigneeFilter.filter(i => i !== idx)
+        : [...s.fbAssigneeFilter, idx]
+    }));
+  };
+
+  // Opening the panel collapses the nav rail (Figma 237:23494 shows the 92px rail).
+  // Mount first, then add .is-open on the next frame so the slide-in transition runs.
+  toggleGhostPanel = () => {
+    if (this._ghostCloseTimer) clearTimeout(this._ghostCloseTimer);
+    if (this.state.showGhostPanel) {
+      this.setState({ showGhostPanel: false, showGhostRefreshConfirm: false });
+      this._ghostCloseTimer = setTimeout(() => {
+        this.setState(s => ({
+          ghostPanelMounted: false,
+          collapsed: s.railWasCollapsed
+        }));
+      }, 580);
       return;
     }
-    this.setState({ nav: value, showBugReport: false, showNotif: false, showProjectMenu: false, showSettingsMenu: false });
+    this.setState(s => ({
+      ghostPanelMounted: true,
+      showGhostPanel: false,
+      railWasCollapsed: s.collapsed,
+      collapsed: true,
+      showNotif: false,
+      showFbTagMenu: false,
+      showFbAssigneeMenu: false,
+      showDateMenu: false
+    }), () => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (this.state.ghostPanelMounted) this.setState({ showGhostPanel: true });
+        });
+      });
+    });
+  };
+
+  requestGhostRefresh = () => {
+    const hasThread = this.state.ghostMessages.length > 0 || this.state.ghostThinking || this.state.ghostDraft;
+    if (!hasThread) {
+      this.resetGhostChat();
+      return;
+    }
+    this.setState({ showGhostRefreshConfirm: true });
+  };
+
+  cancelGhostRefresh = () => {
+    this.setState({ showGhostRefreshConfirm: false });
+  };
+
+  confirmGhostRefresh = () => {
+    this.resetGhostChat();
+    this.setState({ showGhostRefreshConfirm: false });
+  };
+
+  resetGhostChat = () => {
+    if (this._ghostTimer) clearTimeout(this._ghostTimer);
+    if (this._ghostReasonTimer) clearInterval(this._ghostReasonTimer);
+    this.setState({
+      ghostMessages: [],
+      ghostDraft: '',
+      ghostThinking: false,
+      ghostReasoning: [],
+      ghostReasoningIndex: 0,
+      showGhostRefreshConfirm: false
+    });
+  };
+
+  askGhost = (text, starterId) => {
+    if (!text) return;
+    if (this._ghostTimer) clearTimeout(this._ghostTimer);
+    if (this._ghostReasonTimer) clearInterval(this._ghostReasonTimer);
+
+    const plan = ghostReasoningPlan(starterId);
+    const thinkMs = 4500;
+    const stepMs = Math.floor(thinkMs / plan.length);
+
+    this.setState(s => ({
+      ghostMessages: [...s.ghostMessages, { from: 'user', text }],
+      ghostDraft: '',
+      ghostThinking: true,
+      ghostReasoning: plan,
+      ghostReasoningIndex: 0
+    }));
+
+    // Reveal reasoning steps one-by-one, then show the answer.
+    this._ghostReasonTimer = setInterval(() => {
+      this.setState(s => {
+        const next = s.ghostReasoningIndex + 1;
+        if (next >= s.ghostReasoning.length) {
+          clearInterval(this._ghostReasonTimer);
+          this._ghostReasonTimer = null;
+          return s;
+        }
+        return { ghostReasoningIndex: next };
+      });
+    }, stepMs);
+
+    this._ghostTimer = setTimeout(() => {
+      if (this._ghostReasonTimer) {
+        clearInterval(this._ghostReasonTimer);
+        this._ghostReasonTimer = null;
+      }
+      this.setState(s => ({
+        ghostThinking: false,
+        ghostReasoning: [],
+        ghostReasoningIndex: 0,
+        ghostMessages: [...s.ghostMessages, { from: 'ai', id: 'g' + Date.now(), text: ghostAnswer(starterId), feedback: null }]
+      }));
+    }, thinkMs);
+  };
+
+  rateGhostMessage = (id, value) => {
+    this.setState(s => ({
+      ghostMessages: s.ghostMessages.map(m => {
+        if (m.id !== id || m.from !== 'ai') return m;
+        // Toggle off if the same rating is clicked again.
+        return { ...m, feedback: m.feedback === value ? null : value };
+      })
+    }));
+  };
+
+  sendGhostMessage = () => {
+    const text = this.state.ghostDraft.trim();
+    if (!text) return;
+    // Route a free-text question to the closest starter answer.
+    const q = text.toLowerCase();
+    const id = /urgent|priorit|first|p0|blocking/.test(q) ? 'urgent'
+      : /cluster|root cause|group|same|dupe|duplicate|related/.test(q) ? 'cluster'
+      : /player|feature|request|ask|feedback|want/.test(q) ? 'players'
+      : 'overview';
+    this.askGhost(text, id);
+  };
+
+  handleGhostKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      this.sendGhostMessage();
+    }
+  };
+
+  openTicket = () => {
+    this.setState({ showBugReport: true, nav: 'player', analyzedExpanded: false, playerLogExpanded: false, showFbTagMenu: false, showFbAssigneeMenu: false });
+  };
+
+  // Row / Ghost ticket click opens the detail page. Never toggles checkbox selection —
+  // that only happens via toggleFbRow / toggleFbAll.
+  openTicketById = (ticket) => {
+    const row = FEEDBACK_ROWS.find(r => r.ticket === ticket);
+    if (!row) return;
+    this.setState({
+      showFbTagMenu: false,
+      showFbAssigneeMenu: false,
+      showBugReport: true,
+      nav: 'player',
+      analyzedExpanded: false,
+      playerLogExpanded: false,
+      showGhostPanel: false,
+      ghostPanelMounted: false,
+      collapsed: this.state.railWasCollapsed
+    });
+  };
+
+  // Tag / assignee filters + sort applied to the ticket list; shared by the table and "select all".
+  visibleFeedbackRows = (state) => {
+    const s = state || this.state;
+    let rows = FEEDBACK_ROWS.filter(r => !s.fbTagFilter.length || fbRowTags(r).some(t => s.fbTagFilter.includes(t)));
+    if (s.fbAssigneeFilter.length) {
+      rows = rows.filter(r => r.assignees.some(a => s.fbAssigneeFilter.includes(a)));
+    }
+    if (s.fbSortKey && s.fbSortDir) {
+      const key = s.fbSortKey === 'date' ? 'dateSort' : s.fbSortKey;
+      rows = rows.slice().sort((a, b) => {
+        const cmp = String(a[key]).localeCompare(String(b[key]), undefined, { numeric: true });
+        return s.fbSortDir === 'asc' ? cmp : -cmp;
+      });
+    }
+    return rows;
   };
 
   toggleSettingsMenu = () => {
@@ -2402,7 +3978,124 @@ class Component extends DCLogic {
     const showAnalyticsBody = this.state.nav === 'analytics';
     const showMessagesBody = this.state.nav === 'messages';
     const showTasksBody = this.state.nav === 'tasks';
-    const headerTitle = this.state.nav === 'tasks' ? 'My Tasks' : this.state.nav === 'messages' ? 'Message' : 'Dashboard';
+    const showPlayerBody = this.state.nav === 'player';
+    const headerTitle = this.state.nav === 'tasks' ? 'My Tasks'
+      : this.state.nav === 'messages' ? 'Message'
+      : showPlayerBody ? 'Player Report'
+      : 'Dashboard';
+
+    // ---- Feedback Report rows: tag filter + sort, optionally grouped by topic ----
+    const fbRows = this.visibleFeedbackRows();
+    const fbTagBadge = tag => {
+      const t = FEEDBACK_TAGS[tag];
+      return {
+        label: t.label,
+        // The #BUG- / #FBK- prefix already says the type, so that badge is the first to go.
+        cls: (tag === 'bug' || tag === 'feedback') ? 'fb-badge fb-tag-type' : 'fb-badge fb-tag-channel',
+        iconEl: React.createElement('span', { style: { display: 'flex', color: t.color, flexShrink: 0 } }, assetIcon(t.icon, 12))
+      };
+    };
+    const fbAvatar = (idx, key) => {
+      const a = FB_ASSIGNEES[idx] || FB_ASSIGNEES[0];
+      return a.photo
+        ? React.createElement('img', { key, src: a.photo, alt: a.name, title: a.name, className: 'fb-avatar' })
+        : React.createElement('span', { key, className: 'fb-avatar-mono', title: a.name, style: { background: a.color } }, a.initials);
+    };
+    const fbTicketRow = r => {
+      const bars = FEEDBACK_URGENCY[r.urgency];
+      const on = !!this.state.fbSelectedIds[r.id];
+      // Later avatars render first so the stack overlaps left-to-right like the design.
+      const assigneeEl = React.createElement(
+        'span',
+        { className: 'fb-avatar-stack' },
+        r.assignees.slice().reverse().map((idx, i) => fbAvatar(idx, i))
+      );
+      return {
+        isGroupHeader: false,
+        isTicket: true,
+        rowId: String(r.id),
+        ticket: r.ticket,
+        subject: r.subject,
+        hasClip: r.clip,
+        clipIcon: React.createElement('span', { style: { display: 'flex', color: 'var(--accent)', flexShrink: 0 } }, assetIcon('video', 12)),
+        tags: fbRowTags(r).map(fbTagBadge),
+        reporter: '@' + r.reporter,
+        hasRole: !!r.role,
+        role: r.role || '',
+        assigneeEl,
+        date: r.date,
+        u1: bars[0], u2: bars[1], u3: bars[2],
+        urgencyLabel: FEEDBACK_URGENCY_LABEL[r.urgency],
+        rowClass: on ? 'fb-row fb-row-body fb-row-selected' : 'fb-row fb-row-body',
+        checkClass: on ? 'fb-check fb-check-on' : 'fb-check',
+        checkIcon: on ? taskIcon('check', 12) : null,
+        onToggle: this.toggleFbRow(r.id),
+        onOpen: () => this.openTicketById(r.ticket)
+      };
+    };
+    let feedbackRows;
+    if (this.state.fbGroupByTopic) {
+      const topics = [];
+      fbRows.forEach(r => {
+        let group = topics.find(g => g.label === r.topic);
+        if (!group) { group = { label: r.topic, rows: [] }; topics.push(group); }
+        group.rows.push(r);
+      });
+      topics.sort((a, b) => b.rows.length - a.rows.length);
+      feedbackRows = [];
+      const ungrouped = [];
+      topics.forEach(g => {
+        if (g.rows.length < 2) {
+          g.rows.forEach(r => ungrouped.push(r));
+          return;
+        }
+        feedbackRows.push({
+          isGroupHeader: true,
+          isTicket: false,
+          groupHeadClass: 'fb-group-head',
+          groupCount: String(g.rows.length),
+          groupPrefix: 'Group topic:',
+          groupSummary: FEEDBACK_TOPIC_SUMMARIES[g.label] || g.label,
+          hasLinkCode: true,
+          onLinkCode: (e) => {
+            if (e && e.stopPropagation) e.stopPropagation();
+          }
+        });
+        g.rows.forEach(r => feedbackRows.push(fbTicketRow(r)));
+      });
+      if (ungrouped.length) {
+        feedbackRows.push({
+          isGroupHeader: true,
+          isTicket: false,
+          groupHeadClass: 'fb-group-head is-general',
+          groupCount: String(ungrouped.length),
+          groupPrefix: 'Ungrouped:',
+          groupSummary: 'Individual tickets with no shared topic',
+          hasLinkCode: false,
+          onLinkCode: null
+        });
+        ungrouped.forEach(r => feedbackRows.push(fbTicketRow(r)));
+      }
+    } else {
+      feedbackRows = fbRows.map(fbTicketRow);
+    }
+    const fbAllOn = fbRows.length > 0 && fbRows.every(r => this.state.fbSelectedIds[r.id]);
+    const fbTagFilterItem = tag => {
+      const t = FEEDBACK_TAGS[tag];
+      return {
+        isSection: false,
+        isOption: true,
+        label: t.label,
+        iconEl: React.createElement('span', { style: { display: 'flex', color: t.color, flexShrink: 0 } }, assetIcon(t.icon, 14)),
+        checkIcon: this.state.fbTagFilter.includes(tag) ? taskIcon('check', 16) : null,
+        onClick: this.toggleFbTag(tag)
+      };
+    };
+    const fbSortIcon = key => React.createElement(
+      'span',
+      { style: { display: 'flex', color: this.state.fbSortKey === key ? 'var(--accent)' : 'var(--text-tertiary)' } },
+      navIcon('chevronsUpDown', 16, false)
+    );
 
     // ---- My Tasks view builders (canvas notes, buckets, timeline, task plan) ----
     const tNotes = this.state.taskNotes;
@@ -2557,7 +4250,7 @@ class Component extends DCLogic {
           icon: navIcon(it.icon, 20, false),
           active,
           bg: active ? 'var(--primary-foreground-btn)' : 'transparent',
-          color: active ? 'var(--accent)' : 'var(--text-tertiary)',
+          color: active ? 'var(--accent)' : 'var(--muted-foreground)',
           weight: active ? 600 : 500,
           onClick: () => this.selectNav(it.value)
         };
@@ -2603,17 +4296,25 @@ class Component extends DCLogic {
       setDateRange: v => this.setState({ dateRange: v }),
       calendarIcon: assetIcon('calendar', 16),
       chevronDownIcon: navIcon('chevronDown', 12, false),
-      setDateRangeNative: e => {
-        this.setState({ dateRange: e.target.value });
-        this.showToast(`Date range: ${(DATE_RANGE_OPTIONS.find(o => o.value === e.target.value) || {}).label || e.target.value}`);
-      },
+      dateRangeLabel: (DATE_RANGE_OPTIONS.find(o => o.value === this.state.dateRange) || {}).label || '',
+      showDateMenu: this.state.showDateMenu,
+      toggleDateMenu: () => this.setState(s => ({ showDateMenu: !s.showDateMenu, showNotif: false, showProjectMenu: false })),
+      dateRangeMenuItems: DATE_RANGE_OPTIONS.map(o => ({
+        value: o.value,
+        label: o.label,
+        checkIcon: o.value === this.state.dateRange ? taskIcon('check', 16) : null,
+        onClick: () => {
+          this.setState({ dateRange: o.value, showDateMenu: false });
+          this.showToast(`Date range: ${o.label}`);
+        }
+      })),
       segmentOptions: SEGMENT_OPTIONS,
       segment: this.state.segment,
       setSegment: v => this.setState({ segment: v }),
-      exportDashboard: this.exportCsv,
+      exportDashboard: showPlayerBody ? this.exportFeedbackCsv : this.exportCsv,
       showNotif: this.state.showNotif,
       hasUnreadNotif: this.state.notifUnread,
-      toggleNotif: () => this.setState(s => ({ showNotif: !s.showNotif, showProjectMenu: false, showSettingsMenu: false })),
+      toggleNotif: () => this.setState(s => ({ showNotif: !s.showNotif, showProjectMenu: false, showSettingsMenu: false, showDateMenu: false })),
       markNotifRead: () => this.setState({ notifUnread: false, showNotif: false }),
       notifications: [
         { title: '1.6 CCU peak still leading', body: '236,614 remains the all-time concurrent record.' },
@@ -2630,7 +4331,7 @@ class Component extends DCLogic {
           cardClass: selected ? 'dash-kpi dash-kpi-selected' : 'dash-kpi',
           cursor: 'pointer',
           onClick: opensBugReport
-            ? () => this.setState({ showBugReport: true, nav: 'player', analyzedExpanded: false, playerLogExpanded: false })
+            ? () => { this.setState({ showBugReport: true, nav: 'player', analyzedExpanded: false, playerLogExpanded: false }); this.syncUrl('player'); }
             : () => this.setState({ selectedKpi: k.label, summaryVariant: 0, showNotif: false })
         };
       }),
@@ -2639,6 +4340,132 @@ class Component extends DCLogic {
       showAnalyticsBody,
       showMessagesBody,
       showTasksBody,
+      showPlayerBody,
+      showReportControls: showAnalyticsBody || showPlayerBody,
+      // ---- Feedback Report ----
+      ghostSmIcon: navIcon('ghost', 16, false),
+      askGhostAi: this.toggleGhostPanel,
+      askGhostBtnClass: this.state.showGhostPanel ? 'fb-ask-btn ask-ghost-btn fb-ask-btn-active' : 'fb-ask-btn ask-ghost-btn',
+      // ---- Ask Ghost AI panel ----
+      showGhostPanelSlot: (this.state.ghostPanelMounted || this.state.showGhostPanel) && showPlayerBody,
+      ghostPanelSlotClass: this.state.showGhostPanel ? 'ghost-panel-slot is-open' : 'ghost-panel-slot',
+      showGhostPanel: this.state.showGhostPanel && showPlayerBody,
+      ghostShellClass: (this.state.showGhostPanel || this.state.ghostPanelMounted) && showPlayerBody ? 'has-ghost' : '',
+      ghostLgIcon: navIcon('ghost', 32, false),
+      ghostSmallIcon: navIcon('ghost', 18, false),
+      ghostThumbUpIcon: assetIcon('thumb-up', 16),
+      ghostThumbDownIcon: assetIcon('thumb-down', 16),
+      ghostResetIcon: navIcon('refresh', 20, false),
+      ghostSendIcon: taskIcon('chevronRight', 16),
+      ghostGreeting: `Hi ${PROFILE_FIRST_NAME} \u2014 I\u2019ve read this report`,
+      ghostIsEmpty: this.state.ghostMessages.length === 0 && !this.state.ghostThinking,
+      ghostHasThread: this.state.ghostMessages.length > 0 || this.state.ghostThinking,
+      ghostMessages: this.state.ghostMessages.map(m => ({
+        text: m.text,
+        isUser: m.from === 'user',
+        isAi: m.from === 'ai',
+        bodyEl: m.from === 'ai'
+          ? linkifyGhostText(m.text, this.openTicketById)
+          : null,
+        upPressed: m.feedback === 'up',
+        downPressed: m.feedback === 'down',
+        upClass: m.feedback === 'up' ? 'ghost-fb-btn is-active' : 'ghost-fb-btn',
+        downClass: m.feedback === 'down' ? 'ghost-fb-btn is-active' : 'ghost-fb-btn',
+        onUp: () => this.rateGhostMessage(m.id, 'up'),
+        onDown: () => this.rateGhostMessage(m.id, 'down')
+      })),
+      ghostThinking: this.state.ghostThinking,
+      ghostThinkingLabel: this.state.ghostReasoningIndex >= this.state.ghostReasoning.length - 1
+        ? 'Finishing up…'
+        : 'Thinking',
+      ghostReasoningSteps: this.state.ghostReasoning
+        .slice(0, this.state.ghostReasoningIndex + 1)
+        .map((label, i, arr) => {
+          const isActive = i === arr.length - 1 && this.state.ghostThinking;
+          const isDone = i < arr.length - 1;
+          return {
+            label,
+            mark: isDone ? '✓' : '·',
+            cls: 'ghost-thinking-step' + (isDone ? ' is-done' : '') + (isActive ? ' is-active' : '')
+          };
+        }),
+      ghostStarters: GHOST_STARTERS.map(p => ({
+        label: p.label,
+        onClick: () => this.askGhost(p.label, p.id)
+      })),
+      ghostDraft: this.state.ghostDraft,
+      updateGhostDraft: e => this.setState({ ghostDraft: e.target.value }),
+      handleGhostKeyDown: this.handleGhostKeyDown,
+      sendGhostMessage: this.sendGhostMessage,
+      ghostSendDisabled: !this.state.ghostDraft.trim(),
+      ghostSendClass: this.state.ghostDraft.trim() ? 'ghost-send is-active' : 'ghost-send',
+      resetGhostChat: this.resetGhostChat,
+      requestGhostRefresh: this.requestGhostRefresh,
+      cancelGhostRefresh: this.cancelGhostRefresh,
+      confirmGhostRefresh: this.confirmGhostRefresh,
+      showGhostRefreshConfirm: this.state.showGhostRefreshConfirm,
+      feedbackKpis: feedbackKpiTiles().map(k => ({
+        ...k,
+        iconEl: assetIcon(k.icon, 20),
+        arrowEl: trendArrow(k.dir, 20)
+      })),
+      fbSparkleIcon: React.createElement('span', { className: 'fb-pill-sparkle' }, sparkle(16)),
+      fbTotalPillClass: this.state.fbGroupByTopic ? 'fb-pill' : 'fb-pill fb-pill-active',
+      fbGroupPillClass: this.state.fbGroupByTopic ? 'fb-pill fb-pill-active' : 'fb-pill',
+      setFbTotal: () => this.setState({ fbGroupByTopic: false }),
+      setFbGrouped: () => this.setState({ fbGroupByTopic: true }),
+      feedbackRows,
+      fbEmpty: fbRows.length === 0,
+      fbAllCheckClass: fbAllOn ? 'fb-check fb-check-on' : 'fb-check',
+      fbAllCheckIcon: fbAllOn ? taskIcon('check', 12) : null,
+      toggleFbAll: this.toggleFbAll,
+      fbTicketSortIcon: fbSortIcon('ticket'),
+      fbReporterSortIcon: fbSortIcon('reporter'),
+      fbDateSortIcon: fbSortIcon('date'),
+      sortFbTicket: this.toggleFbSort('ticket'),
+      sortFbReporter: this.toggleFbSort('reporter'),
+      sortFbDate: this.toggleFbSort('date'),
+      fbFilterIcon: React.createElement(
+        'span',
+        { style: { display: 'flex', color: this.state.fbTagFilter.length ? 'var(--accent)' : 'var(--text-tertiary)' } },
+        assetIcon('filter-2', 16)
+      ),
+      showFbTagMenu: this.state.showFbTagMenu,
+      toggleFbTagMenu: () => this.setState(s => ({
+        showFbTagMenu: !s.showFbTagMenu,
+        showFbAssigneeMenu: false,
+        showNotif: false,
+        showDateMenu: false
+      })),
+      fbTagFilterItems: [
+        { isSection: true, isOption: false, label: 'Type' },
+        ...['bug', 'feedback'].map(fbTagFilterItem),
+        { isSection: true, isOption: false, label: 'Channel' },
+        ...['ingame', 'discord', 'steam', 'reddit'].map(fbTagFilterItem)
+      ],
+      fbAssigneeFilterIcon: React.createElement(
+        'span',
+        { style: { display: 'flex', color: this.state.fbAssigneeFilter.length ? 'var(--accent)' : 'var(--text-tertiary)' } },
+        assetIcon('filter-2', 16)
+      ),
+      showFbAssigneeMenu: this.state.showFbAssigneeMenu,
+      toggleFbAssigneeMenu: () => this.setState(s => ({
+        showFbAssigneeMenu: !s.showFbAssigneeMenu,
+        showFbTagMenu: false,
+        showNotif: false,
+        showDateMenu: false
+      })),
+      fbAssigneeFilterItems: FB_ASSIGNEES.map((a, idx) => ({
+        label: a.name,
+        iconEl: a.photo
+          ? React.createElement('img', { src: a.photo, alt: '', className: 'fb-avatar', style: { width: 16, height: 16, boxShadow: 'none' } })
+          : React.createElement('span', {
+              className: 'fb-avatar-mono',
+              style: { width: 16, height: 16, fontSize: 8, boxShadow: 'none', background: a.color || 'var(--zinc-600)' }
+            }, a.initials || a.name.slice(0, 1)),
+        checkIcon: this.state.fbAssigneeFilter.includes(idx) ? taskIcon('check', 16) : null,
+        onClick: this.toggleFbAssignee(idx)
+      })),
       // view mode + header toggles
       isCanvasView: this.state.taskViewMode === 'canvas',
       isTimelineView: this.state.taskViewMode === 'timeline',
@@ -2726,7 +4553,7 @@ class Component extends DCLogic {
       composeContacts,
       plusIcon: navIcon('plus', 16, false),
       goDashboard: () => this.selectNav('analytics'),
-      closeBugReport: () => this.setState({ showBugReport: false, nav: 'analytics', analyzedExpanded: false, playerLogExpanded: false }),
+      closeBugReport: () => this.setState({ showBugReport: false, nav: 'player', analyzedExpanded: false, playerLogExpanded: false }),
       analyzedExpanded: this.state.analyzedExpanded,
       playerLogExpanded: this.state.playerLogExpanded,
       analyzedToggleLabel: this.state.analyzedExpanded ? 'Show less' : 'See more',
@@ -2756,7 +4583,7 @@ class Component extends DCLogic {
         badge: i.flag ? 'Need more data' : null,
         showDivider: idx < arr.length - 1
       })),
-      hasInsights: (cfg.insights || []).length > 0,
+      hasInsights: (cfg.insights || []).length > 0 && showAnalyticsBody,
       ghostSummaryEl: summaryHtml ? React.createElement('span', { dangerouslySetInnerHTML: { __html: summaryHtml } }) : null,
       hasGhostSummary: !!summaryHtml,
       generatedAt: this.state.generatedAt,
