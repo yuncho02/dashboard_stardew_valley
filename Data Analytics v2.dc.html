@@ -1561,6 +1561,14 @@
             <div style="flex-shrink:0;display:flex;flex-direction:column;gap:10px;padding:16px 18px 14px">
               <sc-if value="{{ isCanvasView }}" hint-placeholder-val="{{ true }}">
               <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap">
+                <div style="display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface-2);flex:1;min-width:180px;max-width:300px;margin-right:auto;box-sizing:border-box">
+                  <span style="color:var(--text-tertiary);display:flex;flex-shrink:0">{{ taskSearchIcon }}</span>
+                  <input value="{{ taskSearch }}" onChange="{{ setTaskSearch }}" placeholder="Search notes…" style="flex:1;min-width:0;border:none;outline:none;background:transparent;color:var(--text-primary);font:var(--text-body-sm)">
+                  <sc-if value="{{ taskSearching }}" hint-placeholder-val="{{ false }}">
+                    <span style="font:var(--text-mono-sm);color:var(--text-tertiary);white-space:nowrap;flex-shrink:0">{{ taskSearchCount }}</span>
+                    <span onClick="{{ clearTaskSearch }}" title="Clear search" aria-label="Clear search" style="display:flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:999px;cursor:pointer;color:var(--text-tertiary);flex-shrink:0">{{ taskCloseIcon }}</span>
+                  </sc-if>
+                </div>
                 <div style="display:flex;align-items:center;gap:2px;padding:2px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface-2)">
                   <button type="button" onClick="{{ zoomOut }}" aria-label="Zoom out" style="width:28px;height:28px;border:none;border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer">{{ taskMinusIcon }}</button>
                   <span style="font:var(--text-mono-sm);color:var(--text-secondary);width:42px;text-align:center">{{ zoomLabel }}</span>
@@ -1584,6 +1592,13 @@
               </sc-if>
               <sc-if value="{{ isTimelineView }}" hint-placeholder-val="{{ false }}">
               <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap">
+                <div style="display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface-2);flex:1;min-width:180px;max-width:300px;margin-right:auto;box-sizing:border-box">
+                  <span style="color:var(--text-tertiary);display:flex;flex-shrink:0">{{ taskSearchIcon }}</span>
+                  <input value="{{ taskSearch }}" onChange="{{ setTaskSearch }}" placeholder="Search notes…" style="flex:1;min-width:0;border:none;outline:none;background:transparent;color:var(--text-primary);font:var(--text-body-sm)">
+                  <sc-if value="{{ taskSearching }}" hint-placeholder-val="{{ false }}">
+                    <span onClick="{{ clearTaskSearch }}" title="Clear search" aria-label="Clear search" style="display:flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:999px;cursor:pointer;color:var(--text-tertiary);flex-shrink:0">{{ taskCloseIcon }}</span>
+                  </sc-if>
+                </div>
                 <div style="display:flex;align-items:center;gap:2px;padding:2px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface-2)">
                   <button type="button" onClick="{{ zoomOutTimeline }}" aria-label="Zoom out" style="width:28px;height:28px;border:none;border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer">{{ taskMinusIcon }}</button>
                   <button type="button" onClick="{{ zoomInTimeline }}" aria-label="Zoom in" style="width:28px;height:28px;border:none;border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer">{{ taskPlusIcon }}</button>
@@ -3295,7 +3310,8 @@ class Component extends DCLogic {
     panelCollapsed: false,
     tasksDone: {},
     taskOrder: TASKS.map(t => t.id),
-    highlightedGroup: null
+    highlightedGroup: null,
+    taskSearch: ''
   };
 
   viewportRef = React.createRef();
@@ -4119,18 +4135,33 @@ class Component extends DCLogic {
       };
     }).filter(Boolean);
 
+    // Search narrows the canvas and the timeline together. Notes are dimmed rather
+    // than removed so a match keeps its spatial context inside its bucket.
+    const tQuery = this.state.taskSearch.trim().toLowerCase();
+    const noteHaystack = n => {
+      const g = n.groupId ? tGroupsById[n.groupId] : null;
+      const topic = TOPIC_GROUPS.find(x => x.id === n.topicId);
+      return (n.title + ' ' + n.body + ' ' + (g ? g.label : '') + ' ' + (topic ? topic.label : '')).toLowerCase();
+    };
+    let tMatchCount = 0;
+
     const notesView = tNotes.map((n, i) => {
       const g = n.groupId ? tGroupsById[n.groupId] : null;
       const accent = g ? COLOR_MAP[g.color].border : 'var(--border-strong)';
       const selected = !!this.state.selectedIds[n.id];
       const inRange = this.state.rangeDays === null || n.daysAgo <= this.state.rangeDays;
+      const hit = !tQuery || noteHaystack(n).indexOf(tQuery) !== -1;
+      const shown = inRange && hit;
+      if (shown) tMatchCount++;
       const rot = ((i * 37) % 7) - 3;
       return {
         left: n.x + 'px', top: n.y + 'px', rot: rot + 'deg',
         bg: 'var(--bg-surface-raised)', accent,
-        shadow: selected ? '0 0 0 2px var(--accent), var(--shadow-md)' : 'var(--shadow-md)',
-        opacity: inRange ? 1 : 0.18,
-        pointerEvents: inRange ? 'auto' : 'none',
+        shadow: selected ? '0 0 0 2px var(--accent), var(--shadow-md)'
+          : (tQuery && shown) ? '0 0 0 2px var(--accent-border), var(--shadow-md)'
+          : 'var(--shadow-md)',
+        opacity: shown ? 1 : 0.18,
+        pointerEvents: shown ? 'auto' : 'none',
         title: n.title, body: n.body,
         onMouseDown: this.onNoteMouseDown(n),
         onContextMenu: this.onNoteContextMenu(n)
@@ -4168,6 +4199,16 @@ class Component extends DCLogic {
       const rows = this.state.taskOrder
         .map(id => TASKS.find(t => t.id === id))
         .filter(t => this.state.timelineRangeDays === null || t.dueDays <= this.state.timelineRangeDays)
+        // A timeline row is a point on a track, so a miss is dropped outright
+        // rather than dimmed the way a canvas note is.
+        .filter(t => {
+          if (!tQuery) return true;
+          const topic = TOPIC_GROUPS.find(x => x.id === t.topicId);
+          const notes = tNotes.filter(n => n.topicId === t.topicId);
+          const hay = t.text + ' ' + (topic ? topic.label : '') + ' ' +
+            notes.map(n => n.title + ' ' + n.body).join(' ');
+          return hay.toLowerCase().indexOf(tQuery) !== -1;
+        })
         .sort((a, b) => a.dueDays - b.dueDays);
       const scale = this.state.timelineScale;
       const MIN_GAP = 190;
@@ -4483,6 +4524,13 @@ class Component extends DCLogic {
       taskGripIcon: taskIcon('grip', 16), taskCloseIcon: taskIcon('close', 10), taskGroupIcon: taskIcon('group', 13),
       taskSparkleIcon: taskSparkle(14),
       zoomLabel: Math.round(this.state.pan.scale * 100) + '%',
+      // note search — shared by the canvas and timeline toolbars
+      taskSearchIcon: navIcon('search', 16, false),
+      taskSearch: this.state.taskSearch,
+      setTaskSearch: e => this.setState({ taskSearch: e.target.value }),
+      clearTaskSearch: () => this.setState({ taskSearch: '' }),
+      taskSearching: tQuery !== '',
+      taskSearchCount: tQuery ? (tMatchCount + ' of ' + tNotes.length) : '',
       zoomIn: this.zoomIn, zoomOut: this.zoomOut, resetView: this.resetView,
       aiGroup: this.aiGroup, selectedCount: tSelectedCount,
       rangeMenuOpen: this.state.rangeMenuOpen, toggleRangeMenu: this.toggleRangeMenu,
