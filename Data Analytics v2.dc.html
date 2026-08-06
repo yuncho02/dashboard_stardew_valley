@@ -1594,13 +1594,23 @@
                   </sc-if>
                 </div>
                 <div style="position:relative;flex-shrink:0">
-                  <button type="button" onClick="{{ toggleConfidenceMenu }}" title="Only auto-group when the AI is at least this sure" aria-label="Auto-group confidence threshold" style="display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-surface-2);color:var(--text-primary);font:500 13px/1 var(--font-body);cursor:pointer;white-space:nowrap;flex-shrink:0;justify-content:center">{{ confidenceLabel }}{{ taskChevronDownIcon }}</button>
+                  <button type="button" onClick="{{ toggleConfidenceMenu }}" title="Only auto-group when the AI is at least this sure" aria-label="Auto-group confidence threshold" style="display:flex;align-items:center;gap:6px;height:36px;padding:0 11px;border:1px solid var(--accent-border);border-radius:var(--radius-md);background:var(--accent-muted);color:var(--accent);font:500 13px/1 var(--font-body);cursor:pointer;white-space:nowrap;flex-shrink:0;justify-content:center"><span style="display:flex;color:var(--accent)">{{ taskSparkleIcon }}</span>{{ confidenceLabel }}</button>
                   <sc-if value="{{ confidenceMenuOpen }}" hint-placeholder-val="{{ false }}">
-                    <div style="position:absolute;top:42px;right:0;z-index:25;min-width:210px;padding:6px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface);box-shadow:var(--shadow-lg,0 20px 40px rgba(0,0,0,0.4));display:flex;flex-direction:column;gap:1px">
-                      <div style="padding:6px 10px 6px;font:var(--text-caption);color:var(--text-tertiary);white-space:nowrap">Auto-group when sure at least</div>
-                      <sc-for list="{{ confidenceOptions }}" as="c" hint-placeholder-count="5">
-                        <button type="button" onClick="{{ c.onClick }}" style="display:flex;align-items:center;justify-content:space-between;gap:16px;height:32px;padding:0 10px;border:none;border-radius:var(--radius-sm);background:{{ c.bg }};color:{{ c.color }};font:500 13px/1 var(--font-body);cursor:pointer;text-align:left">{{ c.label }}<span style="font:var(--text-mono-sm);color:var(--text-tertiary)">{{ c.hint }}</span></button>
-                      </sc-for>
+                    <div onMouseDown="{{ stopProp }}" style="position:absolute;top:42px;right:0;z-index:25;width:250px;padding:12px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface);box-shadow:var(--shadow-lg,0 20px 40px rgba(0,0,0,0.4))">
+                      <div style="font:var(--text-body-sm);color:var(--text-secondary);margin-bottom:10px">Group when the AI is at least</div>
+                      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                        <input type="range" min="50" max="99" step="1" value="{{ confidenceValue }}" onChange="{{ setConfidence }}" aria-label="Minimum AI confidence" style="flex:1;min-width:0;accent-color:var(--accent);cursor:pointer">
+                        <span style="font:500 14px/1 var(--font-body);color:var(--text-primary);font-variant-numeric:tabular-nums;min-width:38px;text-align:right">{{ confidenceLabel }}</span>
+                      </div>
+                      <div style="display:flex;align-items:center;justify-content:space-between;padding-top:9px;border-top:1px solid var(--border-default)">
+                        <span style="font:var(--text-caption);color:var(--text-tertiary)">Would group</span>
+                        <span style="font:var(--text-caption);color:var(--accent)">{{ confidenceMatchLabel }}</span>
+                      </div>
+                      <div style="display:flex;gap:3px;margin-top:9px">
+                        <sc-for list="{{ confidenceTicks }}" as="t" hint-placeholder-count="8">
+                          <span title="{{ t.title }}" style="flex:1;height:4px;border-radius:2px;background:{{ t.bg }}"></span>
+                        </sc-for>
+                      </div>
                     </div>
                   </sc-if>
                 </div>
@@ -2156,7 +2166,6 @@ const TOPIC_GROUPS = [
 // Groups the model is confident enough to form on its own. Marked `auto` so
 // raising or lowering the bar only churns these, never a hand-made group.
 const CONFIDENCE_DEFAULT = 80;
-const CONFIDENCE_OPTIONS = [60, 70, 80, 90, 95];
 const autoGroupsFor = threshold => TOPIC_GROUPS
   .filter(t => t.confidence >= threshold)
   .map(t => ({ id: t.id, label: t.label, color: t.color, significant: t.significant, confidence: t.confidence, auto: true }));
@@ -3504,7 +3513,10 @@ class Component extends DCLogic {
   setTaskViewMode = mode => () => this.setState({ taskViewMode: mode, contextMenu: null, rangeMenuOpen: false, timelineRangeMenuOpen: false, confidenceMenuOpen: false });
   toggleTimelineRangeMenu = () => this.setState(s => ({ timelineRangeMenuOpen: !s.timelineRangeMenuOpen, rangeMenuOpen: false }));
   toggleConfidenceMenu = () => this.setState(s => ({ confidenceMenuOpen: !s.confidenceMenuOpen, rangeMenuOpen: false, timelineRangeMenuOpen: false }));
-  setGroupConfidence = pct => () => {
+  // Live off the slider, so the board regroups as the bar moves. No toast —
+  // the readout in the popover already reports the count.
+  setConfidence = e => {
+    const pct = Number(e.target.value);
     this.setState(s => {
       // Hand-made groups outrank the threshold, so only the auto ones are rebuilt.
       const manual = s.taskGroups.filter(g => !g.auto);
@@ -3513,13 +3525,10 @@ class Component extends DCLogic {
       groups.forEach(g => { live[g.id] = true; });
       return {
         groupConfidence: pct,
-        confidenceMenuOpen: false,
         taskGroups: groups,
         taskNotes: s.taskNotes.map(n => ({ ...n, groupId: live[n.topicId] ? n.topicId : null }))
       };
     });
-    const n = TOPIC_GROUPS.filter(t => t.confidence >= pct).length;
-    this.showToast('Auto-grouping at ' + pct + '% confidence — ' + n + (n === 1 ? ' group' : ' groups'));
   };
   setTimelineRange = days => () => this.setState({ timelineRangeDays: days, timelineRangeMenuOpen: false });
   zoomInTimeline = () => this.setState(s => ({ timelineScale: Math.min(24, s.timelineScale + 2) }));
@@ -4642,19 +4651,20 @@ class Component extends DCLogic {
       zoomIn: this.zoomIn, zoomOut: this.zoomOut, resetView: this.resetView,
       aiGroup: this.aiGroup, selectedCount: tSelectedCount,
       // auto-group confidence threshold
-      confidenceLabel: 'AI ≥ ' + this.state.groupConfidence + '%',
+      confidenceLabel: this.state.groupConfidence + '%',
+      confidenceValue: this.state.groupConfidence,
       confidenceMenuOpen: this.state.confidenceMenuOpen,
       toggleConfidenceMenu: this.toggleConfidenceMenu,
-      confidenceOptions: CONFIDENCE_OPTIONS.map(pct => {
-        const n = TOPIC_GROUPS.filter(t => t.confidence >= pct).length;
-        return {
-          label: pct + '%',
-          hint: n + (n === 1 ? ' group' : ' groups'),
-          bg: pct === this.state.groupConfidence ? 'var(--bg-surface-2)' : 'transparent',
-          color: pct === this.state.groupConfidence ? 'var(--accent)' : 'var(--text-primary)',
-          onClick: this.setGroupConfidence(pct)
-        };
-      }),
+      setConfidence: this.setConfidence,
+      confidenceMatchLabel: TOPIC_GROUPS.filter(t => t.confidence >= this.state.groupConfidence).length +
+        ' of ' + TOPIC_GROUPS.length,
+      // One tick per topic, strongest first, so the run of lit ticks reads as a meter.
+      confidenceTicks: TOPIC_GROUPS.slice()
+        .sort((a, b) => b.confidence - a.confidence)
+        .map(t => ({
+          title: t.label + ' — ' + t.confidence + '%',
+          bg: t.confidence >= this.state.groupConfidence ? 'var(--accent)' : 'var(--border-strong)'
+        })),
       rangeMenuOpen: this.state.rangeMenuOpen, toggleRangeMenu: this.toggleRangeMenu,
       rangeLabel: (TASK_RANGE_OPTIONS.find(r => r.days === this.state.rangeDays) || TASK_RANGE_OPTIONS[0]).label,
       rangeOptions: TASK_RANGE_OPTIONS.map(r => ({
