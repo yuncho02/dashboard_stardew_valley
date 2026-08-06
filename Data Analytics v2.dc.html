@@ -2067,7 +2067,7 @@ const NAV_ITEMS = [
   { value: 'analytics', label: 'Dashboard', icon: 'home' },
   { value: 'player', label: 'Player Report', icon: 'trendUp2' },
   { value: 'tasks', label: 'My Tasks', icon: 'tasks' },
-  { value: 'messages', label: 'Message', icon: 'messages' }
+  { value: 'messages', label: 'Messages', icon: 'messages' }
 ];
 const TAB_ITEMS = [
   { value: 'overview', label: 'Overview' },
@@ -3980,7 +3980,7 @@ class Component extends DCLogic {
     const showTasksBody = this.state.nav === 'tasks';
     const showPlayerBody = this.state.nav === 'player';
     const headerTitle = this.state.nav === 'tasks' ? 'My Tasks'
-      : this.state.nav === 'messages' ? 'Message'
+      : this.state.nav === 'messages' ? 'Messages'
       : showPlayerBody ? 'Player Report'
       : 'Dashboard';
 
