@@ -188,6 +188,10 @@
     }
     .canvas-note { cursor: grab; }
     .canvas-note:active { cursor: grabbing; }
+    /* Notes are painted after buckets, so a note wins the hit test and the
+       bucket only picks up drags on the empty space around them. */
+    .canvas-bucket { cursor: grab; }
+    .canvas-bucket:active { cursor: grabbing; }
     .task-canvas-viewport {
       /* Marquee-dragging across notes would otherwise highlight their text
          mid-drag, since the drag handlers don't preventDefault. */
@@ -1626,10 +1630,10 @@
               <div style="position:absolute;left:0;top:0;width:2820px;height:1720px;transform:translate({{ panXpx }}, {{ panYpx }}) scale({{ scale }});transform-origin:0 0;transition:{{ canvasTransition }}">
 
                 <sc-for list="{{ bucketsView }}" as="b" hint-placeholder-count="0">
-                  <div style="position:absolute;left:{{ b.left }};top:{{ b.top }};width:{{ b.width }};height:{{ b.height }};border-radius:20px;border:{{ b.borderWidth }} dashed {{ b.borderColor }};background:{{ b.bg }};box-shadow:{{ b.glow }};pointer-events:none;transition:box-shadow 300ms ease"></div>
-                  <div onMouseDown="{{ b.stop }}" style="position:absolute;left:{{ b.labelLeft }};top:{{ b.labelTop }};display:inline-flex;align-items:center;gap:6px;padding:6px 8px 6px 12px;border-radius:var(--radius-full);background:{{ b.chipBg }};border:1px solid {{ b.borderColor }};font:600 12px/16px var(--font-body);color:{{ b.chipColor }};white-space:nowrap;cursor:default">
+                  <div onMouseDown="{{ b.onDragStart }}" class="canvas-bucket" style="position:absolute;left:{{ b.left }};top:{{ b.top }};width:{{ b.width }};height:{{ b.height }};border-radius:20px;border:{{ b.borderWidth }} dashed {{ b.borderColor }};background:{{ b.bg }};box-shadow:{{ b.glow }};transition:box-shadow 300ms ease"></div>
+                  <div onMouseDown="{{ b.onDragStart }}" class="canvas-bucket" style="position:absolute;left:{{ b.labelLeft }};top:{{ b.labelTop }};display:inline-flex;align-items:center;gap:6px;padding:6px 8px 6px 12px;border-radius:var(--radius-full);background:{{ b.chipBg }};border:1px solid {{ b.borderColor }};font:600 12px/16px var(--font-body);color:{{ b.chipColor }};white-space:nowrap">
                     {{ b.label }}
-                    <span onClick="{{ b.onUngroup }}" title="Ungroup" style="display:flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:999px;cursor:pointer;color:{{ b.chipColor }};opacity:0.7">{{ taskCloseIcon }}</span>
+                    <span onClick="{{ b.onUngroup }}" onMouseDown="{{ b.stop }}" title="Ungroup" style="display:flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:999px;cursor:pointer;color:{{ b.chipColor }};opacity:0.7">{{ taskCloseIcon }}</span>
                   </div>
                 </sc-for>
 
@@ -3426,6 +3430,18 @@ class Component extends DCLogic {
     }
     this._drag = { type: 'note', id: note.id, startX: e.clientX, startY: e.clientY, origX: note.x, origY: note.y };
   };
+  startGroupDrag = groupId => e => {
+    // Buckets cover a lot of canvas, so let a pan gesture through untouched
+    // rather than swallowing it into a group move.
+    if (this.spaceDown || e.button === 1) return;
+    e.stopPropagation();
+    if (this.state.contextMenu) this.setState({ contextMenu: null });
+    const members = this.state.taskNotes
+      .filter(n => n.groupId === groupId)
+      .map(n => ({ id: n.id, x: n.x, y: n.y }));
+    if (!members.length) return;
+    this._drag = { type: 'group', groupId, startX: e.clientX, startY: e.clientY, members };
+  };
   stopProp = e => e.stopPropagation();
 
   menuPos = e => {
@@ -3468,6 +3484,14 @@ class Component extends DCLogic {
       const scale = this.state.pan.scale;
       const nx = snap(this._drag.origX + dx / scale), ny = snap(this._drag.origY + dy / scale);
       this.setState(s => ({ taskNotes: s.taskNotes.map(n => n.id === this._drag.id ? { ...n, x: nx, y: ny } : n) }));
+    } else if (this._drag.type === 'group') {
+      const dx = e.clientX - this._drag.startX, dy = e.clientY - this._drag.startY;
+      const scale = this.state.pan.scale;
+      // Snap the delta rather than each note, so the cluster keeps its spacing.
+      const sdx = snap(dx / scale), sdy = snap(dy / scale);
+      const moved = {};
+      this._drag.members.forEach(m => { moved[m.id] = { x: m.x + sdx, y: m.y + sdy }; });
+      this.setState(s => ({ taskNotes: s.taskNotes.map(n => moved[n.id] ? { ...n, ...moved[n.id] } : n) }));
     } else if (this._drag.type === 'marquee') {
       const p = this.toCanvasCoords(e.clientX, e.clientY);
       this._drag.x2 = p.x; this._drag.y2 = p.y;
@@ -4135,7 +4159,8 @@ class Component extends DCLogic {
         glow: (g.significant || isHi) ? ('0 0 60px 8px ' + col.bg) : 'none',
         labelLeft: (box.minX + 16) + 'px', labelTop: (box.minY - 14) + 'px',
         chipBg: 'var(--bg-surface)', chipColor: col.chip, label: g.label,
-        stop: this.stopProp, onUngroup: this.ungroup(g.id)
+        stop: this.stopProp, onUngroup: this.ungroup(g.id),
+        onDragStart: this.startGroupDrag(g.id)
       };
     }).filter(Boolean);
 
