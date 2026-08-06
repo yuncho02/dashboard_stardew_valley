@@ -2239,6 +2239,8 @@ const TASKS = [
   { id: 't10', text: 'Cut the 1.6.5 hotfix branch off main', topicId: 'bug', dueDays: -3, estimate: '1 hr' }
 ];
 const NOTE_W = 190, NOTE_H = 110, PAD = 46, GRID = 24;
+// How far a dragged note has to clear its bucket before the bucket lets go of it.
+const RELEASE_DIST = 60;
 const snap = v => Math.round(v / GRID) * GRID;
 function bucketBox(notes, groupId) {
   const own = notes.filter(n => n.groupId === groupId);
@@ -4334,8 +4336,37 @@ class Component extends DCLogic {
     this.state.taskGroups.forEach(g => { tGroupsById[g.id] = g; });
     const tSelectedCount = Object.keys(this.state.selectedIds).length;
 
+    // A bucket is sized from its members, so it rubber-bands after a note being
+    // dragged out. Once the note is clearly gone, drop it from the measurement so
+    // the box snaps back and reads as "this one is leaving".
+    const tDragIds = this._drag && (this._drag.type === 'note' || this._drag.type === 'multi')
+      ? (this._drag.type === 'note' ? [this._drag.id] : this._drag.members.map(m => m.id))
+      : [];
+    const tReleased = {};
+    tDragIds.forEach(id => {
+      const n = tNotes.find(x => x.id === id);
+      if (!n || !n.groupId) return;
+      const cx = n.x + NOTE_W / 2, cy = n.y + NOTE_H / 2;
+      const box = bucketBox(tNotes.filter(x => x.id !== id), n.groupId);
+      if (box) {
+        // Distance from the box the remaining members would occupy.
+        const dx = Math.max(box.minX - cx, 0, cx - (box.minX + box.w));
+        const dy = Math.max(box.minY - cy, 0, cy - (box.minY + box.h));
+        if (Math.hypot(dx, dy) > RELEASE_DIST) tReleased[id] = true;
+      } else {
+        // Last note in its bucket — measure from where the drag started instead.
+        const from = this._drag.type === 'note'
+          ? { x: this._drag.origX, y: this._drag.origY }
+          : (this._drag.members.find(m => m.id === id) || n);
+        if (Math.hypot(n.x - from.x, n.y - from.y) > RELEASE_DIST) tReleased[id] = true;
+      }
+    });
+    const tBucketNotes = Object.keys(tReleased).length
+      ? tNotes.filter(n => !tReleased[n.id])
+      : tNotes;
+
     const bucketsView = this.state.taskGroups.map(g => {
-      const box = bucketBox(tNotes, g.id);
+      const box = bucketBox(tBucketNotes, g.id);
       if (!box) return null;
       const col = COLOR_MAP[g.color];
       const isHi = this.state.highlightedGroup === g.id;
