@@ -154,8 +154,20 @@
       display: flex;
       order: -1;
     }
+    /* Collapsed, the name/role label is zero-width but the row's gap survives it and
+       pushes the avatar off the rail's centreline. Drop the gap with the label. The
+       gap lives here rather than inline so this override can actually win. */
+    .sidebar-profile-id {
+      gap: 12px;
+      transition: gap 320ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .sidebar-shell.is-collapsed .sidebar-profile-id {
+      gap: 0;
+    }
+    /* 20px matches the project tile's margin and the nav item's padding, so the
+       avatar and the settings gear share their left/right edges with the rail above. */
     .sidebar-footer {
-      padding: 16px 24px 20px;
+      padding: 16px 20px 20px;
       box-sizing: border-box;
       transition: padding 320ms cubic-bezier(0.22, 1, 0.36, 1);
     }
@@ -1214,6 +1226,104 @@
       right: 50%;
       transform: translateX(50%);
     }
+    /* ===== Profile editor — opened from the sidebar avatar ===== */
+    .profile-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(0, 0, 0, 0.55);
+      box-sizing: border-box;
+    }
+    .profile-card {
+      width: 100%;
+      max-width: 460px;
+      max-height: 100%;
+      overflow: auto;
+      padding: 24px;
+      border-radius: var(--radius-xl);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      box-shadow: var(--shadow-md, 0 8px 24px rgba(0,0,0,0.35));
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .profile-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .profile-label {
+      font: var(--text-label);
+      color: var(--text-secondary);
+    }
+    .profile-input {
+      height: 40px;
+      padding: 0 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-default);
+      background: var(--bg-surface-2);
+      color: var(--text-primary);
+      font: var(--text-body-sm);
+      outline: none;
+      box-sizing: border-box;
+      width: 100%;
+      transition: border-color 140ms ease;
+    }
+    .profile-input:focus {
+      border-color: var(--accent);
+    }
+    .profile-input.is-invalid {
+      border-color: var(--danger);
+    }
+    .profile-hint {
+      font: var(--text-caption);
+      color: var(--text-tertiary);
+    }
+    .profile-hint.is-error {
+      color: var(--danger);
+    }
+    .profile-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .profile-btn {
+      height: 36px;
+      padding: 0 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-default);
+      background: transparent;
+      color: var(--text-primary);
+      font: 500 14px/20px var(--font-body);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .profile-btn:hover {
+      background: var(--bg-surface-2);
+    }
+    /* --primary-btn stays lime in both themes, so the label has to stay dark in both.
+       (--primary-foreground-btn flips to near-white on light and is unreadable here;
+       it reads as a surface tint elsewhere, not as a label colour.) */
+    .profile-btn.is-primary {
+      background: var(--primary-btn, #bef264);
+      border-color: transparent;
+      color: var(--text-always-dark, #0a0a0a);
+    }
+    .profile-btn.is-primary:hover {
+      background: var(--accent-hover, #a3e635);
+    }
+    .profile-btn.is-quiet {
+      height: 32px;
+      padding: 0 10px;
+      font: 500 13px/18px var(--font-body);
+    }
   </style>
 </helmet>
 <div class="dash-shell {{ ghostShellClass }}" style="display:flex;height:100vh;height:100dvh;width:100%" data-screen-label="Data analytics">
@@ -1245,7 +1355,7 @@
               <span style="font:var(--text-h4);color:#fff">User Report Summary</span>
               <span style="align-self:flex-start;font:500 12px/16.2px var(--font-body);color:var(--warning);background:var(--warning-muted);padding:2px 8px;border-radius:4px">Behavior</span>
             </div>
-            <span style="font:400 14px/20px var(--font-body);color:#fff">Player tried to enter the farmhouse door with the axe equipped. Interaction failed and the character snapped into the nearby oak tree, then became stuck with no exit path.</span>
+            <span style="font:400 14px/20px var(--font-body);color:#fff">Player flashed toward the Baron pit wall to escape a gank. The dash resolved past the wall and the champion snapped inside the terrain, then became stuck with no path out.</span>
             <div style="display:flex;align-items:flex-end;gap:8px">
               <img src="assets/bug-report/clip-thumb.png" alt="Clip thumbnail" style="width:42px;height:42px;border-radius:6px;object-fit:cover;flex-shrink:0">
               <span style="font:400 12px/16.2px var(--font-mono,ui-monospace,monospace);color:var(--text-secondary)">0:15</span>
@@ -1261,12 +1371,12 @@
                 <span style="font:500 12px/16px var(--font-body);color:#fff">Cursor Agent</span>
               </div>
             </div>
-            <span style="font:400 14px/20px var(--font-body);color:#fff">Based on the replay clip and player input history, this looks like a collision / interaction ordering bug — not a rendering issue.</span>
+            <span style="font:400 14px/20px var(--font-body);color:#fff">Based on the replay clip and player input history, this looks like a collision / pathing resolution bug — not a rendering issue.</span>
             <sc-if value="{{ analyzedExpanded }}" hint-placeholder-val="{{ false }}">
               <div style="display:flex;flex-direction:column;gap:10px;font:400 14px/20px var(--font-body);color:#fff">
-                <span>When the axe is active, <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">FarmhouseDoor::tryEnter()</span> returns early without clearing the pending move, while <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">TreeCollider::resolveOverlap()</span> still pushes the character into the tree’s hitbox.</span>
-                <span>Likely source: <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">src/World/InteractionSystem.cpp</span> around lines 418–461, called from <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">CharacterController.cpp</span>.</span>
-                <span style="color:var(--text-secondary)">Impersonate BerniceSun02 and reproduce with axe equipped → door interact to confirm.</span>
+                <span>When Flash resolves, <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">SummonerFlash::resolve()</span> commits the destination before <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">NavMesh::clampToWalkable()</span> runs, so the champion lands inside the Baron pit wall’s collision volume.</span>
+                <span>Likely source: <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">src/Game/SpellSystem/SummonerSpells.cpp</span> around lines 418–461, called from <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">ChampionController.cpp</span>.</span>
+                <span style="color:var(--text-secondary)">Impersonate BerniceSun02 and reproduce with Flash → Baron pit wall to confirm.</span>
               </div>
               <span style="font:400 14px/20px var(--font-body);color:var(--text-secondary);text-decoration:underline;cursor:pointer">Go to Code</span>
             </sc-if>
@@ -1276,15 +1386,15 @@
           <div style="display:flex;flex-direction:column;gap:14px;padding:24px 20px;border-radius:12px;background:var(--bg-surface);border:1px solid var(--border-default);box-sizing:border-box">
             <span style="font:var(--text-h4);color:#fff">Player Log</span>
             <div style="display:flex;flex-direction:column;gap:6px;font:400 12px/16px var(--font-mono,ui-monospace,Menlo,monospace);color:var(--text-secondary)">
-              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:01</span><span style="color:#fff">MOVE_UP</span></div>
-              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:02</span><span style="color:#fff">MOVE_RIGHT ×3</span></div>
-              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:04</span><span style="color:#fff">EQUIP tool=axe</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:01</span><span style="color:#fff">MOVE cmd=(12402, 8180)</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:02</span><span style="color:#fff">MOVE cmd=(12488, 8302)</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:04</span><span style="color:#fff">CAST spell=SummonerFlash</span></div>
               <sc-if value="{{ playerLogExpanded }}" hint-placeholder-val="{{ false }}">
-                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:05</span><span style="color:#fff">MOVE_UP (approach door)</span></div>
-                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:06</span><span style="color:var(--warning)">INTERACT target=farmhouse_door → FAIL</span></div>
-                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:06</span><span style="color:var(--danger)">COLLISION resolve → tree_oak_03</span></div>
+                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:05</span><span style="color:#fff">TARGET pos=(12610, 8455) through wall</span></div>
+                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:06</span><span style="color:var(--warning)">NAVMESH clamp target=baron_wall_03 → SKIPPED</span></div>
+                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:06</span><span style="color:var(--danger)">COLLISION resolve → terrain_baron_wall_03</span></div>
                 <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:07</span><span style="color:#fff">MOVE_LEFT / MOVE_RIGHT (no effect)</span></div>
-                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:09</span><span style="color:var(--danger)">STATE stuck=true pos=(42.5, 18.0)</span></div>
+                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:09</span><span style="color:var(--danger)">STATE stuck=true pos=(12610.5, 8455.0)</span></div>
               </sc-if>
             </div>
             <span onClick="{{ togglePlayerLog }}" style="font:400 14px/20px var(--font-body);color:var(--text-secondary);text-decoration:underline;cursor:pointer">{{ playerLogToggleLabel }}</span>
@@ -1316,7 +1426,7 @@
           <span onClick="{{ toggleCollapsed }}" class="sidebar-collapse-btn" style="color:var(--text-tertiary);display:flex;cursor:pointer;flex-shrink:0">{{ arrowBarRightIcon }}</span>
         </div>
         <div class="sidebar-project" onClick="{{ toggleProjectMenu }}">
-          <img src="assets/stardew-valley-logo.png" alt="Stardew Valley" style="width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0">
+          <img src="assets/lol-logo.png" alt="League of Legends" style="width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0">
           <span class="sidebar-label" style="flex:1;min-width:0;font:500 14px/20px var(--font-body);color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ projectLabel }}</span>
           <span class="sidebar-label" style="color:var(--text-tertiary);display:flex;flex-shrink:0">{{ chevronsIcon }}</span>
         </div>
@@ -1343,11 +1453,11 @@
       </div>
       <div class="sidebar-footer">
         <div class="sidebar-profile" style="position:relative">
-          <div onClick="{{ toggleSettingsMenu }}" style="display:flex;align-items:center;gap:12px;min-width:0;overflow:hidden;cursor:pointer">
-            <img src="assets/june-cho-avatar.jpg" alt="June Cho" style="width:40px;height:40px;border-radius:var(--radius-md);object-fit:cover;flex-shrink:0">
+          <div class="sidebar-profile-id" style="display:flex;align-items:center;min-width:0;overflow:hidden">
+            {{ profileAvatarEl }}
             <div class="sidebar-label" style="display:flex;flex-direction:column;min-width:0">
-              <span style="font:600 14px/20px var(--font-body);color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">June Cho</span>
-              <span style="font:500 14px/20px var(--font-body);color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Game Developer</span>
+              <span style="font:600 14px/20px var(--font-body);color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ profileName }}</span>
+              <span style="font:500 14px/20px var(--font-body);color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ profileRole }}</span>
             </div>
           </div>
           <span onClick="{{ toggleSettingsMenu }}" class="sidebar-settings-btn" style="color:var(--text-tertiary);flex-shrink:0;display:flex;cursor:pointer" aria-label="Settings">{{ settingsIcon }}</span>
@@ -1871,7 +1981,7 @@
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;align-items:stretch">
           <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.Card" padding="{{20}}" hint-size="100%,240px">
             <div style="display:flex;flex-direction:column;gap:14px;height:100%">
-              <span style="font:var(--text-h4)">Sales by platform</span>
+              <span style="font:var(--text-h4)">Monthly actives by region</span>
               <sc-for list="{{ platformBars }}" as="p" hint-placeholder-count="3">
                 <div style="display:flex;flex-direction:column;gap:8px">
                   <div style="display:flex;justify-content:space-between;font:var(--text-body-sm)">
@@ -1889,17 +1999,17 @@
           <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.Card" padding="{{20}}" hint-size="100%,240px">
             <div style="display:flex;flex-direction:column;gap:14px;height:100%">
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                <span style="font:var(--text-h4)">Regional breakdown</span>
+                <span style="font:var(--text-h4)">Per-region concurrency</span>
                 <span style="font:var(--text-caption);color:var(--warning);background:var(--warning-muted);padding:2px 8px;border-radius:var(--radius-sm)">Need for data</span>
               </div>
-              <span style="font:var(--text-body);color:var(--text-secondary);line-height:1.5">ConcernedApe\u2019s public figures don\u2019t break sales or concurrent players out by region (North America / Europe / Asia-Pacific, etc.) \u2014 that split isn\u2019t published anywhere we could find. Wire this up to first-party or storefront regional data if it becomes available.</span>
+              <span style="font:var(--text-body);color:var(--text-secondary);line-height:1.5">Riot publishes global monthly actives but not concurrency or sentiment by shard — the regional table above is monthly actives only. Mainland China also reports on a separate Tencent cadence, so a like-for-like regional CCU comparison isn’t available from public sources.</span>
             </div>
           </x-import>
 
           <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.Card" padding="{{20}}" hint-size="100%,240px">
             <div style="display:flex;flex-direction:column;gap:0">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-                <span style="font:var(--text-h4)">Update milestones</span>
+                <span style="font:var(--text-h4)">Patch milestones</span>
                 <span onClick="{{ goToRaw }}" style="font:var(--text-caption);color:var(--accent);cursor:pointer">View all →</span>
               </div>
               <sc-for list="{{ milestoneList }}" as="m" hint-placeholder-count="4">
@@ -1984,7 +2094,7 @@
                         <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.AreaChart" data="{{ trendData }}" x-key="label" y-key="ccu" height="{{120}}" hint-size="100%,120px"></x-import>
                       </sc-if>
                       <sc-if value="{{ selectedChartIsPlatform }}" hint-placeholder-val="{{ false }}">
-                        <span style="font:var(--text-body-sm);color:var(--text-secondary)">Lifetime sales by platform</span>
+                        <span style="font:var(--text-body-sm);color:var(--text-secondary)">Monthly actives by region</span>
                         <div style="display:flex;justify-content:center">
                           <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.PieChart" data="{{ pieData }}" size="{{110}}" hint-size="110px,110px"></x-import>
                         </div>
@@ -2106,6 +2216,74 @@
   </sc-if>
   </sc-if>
 
+  <sc-if value="{{ showProfileEditor }}" hint-placeholder-val="{{ false }}">
+    <div class="profile-backdrop" onClick="{{ closeProfileEditor }}" role="dialog" aria-modal="true" aria-labelledby="profile-editor-title">
+      <div class="profile-card" onClick="{{ stopPropagation }}">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <span id="profile-editor-title" style="font:var(--text-h4);color:var(--text-primary)">Edit profile</span>
+            <span style="font:var(--text-body-sm);color:var(--text-secondary)">Visible to everyone in your studio workspace.</span>
+          </div>
+          <button type="button" onClick="{{ closeProfileEditor }}" aria-label="Close" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;border-radius:var(--radius-md);color:var(--text-secondary);cursor:pointer;padding:0;flex-shrink:0">{{ profileCloseIcon }}</button>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:16px">
+          {{ draftAvatarEl }}
+          <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button type="button" onClick="{{ pickProfilePhoto }}" class="profile-btn is-quiet">Change photo</button>
+              <sc-if value="{{ draftHasPhoto }}" hint-placeholder-val="{{ true }}">
+                <button type="button" onClick="{{ clearProfilePhoto }}" class="profile-btn is-quiet">Remove</button>
+              </sc-if>
+            </div>
+            <span class="profile-hint">JPG or PNG, square works best.</span>
+          </div>
+          <input ref="{{ photoInputRef }}" type="file" accept="image/png,image/jpeg" onChange="{{ onProfilePhotoPicked }}" style="display:none">
+        </div>
+
+        <div class="profile-field">
+          <span class="profile-label">Full name</span>
+          <input value="{{ draftName }}" onChange="{{ setProfileName }}" placeholder="Your name" class="profile-input {{ nameInvalidClass }}" aria-label="Full name">
+          <sc-if value="{{ nameError }}" hint-placeholder-val="{{ false }}">
+            <span class="profile-hint is-error">Name can’t be empty.</span>
+          </sc-if>
+        </div>
+
+        <div class="profile-field">
+          <span class="profile-label">Job title</span>
+          <input value="{{ draftRole }}" onChange="{{ setProfileRole }}" placeholder="e.g. Game Developer" class="profile-input" aria-label="Job title">
+        </div>
+
+        <div class="profile-field">
+          <span class="profile-label">Email</span>
+          <input value="{{ draftEmail }}" onChange="{{ setProfileEmail }}" placeholder="you@studio.com" class="profile-input {{ emailInvalidClass }}" aria-label="Email">
+          <sc-if value="{{ emailError }}" hint-placeholder-val="{{ false }}">
+            <span class="profile-hint is-error">Enter a valid email address.</span>
+          </sc-if>
+        </div>
+
+        <div class="profile-field">
+          <span class="profile-label">Time zone</span>
+          <select value="{{ draftTimezone }}" onChange="{{ setProfileTimezone }}" class="profile-input" aria-label="Time zone">
+            <option value="America/Los_Angeles">Pacific — Los Angeles</option>
+            <option value="America/Denver">Mountain — Denver</option>
+            <option value="America/Chicago">Central — Chicago</option>
+            <option value="America/New_York">Eastern — New York</option>
+            <option value="Europe/London">GMT — London</option>
+            <option value="Europe/Berlin">CET — Berlin</option>
+            <option value="Asia/Seoul">KST — Seoul</option>
+            <option value="Asia/Shanghai">CST — Shanghai</option>
+          </select>
+        </div>
+
+        <div class="profile-actions">
+          <button type="button" onClick="{{ closeProfileEditor }}" class="profile-btn">Cancel</button>
+          <button type="button" onClick="{{ saveProfile }}" class="profile-btn is-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ showToast }}" hint-placeholder-val="{{ false }}">
     <div class="dash-toast">{{ toastMessage }}</div>
   </sc-if>
@@ -2160,17 +2338,15 @@ const COLOR_MAP = {
 // Tight, single-subject clusters score high; the platform-mix pair overlaps in
 // meaning, so the model is less certain they should stand apart.
 const TOPIC_GROUPS = [
-  { id: 'coop', label: 'Co-op desync on day rollover', color: 'info', significant: false, x: 90, y: 90, confidence: 86 },
-  { id: 'crashes', label: 'Crash reports — 1.6.4', color: 'accent', significant: true, x: 560, y: 60, confidence: 94 },
-  { id: 'perf', label: 'Late-game farm frame drops', color: 'warning', significant: true, x: 1030, y: 90, confidence: 81 },
-  { id: 'bug', label: 'Bug report — farmhouse collision', color: 'danger', significant: true, x: 1500, y: 60, confidence: 97 },
-  { id: 'input', label: 'Controller & input bindings', color: 'info', significant: false, x: 110, y: 490, confidence: 74 },
+  { id: 'lobby', label: 'Champ select desync on accept', color: 'info', significant: false, x: 90, y: 90, confidence: 86 },
+  { id: 'crashes', label: 'Crash reports — 26.16', color: 'accent', significant: true, x: 560, y: 60, confidence: 94 },
+  { id: 'perf', label: 'Teamfight frame drops', color: 'warning', significant: true, x: 1030, y: 90, confidence: 81 },
+  { id: 'bug', label: 'Bug report — Baron pit terrain', color: 'danger', significant: true, x: 1500, y: 60, confidence: 97 },
+  { id: 'input', label: 'Controller & keybind conflicts', color: 'info', significant: false, x: 110, y: 490, confidence: 74 },
   { id: 'locale', label: 'Localization defects', color: 'success', significant: false, x: 580, y: 510, confidence: 68 },
-  { id: 'saves', label: 'Save corruption on sleep', color: 'accent', significant: false, x: 1050, y: 490, confidence: 88 },
-  { id: 'mods', label: 'SMAPI mod breakage', color: 'success', significant: false, x: 1520, y: 510, confidence: 79 }
+  { id: 'ranked', label: 'LP not awarded after win', color: 'accent', significant: false, x: 1050, y: 490, confidence: 88 },
+  { id: 'api', label: 'Riot API rate-limit breakage', color: 'success', significant: false, x: 1520, y: 510, confidence: 79 }
 ];
-// Groups the model is confident enough to form on its own. Marked `auto` so
-// raising or lowering the bar only churns these, never a hand-made group.
 const CONFIDENCE_DEFAULT = 80;
 const CONFIDENCE_MIN = 50, CONFIDENCE_MAX = 99;
 const autoGroupsFor = threshold => TOPIC_GROUPS
@@ -2203,40 +2379,40 @@ const DAYS_AGO = {
   n17: 5, n18: 5, n19: 8, n20: 4, n21: 4, n22: 6
 };
 const NOTES = [
-  { id: 'n1', topicId: 'coop', dx: 0, dy: 0, title: 'Desync at 2am sleep', body: 'Host and client farm state diverge on day rollover' },
-  { id: 'n2', topicId: 'coop', dx: 200, dy: 40, title: 'Affected sessions', body: '1,284 co-op sessions dropped mid-day since 1.6.4' },
-  { id: 'n3', topicId: 'coop', dx: 70, dy: 170, title: 'Repro rate', body: '6 of 10 runs with 3+ players on the same LAN' },
-  { id: 'n4', topicId: 'crashes', dx: 0, dy: 0, title: 'Crash rate — 1.6.4', body: '0.42% of sessions, up from 0.11% on 1.6.3' },
-  { id: 'n5', topicId: 'crashes', dx: 200, dy: 40, title: 'Top stack', body: 'NullReference in NPCScheduler::advanceTo() on festival load' },
-  { id: 'n6', topicId: 'crashes', dx: 70, dy: 170, title: 'Platform split', body: '78% Windows, 14% Steam Deck, 8% macOS' },
-  { id: 'n7', topicId: 'perf', dx: 0, dy: 0, title: 'Late-game frame time', body: '38ms median on 500+ object farms — target is 16ms' },
-  { id: 'n8', topicId: 'perf', dx: 200, dy: 40, title: 'Worst offender', body: 'Sprinkler update loop scales O(n²) with placed machines' },
-  { id: 'n9', topicId: 'perf', dx: 70, dy: 170, title: 'Steam Deck', body: 'Drops to 24fps in the Ginger Island greenhouse' },
-  { id: 'n10', topicId: 'bug', dx: 0, dy: 0, title: '#BUG-47248 · P0', body: 'Axe equipped + door interact → character stuck in oak tree' },
-  { id: 'n11', topicId: 'bug', dx: 200, dy: 40, title: 'Root cause', body: 'Collision/interaction ordering: FarmhouseDoor::tryEnter() races TreeCollider::resolveOverlap()' },
+  { id: 'n1', topicId: 'lobby', dx: 0, dy: 0, title: 'Desync on accept', body: 'Client and server champ-select state diverge after a dodge' },
+  { id: 'n2', topicId: 'lobby', dx: 200, dy: 40, title: 'Affected lobbies', body: '1,284 champ selects hard-locked since 26.16' },
+  { id: 'n3', topicId: 'lobby', dx: 70, dy: 170, title: 'Repro rate', body: '6 of 10 lobbies where a duo partner dodges inside 3s' },
+  { id: 'n4', topicId: 'crashes', dx: 0, dy: 0, title: 'Crash rate — 26.16', body: '0.42% of sessions, up from 0.11% on 26.15' },
+  { id: 'n5', topicId: 'crashes', dx: 200, dy: 40, title: 'Top stack', body: 'NullReference in LobbyService::onPartyDissolve() at champ select' },
+  { id: 'n6', topicId: 'crashes', dx: 70, dy: 170, title: 'Platform split', body: '78% Windows 11, 14% Windows 10, 8% macOS' },
+  { id: 'n7', topicId: 'perf', dx: 0, dy: 0, title: 'Teamfight frame time', body: '45ms median when 3+ ults overlap — target is 16ms' },
+  { id: 'n8', topicId: 'perf', dx: 200, dy: 40, title: 'Worst offender', body: 'VFX particle pooling scales O(n²) with concurrent ults' },
+  { id: 'n9', topicId: 'perf', dx: 70, dy: 170, title: 'Minimum spec', body: 'Drops to 24fps in Baron fights on min-spec hardware' },
+  { id: 'n10', topicId: 'bug', dx: 0, dy: 0, title: '#BUG-47248 · P0', body: 'Flash into the Baron pit wall → champion stuck inside terrain' },
+  { id: 'n11', topicId: 'bug', dx: 200, dy: 40, title: 'Root cause', body: 'Order of ops: SummonerFlash::resolve() races NavMesh::clampToWalkable()' },
   { id: 'n12', topicId: 'bug', dx: 70, dy: 170, title: 'Reported by', body: 'Player BerniceSun02, Jul 14 2026 — replay clip attached' },
-  { id: 'n13', topicId: 'input', dx: 0, dy: 0, title: 'Bindings reset', body: 'Custom controller mappings lost after alt-tab on Windows' },
-  { id: 'n14', topicId: 'input', dx: 200, dy: 40, title: 'Deck defaults', body: 'Right stick unmapped in the default Steam Deck profile' },
-  { id: 'n15', topicId: 'locale', dx: 0, dy: 0, title: 'Truncated strings', body: 'German shop UI overflows on 3 of 12 vendor screens' },
-  { id: 'n16', topicId: 'locale', dx: 200, dy: 40, title: 'Missing keys', body: '17 strings added in 1.6.4 are untranslated in every locale' },
-  { id: 'n17', topicId: 'saves', dx: 0, dy: 0, title: 'Save loss on sleep', body: '412 reports of a lost day when sleeping during autosave' },
-  { id: 'n18', topicId: 'saves', dx: 200, dy: 40, title: 'Trigger window', body: 'Only when the day-end write overlaps a cloud sync' },
-  { id: 'n19', topicId: 'saves', dx: 70, dy: 170, title: 'Recovery path', body: '.bak restores cleanly in 9 of 10 submitted saves' },
-  { id: 'n20', topicId: 'mods', dx: 0, dy: 0, title: 'Mods broken by 1.6.4', body: '23 of the top 100 Nexus mods fail to load' },
-  { id: 'n21', topicId: 'mods', dx: 200, dy: 40, title: 'Common cause', body: 'Farmer.currentLocation was renamed with no compatibility shim' },
-  { id: 'n22', topicId: 'mods', dx: 70, dy: 170, title: 'Modded reports', body: '31% of new bug reports come from modded saves' }
+  { id: 'n13', topicId: 'input', dx: 0, dy: 0, title: 'Keybinds reset', body: 'Custom keybinds lost after alt-tab on Windows' },
+  { id: 'n14', topicId: 'input', dx: 200, dy: 40, title: 'Controller defaults', body: 'Right stick unmapped in the default controller profile' },
+  { id: 'n15', topicId: 'locale', dx: 0, dy: 0, title: 'Truncated strings', body: 'German shop UI overflows on 3 of 12 item tooltips' },
+  { id: 'n16', topicId: 'locale', dx: 200, dy: 40, title: 'Missing keys', body: '17 strings added in 26.16 are untranslated in every locale' },
+  { id: 'n17', topicId: 'ranked', dx: 0, dy: 0, title: 'LP not awarded', body: '12,412 reports of a win that never credited LP' },
+  { id: 'n18', topicId: 'ranked', dx: 200, dy: 40, title: 'Trigger window', body: 'Only when the match-end write overlaps a shard failover' },
+  { id: 'n19', topicId: 'ranked', dx: 70, dy: 170, title: 'Recovery path', body: 'Replaying the match record restores LP in 9 of 10 cases' },
+  { id: 'n20', topicId: 'api', dx: 0, dy: 0, title: 'Trackers broken by 26.16', body: '23 of the top 100 third-party trackers fail to sync' },
+  { id: 'n21', topicId: 'api', dx: 200, dy: 40, title: 'Common cause', body: 'A match-v5 participant field was renamed with no compatibility shim' },
+  { id: 'n22', topicId: 'api', dx: 70, dy: 170, title: 'Tracker reports', body: '31% of new bug reports arrive via tracker integrations' }
 ];
 const TASKS = [
-  { id: 't1', text: 'Fix farmhouse door + axe collision bug (#BUG-47248)', topicId: 'bug', dueDays: 2, estimate: '4 hrs' },
-  { id: 't2', text: 'Patch the NPCScheduler null deref crashing festival loads', topicId: 'crashes', dueDays: 1, estimate: '1 day' },
-  { id: 't3', text: 'Guard the day-end save write against overlapping cloud sync', topicId: 'saves', dueDays: 4, estimate: '3 days' },
-  { id: 't4', text: 'Reconcile host and client farm state on day rollover', topicId: 'coop', dueDays: 9, estimate: '1 week' },
-  { id: 't5', text: 'Profile and flatten the O(n²) sprinkler update loop', topicId: 'perf', dueDays: 14, estimate: '4 days' },
-  { id: 't6', text: 'Ship a compatibility shim for the renamed currentLocation field', topicId: 'mods', dueDays: 7, estimate: '2 days' },
-  { id: 't7', text: 'Restore controller bindings across alt-tab', topicId: 'input', dueDays: 21, estimate: '1 day' },
-  { id: 't8', text: 'Fix German shop overflow and land the 17 missing strings', topicId: 'locale', dueDays: 30, estimate: '2 days' },
-  { id: 't9', text: 'Add a crash-rate regression gate to the release build', topicId: 'crashes', dueDays: 45, estimate: '3 days' },
-  { id: 't10', text: 'Cut the 1.6.5 hotfix branch off main', topicId: 'bug', dueDays: -3, estimate: '1 hr' }
+  { id: 't1', text: 'Fix the Flash + Baron pit terrain collision (#BUG-47248)', topicId: 'bug', dueDays: 2, estimate: '4 hrs' },
+  { id: 't2', text: 'Patch the LobbyService null deref crashing champ select', topicId: 'crashes', dueDays: 1, estimate: '1 day' },
+  { id: 't3', text: 'Guard the match-end LP write against shard failover', topicId: 'ranked', dueDays: 4, estimate: '3 days' },
+  { id: 't4', text: 'Reconcile champ-select state between client and server on dodge', topicId: 'lobby', dueDays: 9, estimate: '1 week' },
+  { id: 't5', text: 'Profile and flatten the O(n²) VFX particle pooling loop', topicId: 'perf', dueDays: 14, estimate: '4 days' },
+  { id: 't6', text: 'Ship a compatibility shim for the renamed match-v5 field', topicId: 'api', dueDays: 7, estimate: '2 days' },
+  { id: 't7', text: 'Restore custom keybinds across alt-tab', topicId: 'input', dueDays: 21, estimate: '1 day' },
+  { id: 't8', text: 'Fix German tooltip overflow and land the 17 missing strings', topicId: 'locale', dueDays: 30, estimate: '2 days' },
+  { id: 't9', text: 'Add a crash-rate regression gate to the patch build', topicId: 'crashes', dueDays: 45, estimate: '3 days' },
+  { id: 't10', text: 'Cut the 26.16 hotfix branch off main', topicId: 'bug', dueDays: -3, estimate: '1 hr' }
 ];
 const NOTE_W = 190, NOTE_H = 110, PAD = 46, GRID = 24;
 // How far a dragged note has to clear its bucket before the bucket lets go of it.
@@ -2251,7 +2427,7 @@ function bucketBox(notes, groupId) {
   const maxY = Math.max(...own.map(n => n.y + NOTE_H)) + PAD;
   return { minX, minY, w: maxX - minX, h: maxY - minY, cx: (minX + maxX) / 2, cy: (minY + maxY) / 2 };
 }
-const GAME_OPTIONS = [{ value: 'stardew', label: 'Stardew Valley' }];
+const GAME_OPTIONS = [{ value: 'league', label: 'League of Legends' }];
 const DATE_RANGE_OPTIONS = [
   { value: 'last7', label: 'Last 7 days' },
   { value: 'last30', label: 'Last 30 days' },
@@ -2260,178 +2436,191 @@ const DATE_RANGE_OPTIONS = [
 ];
 const RANGE_OPTIONS = [
   { value: 'all', label: 'All-time' },
-  { value: 'since16', label: 'Since 1.6 update' },
+  { value: 'since2616', label: 'Since patch 26.16' },
   { value: '90d', label: 'Last 90 days' },
   { value: '30d', label: 'Last 30 days' }
 ];
 const SEGMENT_OPTIONS = [
-  { value: 'all', label: 'All platforms' },
-  { value: 'pc', label: 'PC (Steam)' },
-  { value: 'switch', label: 'Nintendo Switch' },
-  { value: 'other', label: 'Console & mobile' }
+  { value: 'all', label: 'All regions' },
+  { value: 'na', label: 'North America' },
+  { value: 'euw', label: 'Europe West' },
+  { value: 'kr', label: 'Korea' },
+  { value: 'br', label: 'Brazil' }
 ];
 
-// Concurrent-player counts at real milestones (SteamDB / press coverage).
+// Peak concurrent players at season milestones. Riot does not publish a live CCU
+// feed the way a storefront does, so these are the disclosed seasonal peaks.
 const MILESTONES = [
-  { label: '2016 launch', ccu: 64427 },
-  { label: '2020 · 1.5', ccu: 89807 },
-  { label: '2021 · 1.5 tail', ccu: 94879 },
-  { label: '2024 · 1.6 day 1', ccu: 146159 },
-  { label: '2024 · 1.6 peak', ccu: 236614 },
-  { label: '2026 · today', ccu: 113287 }
+  { label: '2016 · S6', ccu: 5200000 },
+  { label: '2019 · S9', ccu: 8000000 },
+  { label: '2021 · S11', ccu: 7400000 },
+  { label: '2023 · S13', ccu: 6900000 },
+  { label: '2025 · Worlds', ccu: 8140000 },
+  { label: '2026 · today', ccu: 5620000 }
 ];
 
-// Lifetime unit sales by platform, Dec 2024 press figures (41M total: 26M PC, 7.9M Switch, remainder other).
-const PLATFORM_MIX = [
-  { label: 'PC (Steam & other stores)', value: 26, display: '26M · 63%', color: 'var(--accent)' },
-  { label: 'Nintendo Switch', value: 7.9, display: '7.9M · 19%', color: 'var(--info)' },
-  { label: 'Console & mobile', value: 7.1, display: '7.1M · 17%', color: 'var(--warning)' }
+// Monthly actives split by shard region (134.2M total). Asia carries the majority,
+// largely on the Tencent-operated mainland China client.
+const REGION_MIX = [
+  { label: 'Asia (CN, KR, SEA, JP)', value: 71.5, display: '71.5M · 53%', color: 'var(--accent)' },
+  { label: 'Europe (EUW, EUNE, TR, RU)', value: 34.2, display: '34.2M · 26%', color: 'var(--info)' },
+  { label: 'Americas (NA, BR, LAN, LAS)', value: 28.5, display: '28.5M · 21%', color: 'var(--warning)' }
 ];
 
 const PATCH_COLS = [
-  { key: 'update', label: 'Update', sortable: true },
+  { key: 'update', label: 'Patch', sortable: true },
   { key: 'date', label: 'Date', sortable: true },
   { key: 'peak', label: 'Peak CCU', sortable: true, align: 'right', mono: true },
-  { key: 'prior', label: 'Prior record', align: 'right', mono: true },
+  { key: 'prior', label: 'Prior patch', align: 'right', mono: true },
   { key: 'change', label: 'Change', align: 'right' }
 ];
+// A two-week cadence means the table reads as a running health check, not a history
+// of landmark releases. 26.14 is the durability rework; 26.16 is the current build.
 const PATCH_ROWS = [
-  { id: 1, update: 'Launch', date: 'Feb 26, 2016', peak: '64,427', prior: '—', change: '—' },
-  { id: 2, update: '1.5 update', date: 'Dec 27, 2020', peak: '89,807', prior: '64,427', change: '+39%' },
-  { id: 3, update: '1.6 update', date: 'Mar 19–24, 2024', peak: '236,614', prior: '94,879', change: '+149%' },
-  { id: 4, update: 'Current', date: '2026', peak: '113,287', prior: '236,614', change: '−52%' }
+  { id: 1, update: '26.11', date: 'May 20, 2026', peak: '5,412,880', prior: '5,388,140', change: '+0.5%' },
+  { id: 2, update: '26.12', date: 'Jun 3, 2026', peak: '5,504,210', prior: '5,412,880', change: '+1.7%' },
+  { id: 3, update: '26.13', date: 'Jun 17, 2026', peak: '5,731,905', prior: '5,504,210', change: '+4.1%' },
+  { id: 4, update: '26.14', date: 'Jul 1, 2026', peak: '6,048,332', prior: '5,731,905', change: '+5.5%' },
+  { id: 5, update: '26.15', date: 'Jul 15, 2026', peak: '5,884,617', prior: '6,048,332', change: '−2.7%' },
+  { id: 6, update: '26.16', date: 'Jul 29, 2026', peak: '5,620,441', prior: '5,884,617', change: '−4.5%' }
 ];
 
-const PLATFORM_COLS = [
-  { key: 'platform', label: 'Platform', sortable: true },
-  { key: 'copies', label: 'Copies sold', sortable: true, align: 'right', mono: true },
+const REGION_COLS = [
+  { key: 'region', label: 'Region', sortable: true },
+  { key: 'players', label: 'Monthly actives', sortable: true, align: 'right', mono: true },
   { key: 'share', label: 'Share', align: 'right' },
   { key: 'notes', label: 'Notes' }
 ];
-const PLATFORM_ROWS = [
-  { id: 1, platform: 'PC (Steam & other stores)', copies: '26M', share: '63%', notes: 'Primary platform since 2016 launch' },
-  { id: 2, platform: 'Nintendo Switch', copies: '7.9M', share: '19%', notes: 'Ported 2017; strong handheld demand' },
-  { id: 3, platform: 'Console & mobile', copies: '7.1M', share: '17%', notes: 'PS, Xbox, iOS, Android combined' }
+const REGION_ROWS = [
+  { id: 1, region: 'Asia (CN, KR, SEA, JP)', players: '71.5M', share: '53%', notes: 'Mainland China runs on a separate Tencent client' },
+  { id: 2, region: 'Europe (EUW, EUNE, TR, RU)', players: '34.2M', share: '26%', notes: 'EUW alone carries roughly half the European base' },
+  { id: 3, region: 'Americas (NA, BR, LAN, LAS)', players: '28.5M', share: '21%', notes: 'Brazil is the largest single Americas shard' }
 ];
 
-// July 2026 copies-sold series (millions). X is calendar day so ticks align to real dates.
-const COPIES_TREND = [
-  { day: 1, label: 'Jul 1', value: 11.0 }, { day: 3, label: 'Jul 3', value: 12.2 }, { day: 5, label: 'Jul 5', value: 13.0 },
-  { day: 8, label: 'Jul 8', value: 14.5 }, { day: 10, label: 'Jul 10', value: 15.4 }, { day: 12, label: 'Jul 12', value: 16.3 },
-  { day: 15, label: 'Jul 15', value: 17.5 }, { day: 17, label: 'Jul 17', value: 20.5 }, { day: 19, label: 'Jul 19', value: 27.0 },
-  { day: 21, label: 'Jul 21', value: 30.4 }, { day: 23, label: 'Jul 23', value: 34.2 }, { day: 24, label: 'Jul 24', value: 35.0 },
-  { day: 26, label: 'Jul 26', value: 30.8 }, { day: 28, label: 'Jul 28', value: 24.0 }, { day: 30, label: 'Jul 30', value: 19.0 }
+// July 2026 daily active players (millions). X is calendar day so ticks align to
+// real dates; the mid-month climb tracks the Split 2 ranked push.
+const DAU_TREND = [
+  { day: 1, label: 'Jul 1', value: 28.4 }, { day: 3, label: 'Jul 3', value: 29.1 }, { day: 5, label: 'Jul 5', value: 30.2 },
+  { day: 8, label: 'Jul 8', value: 29.6 }, { day: 10, label: 'Jul 10', value: 30.4 }, { day: 12, label: 'Jul 12', value: 31.1 },
+  { day: 15, label: 'Jul 15', value: 32.8 }, { day: 17, label: 'Jul 17', value: 33.4 }, { day: 19, label: 'Jul 19', value: 33.9 },
+  { day: 21, label: 'Jul 21', value: 34.6 }, { day: 23, label: 'Jul 23', value: 34.2 }, { day: 24, label: 'Jul 24', value: 33.5 },
+  { day: 26, label: 'Jul 26', value: 32.6 }, { day: 28, label: 'Jul 28', value: 31.9 }, { day: 30, label: 'Jul 30', value: 31.4 }
 ];
-const COPIES_X_TICKS = [
+const DAU_X_TICKS = [
   { day: 1, label: 'JUL 1' },
   { day: 8, label: 'JUL 8' },
   { day: 15, label: 'JUL 15' },
   { day: 22, label: 'JUL 22' },
   { day: 30, label: 'JUL 30' }
 ];
-const COPIES_Y_TICKS = [
+const DAU_Y_TICKS = [
   { value: 0, label: '0' },
   { value: 10, label: '10M' },
   { value: 20, label: '20M' },
   { value: 30, label: '30M' },
   { value: 40, label: '40M' }
 ];
-const WISH_TREND = [
+// Daily battle pass activations, in thousands. The month-end spike is the Act III
+// pass going live alongside patch 26.16.
+const PASS_TREND = [
   { day: 1, label: 'Jul 1', value: 14 }, { day: 3, label: 'Jul 3', value: 22 }, { day: 5, label: 'Jul 5', value: 18 },
   { day: 7, label: 'Jul 7', value: 31 }, { day: 9, label: 'Jul 9', value: 27 }, { day: 11, label: 'Jul 11', value: 35 },
   { day: 13, label: 'Jul 13', value: 29 }, { day: 15, label: 'Jul 15', value: 41 }, { day: 17, label: 'Jul 17', value: 38 },
   { day: 19, label: 'Jul 19', value: 44 }, { day: 21, label: 'Jul 21', value: 52 }, { day: 23, label: 'Jul 23', value: 48 },
   { day: 25, label: 'Jul 25', value: 61 }, { day: 27, label: 'Jul 27', value: 55 }, { day: 30, label: 'Jul 30', value: 120 }
 ];
-const REVIEW_TREND = [
-  { day: 1, label: 'Jul 1', value: 1008200 }, { day: 5, label: 'Jul 5', value: 1008700 }, { day: 9, label: 'Jul 9', value: 1009100 },
-  { day: 13, label: 'Jul 13', value: 1009600 }, { day: 17, label: 'Jul 17', value: 1009900 }, { day: 21, label: 'Jul 21', value: 1010200 },
-  { day: 25, label: 'Jul 25', value: 1010400 }, { day: 30, label: 'Jul 30', value: 1010577 }
+// Post-game survey sentiment, 0–100. The slide starts with the 26.14 durability
+// rework and has not recovered through 26.16.
+const SENTIMENT_TREND = [
+  { day: 1, label: 'Jul 1', value: 74.1 }, { day: 5, label: 'Jul 5', value: 73.6 }, { day: 9, label: 'Jul 9', value: 72.8 },
+  { day: 13, label: 'Jul 13', value: 72.0 }, { day: 17, label: 'Jul 17', value: 71.5 }, { day: 21, label: 'Jul 21', value: 71.2 },
+  { day: 25, label: 'Jul 25', value: 71.0 }, { day: 30, label: 'Jul 30', value: 70.8 }
 ];
+// r/leagueoflegends subscribers, in millions.
 const ENGAGE_TREND = [
-  { day: 1, label: 'Jul 1', value: 2.98 }, { day: 5, label: 'Jul 5', value: 3.01 }, { day: 9, label: 'Jul 9', value: 3.04 },
-  { day: 13, label: 'Jul 13', value: 3.06 }, { day: 17, label: 'Jul 17', value: 3.08 }, { day: 21, label: 'Jul 21', value: 3.09 },
-  { day: 25, label: 'Jul 25', value: 3.11 }, { day: 30, label: 'Jul 30', value: 3.12 }
+  { day: 1, label: 'Jul 1', value: 8.28 }, { day: 5, label: 'Jul 5', value: 8.31 }, { day: 9, label: 'Jul 9', value: 8.33 },
+  { day: 13, label: 'Jul 13', value: 8.35 }, { day: 17, label: 'Jul 17', value: 8.37 }, { day: 21, label: 'Jul 21', value: 8.38 },
+  { day: 25, label: 'Jul 25', value: 8.40 }, { day: 30, label: 'Jul 30', value: 8.41 }
 ];
 
 const KPI_VIEWS = {
-  'Lifetime copies sold': {
-    headline: '+ 11M Since May 2026',
-    trend: COPIES_TREND,
-    summary: 'Lifetime copies sold climbed to <b>41.3M</b>, with roughly <b>+11M since May 2026</b>. Growth is still led by PC storefronts, while Switch and console/mobile remain steady long-tail contributors.'
+  'Daily active players': {
+    headline: '+ 2.9M Since patch 26.14',
+    trend: DAU_TREND,
+    summary: 'Daily actives closed July at <b>31.4M</b>, up roughly <b>2.9M since patch 26.14</b>. The climb peaks at 34.6M on Jul 21 as Split 2 ranked runs toward its cutoff, then eases back to a normal weekday baseline.'
   },
-  'Wish list': {
-    headline: '+ 120 wish list adds · 7d',
-    trend: WISH_TREND,
-    summary: 'Steam wish list adds spiked to <b>120 in the last 7 days</b>, with the strongest day near month-end. Wish list momentum often precedes a sales lift after a discount or content announcement.'
+  'Battle pass activations': {
+    headline: '120K activations · Jul 30',
+    trend: PASS_TREND,
+    summary: 'Battle pass activations spiked to <b>120K on Jul 30</b>, the day the Act III pass went live alongside patch 26.16. A launch-day spike is expected — the number worth watching is week-two retention on that cohort.'
   },
   'Peak concurrent players': {
-    headline: 'All-time peak · 236,614',
+    headline: 'All-time peak · 8.14M',
     trend: MILESTONES,
-    summary: 'Concurrent players are up sharply since the <b>1.6 update (March 2024)</b>, which remains the largest content patch in the game\u2019s history. CCU peaked at 236,614 \u2014 149% above the prior record \u2014 and has settled at 113,287, still nearly double the 2016 launch peak.'
+    summary: 'Concurrent players peaked at <b>8.14M</b> during the <b>2025 Worlds final</b>, narrowly above the 8.0M record that had stood since S9. The current 5.62M baseline sits 31% off that peak — an ordinary between-event trough, not a decline.'
   },
-  'Steam reviews': {
-    headline: '1.01M reviews · 98/100',
-    trend: REVIEW_TREND,
-    summary: 'Steam reviews sit at <b>1,010,577</b> with an <b>Overwhelmingly Positive</b> score (98/100). Recent volume is flat-to-slightly softer day-over-day, which is typical for a mature evergreen title.'
+  'Player sentiment': {
+    headline: '70.8 / 100 · falling',
+    trend: SENTIMENT_TREND,
+    summary: 'Post-game survey sentiment slid from <b>74.1 to 70.8</b> across July. The break starts with the <b>26.14 durability rework</b> and has not recovered through 26.16 — the clearest negative trend on the board.'
   },
   'Current concurrent players': {
-    headline: '113,287 concurrent · stable',
+    headline: '5.62M concurrent · softening',
     trend: MILESTONES,
-    summary: 'Current concurrent players sit near <b>113,287</b>, about <b>52% below the all-time peak</b> but still nearly double the 2016 launch baseline \u2014 a healthy post-update plateau.'
+    summary: 'Current concurrents sit near <b>5.62M</b>, down <b>4.5% patch-over-patch</b> and 31% off the Worlds 2025 peak. Two consecutive down patches is the part that deserves attention, not the absolute number.'
   },
   'Vs. all-time peak': {
-    headline: '−52% vs Mar 2024 peak',
+    headline: '−31% vs Nov 2025 peak',
     trend: MILESTONES,
-    summary: 'CCU is <b>52% below</b> the March 2024 high of 236,614. That decay is expected after a major content patch; retained players remain high relative to earlier eras.'
+    summary: 'CCU is <b>31% below</b> the 8.14M Worlds 2025 high. Off-season troughs of this depth are normal for the title; concurrency has historically recovered with the pre-season patch.'
   },
-  'Retained of 1.6 launch-day CCU': {
-    headline: '77% of 1.6 day-1 CCU retained',
+  'Monthly active players': {
+    headline: '134.2M monthly actives',
     trend: MILESTONES,
-    summary: 'About <b>77%</b> of 1.6 launch-day concurrent players remain online today (146,159 → 113,287), pointing to strong long-tail retention for a premium single-player title.'
+    summary: 'Monthly actives hold at <b>134.2M</b> unique logins on a rolling 30-day window. Asia contributes 53% of that base, most of it on the separately operated mainland China client.'
   },
-  'Lifetime reviews': {
-    headline: '1.01M lifetime reviews',
-    trend: REVIEW_TREND,
-    summary: 'Lifetime review volume keeps climbing past <b>1.01M</b>, reinforcing sustained goodwill even between major content drops.'
+  'Day-30 return rate': {
+    headline: '68% day-30 return',
+    trend: MILESTONES,
+    summary: 'The Split 2 cohort returns at <b>68% on day 30</b>, up 3 points on Split 1. The ranked split structure keeps mid-term retention strong even while sentiment softens.'
   },
   'Reddit subscribers': {
-    headline: '3.12M r/StardewValley',
+    headline: '8.41M r/leagueoflegends',
     trend: ENGAGE_TREND,
-    summary: 'Community reach on Reddit is at <b>3.12M subscribers</b>, a durable off-platform audience that stays active between Steam updates.'
+    summary: 'Community reach on Reddit is at <b>8.41M subscribers</b>, a durable off-client audience that stays active between patches — and the first place balance complaints surface.'
   },
   'Twitch watched hours': {
-    headline: '975,619 Twitch hours',
-    trend: ENGAGE_TREND.map((d, i) => ({ day: d.day, label: d.label, value: 820000 + i * 22000 })),
-    summary: 'Twitch watched hours total <b>975,619</b> in the trailing period \u2014 evidence that creators keep the game discoverable outside the storefront.'
+    headline: '112.4M Twitch hours',
+    trend: ENGAGE_TREND.map((d, i) => ({ day: d.day, label: d.label, value: 104000000 + i * 1200000 })),
+    summary: 'Twitch watched hours reached <b>112.4M</b> for the month — creators and league broadcasts keep the game discoverable well outside the client.'
   },
   'TikTok posts': {
-    headline: '468.9K #stardewvalley posts',
-    trend: ENGAGE_TREND.map((d, i) => ({ day: d.day, label: d.label, value: 420 + i * 6.5 })),
-    summary: 'TikTok activity around <b>#stardewvalley</b> sits near <b>468.9K posts</b>, extending reach into short-form social discovery.'
+    headline: '14.2M #leagueoflegends posts',
+    trend: ENGAGE_TREND.map((d, i) => ({ day: d.day, label: d.label, value: 13400 + i * 115 })),
+    summary: 'TikTok activity around <b>#leagueoflegends</b> sits near <b>14.2M posts</b>, extending reach into short-form discovery well beyond the active player base.'
   }
 };
 
 const SUMMARY_VARIANTS = {
-  'Lifetime copies sold': [
-    'Lifetime copies sold climbed to <b>41.3M</b>, with roughly <b>+11M since May 2026</b>. Growth is still led by PC storefronts, while Switch and console/mobile remain steady long-tail contributors.',
-    'Unit growth remains evergreen: <b>41.3M lifetime copies</b> with the latest lift concentrated after May 2026. PC still accounts for most of the volume, but console ports keep adding incremental sales.',
-    'Ghost AI re-scored the copies-sold series: the recent <b>+11M</b> bump is real, not seasonal noise, and lines up with renewed storefront visibility and long-tail Switch demand.'
+  'Daily active players': [
+    'Daily actives closed July at <b>31.4M</b>, up roughly <b>2.9M since patch 26.14</b>. The climb peaks at 34.6M on Jul 21 as Split 2 ranked runs toward its cutoff, then eases back to a normal weekday baseline.',
+    'Engagement is holding: <b>31.4M daily actives</b> with the month’s high at 34.6M. The shape is the usual ranked-split curve rather than anything patch-driven.',
+    'Ghost AI re-scored the DAU series: the mid-July lift is a genuine ranked-split effect, not a one-off event spike, and the settle back to 31.4M is on trend.'
   ],
-  'Wish list': [
-    'Steam wish list adds spiked to <b>120 in the last 7 days</b>, with the strongest day near month-end. Wish list momentum often precedes a sales lift after a discount or content announcement.',
-    'Wish list velocity accelerated late in July \u2014 <b>120 adds</b> in seven days. Watch for conversion if a Steam sale or patch notes land next.',
-    'Re-run complete: wish list adds remain elevated vs early July, suggesting renewed discovery rather than a one-day spike.'
+  'Battle pass activations': [
+    'Battle pass activations spiked to <b>120K on Jul 30</b>, the day the Act III pass went live alongside patch 26.16. A launch-day spike is expected — the number worth watching is week-two retention on that cohort.',
+    'Act III opened strong — <b>120K activations</b> in a single day, roughly 2× the prior in-month high. Conversion quality won’t be readable until the second week.',
+    'Re-run complete: the month-end activation spike is pass-launch driven and consistent with the Act I and Act II openings, not an anomaly.'
   ],
   'Peak concurrent players': [
-    'Concurrent players are up sharply since the <b>1.6 update (March 2024)</b>, which remains the largest content patch in the game\u2019s history. CCU peaked at 236,614 \u2014 149% above the prior record \u2014 and has settled at 113,287, still nearly double the 2016 launch peak.',
-    'Milestone peaks still tell the story: <b>1.6</b> set the all-time high at <b>236,614</b>, and today\u2019s baseline remains historically strong for an 8+ year old title.',
-    'Regenerated take: CCU decay from the 1.6 peak looks healthy, not alarming \u2014 retained concurrency is still ~2\u00d7 the original launch peak.'
+    'Concurrent players peaked at <b>8.14M</b> during the <b>2025 Worlds final</b>, narrowly above the 8.0M record that had stood since S9. The current 5.62M baseline sits 31% off that peak — an ordinary between-event trough, not a decline.',
+    'Season peaks still tell the story: <b>Worlds 2025</b> set the all-time high at <b>8.14M</b>, edging out a record that had held since 2019.',
+    'Regenerated take: the gap between the Worlds peak and today’s baseline is seasonal, and the 2026 pre-season patch is the natural recovery point.'
   ],
-  'Steam reviews': [
-    'Steam reviews sit at <b>1,010,577</b> with an <b>Overwhelmingly Positive</b> score (98/100). Recent volume is flat-to-slightly softer day-over-day, which is typical for a mature evergreen title.',
-    'Review quality remains elite at <b>98/100</b> across <b>1.01M+</b> reviews. Softening daily volume does not change the overall sentiment signal.',
-    'Fresh pass: sentiment is stable; the slight recent dip in review count velocity is noise around an already saturated positive score.'
+  'Player sentiment': [
+    'Post-game survey sentiment slid from <b>74.1 to 70.8</b> across July. The break starts with the <b>26.14 durability rework</b> and has not recovered through 26.16 — the clearest negative trend on the board.',
+    'Sentiment is down <b>3.3 points</b> in a month, and the inflection lines up cleanly with the 26.14 durability changes rather than with any single champion.',
+    'Fresh pass: the decline is real and sustained across four patches — not survey noise. Balance perception, not client stability, is what the responses are penalising.'
   ]
 };
 
@@ -2454,7 +2643,7 @@ function formatAxisValue(v, mode) {
     if (v >= 1000) return `${Math.round(v / 1000)}K`;
     return String(Math.round(v));
   }
-  if (mode === 'copies') {
+  if (mode === 'millions') {
     if (v === 0) return '0';
     return `${v}M`;
   }
@@ -2468,7 +2657,7 @@ function valsAreLarge(data) {
 }
 
 function formatTooltipValue(v, mode) {
-  if (mode === 'copies') return `${Number(v).toFixed(1).replace(/\.0$/, '')}M`;
+  if (mode === 'millions') return `${Number(v).toFixed(1).replace(/\.0$/, '')}M`;
   if (mode === 'm') return Math.round(v).toLocaleString('en-US');
   return Number.isInteger(v) ? v.toLocaleString('en-US') : String(v);
 }
@@ -2821,72 +3010,72 @@ function buildSmoothAreaChart(data, opts) {
 const TAB_CONFIG = {
   overview: {
     kpis: [
-      { icon: 'device-gamepad-2', label: 'Lifetime copies sold', value: '41.3M', dir: 'up', trend: '+11M since Feb 2024' },
-      { icon: 'shopping-bag-heart', label: 'Wish list', value: '120 added', dir: 'flat', trend: 'Steam wish list adds · last 7 days' },
-      { icon: 'users', label: 'Peak concurrent players', value: '236,614', dir: 'flat', trend: 'All-time record · Mar 24, 2024' },
-      { icon: 'text-scan-2', label: 'Steam reviews', value: '1,010,577', dir: 'down', trend: 'Overwhelmingly Positive · 98/100' }
+      { icon: 'device-gamepad-2', label: 'Daily active players', value: '31.4M', dir: 'up', trend: '+2.9M since patch 26.14' },
+      { icon: 'shopping-bag-heart', label: 'Battle pass activations', value: '120K', dir: 'flat', trend: 'Act III pass · Jul 30 peak' },
+      { icon: 'users', label: 'Peak concurrent players', value: '8.14M', dir: 'flat', trend: 'All-time record · Nov 2, 2025' },
+      { icon: 'text-scan-2', label: 'Player sentiment', value: '70.8', dir: 'down', trend: 'Post-game surveys · patch 26.16' }
     ],
-    chartHeadline: '+ 11M Since May 2026',
-    chartTitle: 'Concurrent players by update',
-    chartSub: 'Milestone peaks · all-time (SteamDB)',
-    tableTitle: 'Update impact on concurrent players',
+    chartHeadline: '+ 2.9M Since patch 26.14',
+    chartTitle: 'Concurrent players by patch',
+    chartSub: 'Season peaks · all-time (Riot disclosures)',
+    tableTitle: 'Patch impact on concurrent players',
     tableCols: PATCH_COLS,
     tableRows: PATCH_ROWS,
-    ghostSummary: 'Concurrent players are up sharply since the <b>1.6 update (March 2024)</b>, which remains the largest content patch in the game\u2019s history. CCU peaked at 236,614 \u2014 149% above the prior record \u2014 and has settled at 113,287, still nearly double the 2016 launch peak.',
+    ghostSummary: 'Concurrency has fallen for two straight patches since the <b>26.14 durability rework</b> — 6.05M down to 5.62M, or −7.1% across the pair. Sentiment broke on the same patch, which points at balance perception rather than client stability.',
     showExtraRow: true,
-    useCopiesTrend: true,
+    useDauTrend: true,
     insights: []
   },
   retention: {
     kpis: [
-      { icon: 'users', label: 'Current concurrent players', value: '113,287', dir: 'flat', trend: '±3.7% month-over-month · stable' },
-      { icon: 'trendUp', label: 'Vs. all-time peak', value: '−52%', dir: 'down', trend: '236,614 peak on Mar 24, 2024' },
-      { icon: 'box', label: 'Retained of 1.6 launch-day CCU', value: '77%', dir: 'up', trend: '146,159 day 1 → 113,287 today' },
-      { icon: 'star', label: 'Lifetime reviews', value: '1.01M', dir: 'up', trend: 'Signal of sustained goodwill' }
+      { icon: 'users', label: 'Current concurrent players', value: '5.62M', dir: 'down', trend: '−4.5% patch-over-patch' },
+      { icon: 'trendUp', label: 'Vs. all-time peak', value: '−31%', dir: 'down', trend: '8.14M peak on Nov 2, 2025' },
+      { icon: 'box', label: 'Monthly active players', value: '134.2M', dir: 'flat', trend: 'Rolling 30-day unique logins' },
+      { icon: 'star', label: 'Day-30 return rate', value: '68%', dir: 'up', trend: 'Split 2 cohort — up 3pts on Split 1' }
     ],
-    chartHeadline: 'Concurrent players by update',
-    chartTitle: 'Concurrent players by update',
-    chartSub: 'Milestone peaks · all-time (SteamDB)',
-    tableTitle: 'Post-update player retention',
+    chartHeadline: 'Concurrent players by season',
+    chartTitle: 'Concurrent players by patch',
+    chartSub: 'Season peaks · all-time (Riot disclosures)',
+    tableTitle: 'Post-patch player retention',
     tableCols: PATCH_COLS,
     tableRows: PATCH_ROWS,
-    ghostSummary: 'Concurrent players sit <b>52% below the all-time peak</b> set at the 1.6 update, 19 months later \u2014 but that\u2019s still 77% of the update\u2019s own launch-day count, and nearly double the 2016 baseline.',
+    ghostSummary: 'Mid-term retention is healthy — the Split 2 cohort returns at <b>68% on day 30</b>, up 3 points on Split 1. Short-term concurrency is the weak spot: two consecutive down patches while the return rate holds suggests session frequency, not churn.',
     insights: [
-      { title: 'Current concurrent players sit 52% below the all-time peak, 19 months on', body: '113,287 today vs. 236,614 at the March 2024 high \u2014 typical decay after a major content update, not a sign of decline. (Steambase)', flag: false },
-      { title: 'Day-1 / Day-7 / Day-30 retention curves \u2014 need more data', body: 'Valve does not publish per-title retention cohorts; Steam concurrent-player counts are the closest public proxy available for a premium single-player title.', flag: true }
+      { title: 'Day-30 return is up 3 points while concurrency falls', body: 'Returning players are not leaving — they are playing fewer sessions per week. The 68% Split 2 return rate against a −4.5% CCU patch means shorter play windows, not a shrinking base.', flag: false },
+      { title: 'Per-region churn cohorts — need more data', body: 'Riot does not publish per-shard retention. Regional CCU splits would separate a global balance reaction from a localised one (a KR-only drop reads very differently to a flat global dip).', flag: true }
     ]
   },
   engagement: {
     kpis: [
-      { icon: 'star', label: 'Steam reviews', value: '1,010,577', dir: 'up', trend: 'Overwhelmingly Positive · 98/100' },
-      { icon: 'users', label: 'Reddit subscribers', value: '3.12M', dir: 'up', trend: 'r/StardewValley' },
-      { icon: 'trendUp', label: 'Twitch watched hours', value: '975,619', dir: 'up', trend: 'Trailing period, 2026' },
-      { icon: 'box', label: 'TikTok posts', value: '468.9K', dir: 'up', trend: '#stardewvalley' }
+      { icon: 'star', label: 'Player sentiment', value: '70.8', dir: 'down', trend: 'Post-game surveys · −3.3 in July' },
+      { icon: 'users', label: 'Reddit subscribers', value: '8.41M', dir: 'up', trend: 'r/leagueoflegends' },
+      { icon: 'trendUp', label: 'Twitch watched hours', value: '112.4M', dir: 'up', trend: 'Monthly total, 2026' },
+      { icon: 'box', label: 'TikTok posts', value: '14.2M', dir: 'up', trend: '#leagueoflegends' }
     ],
     chartHeadline: 'Community reach over time',
-    chartTitle: 'Concurrent players by update',
-    chartSub: 'Milestone peaks · all-time (SteamDB)',
-    tableTitle: 'Sales & engagement by platform',
-    tableCols: PLATFORM_COLS,
-    tableRows: PLATFORM_ROWS,
-    ghostSummary: 'Reach extends well past Steam: <b>3.12M Reddit subscribers</b> and <b>975,619 Twitch watched hours</b> point to a community that stays active between content updates, not just around them.',
+    chartTitle: 'Concurrent players by patch',
+    chartSub: 'Season peaks · all-time (Riot disclosures)',
+    tableTitle: 'Monthly actives by region',
+    tableCols: REGION_COLS,
+    tableRows: REGION_ROWS,
+    ghostSummary: 'Off-client reach keeps growing while in-client sentiment falls: <b>8.41M Reddit subscribers</b> and <b>112.4M Twitch hours</b> against a sentiment score down 3.3 points. Attention is not the problem — satisfaction is.',
     insights: [
-      { title: 'Community engagement spans far beyond Steam', body: '3.12M Reddit subscribers and 975,619 Twitch watched hours show sustained cross-platform reach outside the storefront. (SubredditStats, activeplayer.io)', flag: false },
-      { title: 'Discord member count & mobile store ratings \u2014 need more data', body: 'No public membership count for the official Discord, and iOS/Android review scores weren\u2019t available in this pass \u2014 worth pulling directly from those storefronts.', flag: true }
+      { title: 'Reach is rising while sentiment falls', body: 'Reddit subscribers and Twitch hours both grew through July even as survey sentiment dropped 3.3 points. A louder audience is not a happier one — the discourse volume is partly the balance complaints themselves.', flag: false },
+      { title: 'Sentiment by region and rank — need more data', body: 'Post-game surveys are aggregated globally in this pass. Splitting by shard and by rank tier would show whether the 26.14 reaction is concentrated in high-elo play, where durability changes bite hardest.', flag: true }
     ]
   },
   raw: {
     kpis: [
       { icon: 'box', label: 'Records', value: '19', dir: 'flat', trend: 'bugs are screen recorded' },
-      { icon: 'trendUp', label: 'Date range covered', value: '2016–2026', dir: 'flat', trend: 'Launch through current period' },
-      { icon: 'users', label: 'Sources', value: '9', dir: 'flat', trend: 'SteamDB, Steambase, Reddit, TikTok & more' },
-      { icon: 'star', label: 'Last refreshed', value: '2026', dir: 'flat', trend: 'Manual pull, not a live feed' }
+      { icon: 'trendUp', label: 'Date range covered', value: '2009–2026', dir: 'flat', trend: 'Launch through current patch' },
+      { icon: 'users', label: 'Sources', value: '9', dir: 'flat', trend: 'Riot, ActivePlayer, OP.GG, Twitch & more' },
+      { icon: 'star', label: 'Last refreshed', value: 'Patch 26.16', dir: 'flat', trend: 'Manual pull, not a live feed' }
     ],
     insights: []
   }
 };
 
-const SOURCE_LINE = 'Sources: SteamDB, Steambase, Tracker.gg, ConcernedApe/Stardew Valley press page, Statista (Eurogamer), activeplayer.io, SubredditStats/OpenCommunity, TikTok.';
+const SOURCE_LINE = 'Sources: Riot Games dev blog, ActivePlayer.io, LoLalytics, OP.GG, U.GG, Twitch Tracker, Esports Charts, SubredditStats, TikTok.';
 
 const RAW_COLS = [
   { key: 'metric', label: 'Metric', sortable: true },
@@ -2895,47 +3084,49 @@ const RAW_COLS = [
   { key: 'source', label: 'Source' }
 ];
 const RAW_ROWS = [
-  { id: 1, metric: 'Concurrent players — all-time peak', value: '236,614', period: '2024-03-24', source: 'SteamDB' },
-  { id: 2, metric: 'Concurrent players — 2016 launch peak', value: '64,427', period: '2016-02-26', source: 'SteamDB' },
-  { id: 3, metric: 'Concurrent players — 1.5 update peak', value: '89,807', period: '2020-12-27', source: 'PCGamesN / SteamDB' },
-  { id: 4, metric: 'Concurrent players — 1.5 tail record', value: '94,879', period: '2021-01', source: 'Notebookcheck' },
-  { id: 5, metric: 'Concurrent players — 1.6 update day 1', value: '146,159', period: '2024-03-19', source: 'Game World Observer' },
-  { id: 6, metric: 'Concurrent players — current (24h peak)', value: '113,287', period: '2026', source: 'Steambase' },
-  { id: 7, metric: 'Concurrent players — live now', value: '69,266', period: '2026', source: 'SteamDB' },
-  { id: 8, metric: 'Lifetime copies sold — all platforms', value: '41,300,000', period: '2024-12', source: 'ConcernedApe press page' },
-  { id: 9, metric: 'Copies sold — PC', value: '26,000,000', period: '2024-12', source: 'ConcernedApe press page' },
-  { id: 10, metric: 'Copies sold — Nintendo Switch', value: '7,900,000', period: '2024-12', source: 'ConcernedApe press page' },
-  { id: 11, metric: 'Copies sold — console & mobile', value: '7,100,000', period: '2024-12', source: 'Derived (41.3M − PC − Switch)' },
-  { id: 12, metric: 'Gross revenue', value: '$518,000,000', period: '2024-12', source: 'Udonis analysis' },
-  { id: 13, metric: 'Net revenue (est., after cuts/discounts/tax)', value: '$152,800,000', period: '2024-12', source: 'Udonis analysis' },
-  { id: 14, metric: 'Steam reviews — total', value: '1,010,577', period: '2026', source: 'Steambase' },
-  { id: 15, metric: 'Steam review score', value: '98 / 100', period: '2026', source: 'Steambase' },
-  { id: 16, metric: 'Community hub followers', value: '1,029,383', period: '2026', source: 'Steambase' },
-  { id: 17, metric: 'Twitch watched hours', value: '975,619', period: '2026 (trailing)', source: 'activeplayer.io' },
-  { id: 18, metric: 'Reddit subscribers — r/StardewValley', value: '3,119,329', period: '2026', source: 'SubredditStats / OpenCommunity' },
-  { id: 19, metric: 'TikTok posts — #stardewvalley', value: '468,900', period: '2026', source: 'TikTok' }
+  { id: 1, metric: 'Concurrent players — all-time peak', value: '8,140,000', period: '2025-11-02', source: 'Esports Charts' },
+  { id: 2, metric: 'Concurrent players — S9 peak (prior record)', value: '8,000,000', period: '2019', source: 'Riot Games dev blog' },
+  { id: 3, metric: 'Concurrent players — S11 peak', value: '7,400,000', period: '2021', source: 'ActivePlayer.io' },
+  { id: 4, metric: 'Concurrent players — S13 peak', value: '6,900,000', period: '2023', source: 'ActivePlayer.io' },
+  { id: 5, metric: 'Concurrent players — patch 26.14 peak', value: '6,048,332', period: '2026-07-01', source: 'ActivePlayer.io' },
+  { id: 6, metric: 'Concurrent players — current (24h peak)', value: '5,620,441', period: '2026-07-29', source: 'ActivePlayer.io' },
+  { id: 7, metric: 'Concurrent players — live now', value: '3,214,880', period: '2026', source: 'ActivePlayer.io' },
+  { id: 8, metric: 'Monthly active players — all regions', value: '134,200,000', period: '2026-07', source: 'Riot Games dev blog' },
+  { id: 9, metric: 'Monthly actives — Asia (CN, KR, SEA, JP)', value: '71,500,000', period: '2026-07', source: 'Riot Games dev blog' },
+  { id: 10, metric: 'Monthly actives — Europe (EUW, EUNE, TR, RU)', value: '34,200,000', period: '2026-07', source: 'Riot Games dev blog' },
+  { id: 11, metric: 'Monthly actives — Americas (NA, BR, LAN, LAS)', value: '28,500,000', period: '2026-07', source: 'Derived (134.2M − Asia − Europe)' },
+  { id: 12, metric: 'Gross revenue — skins, passes & RP', value: '$1,780,000,000', period: '2025 (FY)', source: 'Third-party estimate' },
+  { id: 13, metric: 'Net revenue (est., after platform & regional cuts)', value: '$1,240,000,000', period: '2025 (FY)', source: 'Third-party estimate' },
+  { id: 14, metric: 'Player sentiment — post-game surveys', value: '70.8 / 100', period: '2026-07 (patch 26.16)', source: 'Riot Games dev blog' },
+  { id: 15, metric: 'Games played per day', value: '26,800,000', period: '2026-07', source: 'Riot Games dev blog' },
+  { id: 16, metric: 'Ranked players — Split 2 placements complete', value: '41,900,000', period: '2026-07', source: 'OP.GG' },
+  { id: 17, metric: 'Twitch watched hours', value: '112,400,000', period: '2026-07', source: 'Twitch Tracker' },
+  { id: 18, metric: 'Reddit subscribers — r/leagueoflegends', value: '8,412,600', period: '2026', source: 'SubredditStats' },
+  { id: 19, metric: 'TikTok posts — #leagueoflegends', value: '14,205,000', period: '2026', source: 'TikTok' }
 ];
 
 // Editorial notes shown in the raw-data detail panel — only where we have real supporting context.
 const RAW_NOTES = {
-  1: 'Set within days of the March 19, 2024 "1.6" update \u2014 the largest content patch in the game\u2019s history. 149% above the prior record.',
-  2: 'The original record, set shortly after the Feb 26, 2016 launch on Steam.',
-  4: 'Record set during the tail of the 1.5 update\u2019s surge, before being broken by 1.6 in 2024.',
-  5: 'Recorded hours after the 1.6 update went live \u2014 crossed 100k concurrent for the first time ever.',
-  6: 'Steambase\u2019s own comparison: 52% below the March 2024 peak, but still a historically high baseline for an 8+ year old title.',
-  8: 'Reported directly on the developer\u2019s press page; PC + Switch + console/mobile combined.',
-  11: 'Not an official figure \u2014 derived by subtracting PC and Switch units from the 41.3M total.',
-  13: 'Estimated by third-party analysis (Udonis), not disclosed directly by the developer.'
+  1: 'Set during the Worlds 2025 final on Nov 2, 2025 — the first time the S9 record had been beaten in six years. Event peaks are not comparable to a normal-day baseline.',
+  2: 'The 2019 record, disclosed by Riot at the time and unbeaten until Worlds 2025.',
+  5: 'The last patch before the two-patch slide; 26.14 shipped the durability rework that sentiment tracks against.',
+  6: 'Down 4.5% on 26.15 and 7.1% across the two patches since 26.14. Still a historically strong baseline for a title in its 17th year.',
+  7: 'A live sample rather than a 24-hour peak — useful only for intraday comparisons, not against the peak figures above.',
+  9: 'Mainland China runs on a separately operated Tencent client; its figures are reported on a different cadence and folded in here.',
+  11: 'Not an official figure — derived by subtracting the Asia and Europe totals from the 134.2M global monthly actives.',
+  13: 'Estimated by third-party analysis, not disclosed directly by Riot. Platform cuts vary sharply by region, so treat the spread as wide.',
+  14: 'Aggregated globally in this pass. Splitting by shard and rank tier is the obvious next cut — durability changes bite hardest in high elo.',
+  16: 'Placement completions, not unique ranked players; a player who completes placements in two queues is counted twice.'
 };
 const RAW_NOTE_FALLBACK = 'No additional editorial context captured for this metric yet — need more data.';
 const CCU_METRIC_IDS = [1, 2, 3, 4, 5, 6, 7];
-const PLATFORM_METRIC_IDS = [8, 9, 10, 11, 12, 13];
+const REGION_METRIC_IDS = [8, 9, 10, 11, 12, 13];
 
 const MESSAGE_CONTACTS = [
   { id: 'qa', name: 'QA Team', avatar: 'QA', color: '#a78bfa' },
   { id: 'player-support', name: 'Player Support', avatar: 'PS', color: '#60a5fa' },
   { id: 'marketing', name: 'Marketing', avatar: 'MK', color: '#f472b6' },
-  { id: 'concernedape', name: 'ConcernedApe', avatar: 'CA', color: '#a3e635' }
+  { id: 'balance', name: 'Balance Team', avatar: 'BT', color: '#a3e635' }
 ];
 
 const MESSAGE_THREADS_SEED = [
@@ -2944,7 +3135,7 @@ const MESSAGE_THREADS_SEED = [
     contactId: 'qa',
     unread: 2,
     messages: [
-      { from: 'them', text: 'Repro rate on the fishing-minigame crash is holding at 3% on Switch.', time: '9:12 AM' },
+      { from: 'them', text: 'Repro rate on the champ-select hard-lock is holding at 3% on EUW.', time: '9:12 AM' },
       { from: 'me', text: 'Got it — flagging as P1 for the next patch.', time: '9:15 AM' },
       { from: 'them', text: 'Sounds good. I’ll attach the latest crash logs to the bug report.', time: '9:20 AM' }
     ]
@@ -2954,7 +3145,7 @@ const MESSAGE_THREADS_SEED = [
     contactId: 'player-support',
     unread: 1,
     messages: [
-      { from: 'them', text: 'Getting a spike in tickets about lost save files after the 1.6 update on iOS.', time: 'Yesterday' },
+      { from: 'them', text: 'Getting a spike in tickets about ranked wins not awarding LP since 26.16.', time: 'Yesterday' },
       { from: 'them', text: 'Can we get a pinned FAQ post out today?', time: 'Yesterday' }
     ]
   },
@@ -2963,16 +3154,16 @@ const MESSAGE_THREADS_SEED = [
     contactId: 'marketing',
     unread: 0,
     messages: [
-      { from: 'them', text: 'Wishlist adds are up 40% since the anniversary post went live.', time: 'Mon' },
+      { from: 'them', text: 'Act III pass activations are up 40% since the champion teaser went live.', time: 'Mon' },
       { from: 'me', text: 'Nice! Let’s keep pushing that thread through the weekend.', time: 'Mon' }
     ]
   },
   {
-    id: 'concernedape',
-    contactId: 'concernedape',
+    id: 'balance',
+    contactId: 'balance',
     unread: 0,
     messages: [
-      { from: 'them', text: 'Numbers for the Reddit AMA look great, thanks for pulling those together.', time: 'Last week' }
+      { from: 'them', text: 'Sentiment numbers for the 26.14 durability retro look great, thanks for pulling those together.', time: 'Last week' }
     ]
   }
 ];
@@ -2982,7 +3173,7 @@ const ASSET_ICON_DATA = {
   'bug': { viewBox: '0 0 24 24', body: `<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9v-1a3 3 0 0 1 6 0v1"/><path d="M8 9h8a6 6 0 0 1 1 3v3a5 5 0 0 1 -10 0v-3a6 6 0 0 1 1 -3"/><path d="M3 13l4 0"/><path d="M17 13l4 0"/><path d="M12 20l0 -6"/><path d="M4 19l3.35 -2"/><path d="M20 19l-3.35 -2"/><path d="M4 7l3.75 2.4"/><path d="M20 7l-3.75 2.4"/></g>` },
   'video': { viewBox: '0 0 24 24', body: `<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553 -2.276a1 1 0 0 1 1.447 .894v6.764a1 1 0 0 1 -1.447 .894l-4.553 -2.276v-4"/><path d="M3 8a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2l0 -8"/></g>` },
   'brand-discord': { viewBox: '0 0 24 24', body: `<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"/><path d="M14 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"/><path d="M15.5 17c0 1 1.5 3 2 3c1.5 0 2.833 -1.667 3.5 -3c.667 -1.667 .5 -5.833 -1.5 -11.5c-1.457 -1.015 -3 -1.34 -4.5 -1.5l-.972 1.923a11.913 11.913 0 0 0 -4.053 0l-.975 -1.923c-1.5 .16 -3.043 .485 -4.5 1.5c-2 5.667 -2.167 9.833 -1.5 11.5c.667 1.333 2 3 3.5 3c.5 0 2 -2 2 -3"/><path d="M7 16.5c3.5 1 6.5 1 10 0"/></g>` },
-  'brand-steam': { viewBox: '0 0 24 24', body: `<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 5a4.5 4.5 0 1 1 -.653 8.953l-4.347 3.009l0 .038a3 3 0 0 1 -2.824 3l-.176 0a3 3 0 0 1 -2.94 -2.402l-2.56 -1.098v-3.5l3.51 1.755a2.989 2.989 0 0 1 2.834 -.635l2.727 -3.818a4.5 4.5 0 0 1 4.429 -5.302"/><path d="M15.5 9.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" fill="currentColor"/></g>` },
+  'lifebuoy': { viewBox: '0 0 24 24', body: `<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0 -18"/><path d="M12 8a4 4 0 1 0 0 8a4 4 0 0 0 0 -8"/><path d="M15 9l3.5 -3.5"/><path d="M15 15l3.5 3.5"/><path d="M9 15l-3.5 3.5"/><path d="M9 9l-3.5 -3.5"/></g>` },
   'brand-reddit': { viewBox: '0 0 24 24', body: `<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8c2.648 0 5.028 .826 6.675 2.14a2.5 2.5 0 0 1 2.326 4.36c0 3.59 -4.03 6.5 -9 6.5c-4.875 0 -8.845 -2.8 -9 -6.294l-1 -.206a2.5 2.5 0 0 1 2.326 -4.36c1.646 -1.313 4.026 -2.14 6.674 -2.14l.999 0"/><path d="M12 8l1 -5l6 1"/><path d="M18 4a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M8.5 13a.5 .5 0 1 0 1 0a.5 .5 0 1 0 -1 0" fill="currentColor"/><path d="M14.5 13a.5 .5 0 1 0 1 0a.5 .5 0 1 0 -1 0" fill="currentColor"/><path d="M10 17c.667 .333 1.333 .5 2 .5s1.333 -.167 2 -.5"/></g>` },
   'message-2': { viewBox: '0 0 24 24', body: `<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9h8"/><path d="M8 13h6"/><path d="M9 18h-3a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-3l-3 3l-3 -3"/></g>` },
   'filter-2': { viewBox: '0 0 24 24', body: `<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16"/><path d="M6 12h12"/><path d="M9 18h6"/></g>` },
@@ -3101,13 +3292,13 @@ function feedbackKpiTiles() {
 }
 
 // Tags carry two things at once: what the ticket IS (bug / feedback) and where it
-// CAME FROM (the in-game reporter, Discord, Steam, Reddit).
+// CAME FROM (the in-game reporter, Discord, Riot Support, Reddit).
 const FEEDBACK_TAGS = {
   bug: { label: 'Bug', icon: 'bug', color: 'var(--red-400)' },
   feedback: { label: 'Feedback', icon: 'message-2', color: 'var(--lime-400)' },
   ingame: { label: 'In-game', icon: 'device-gamepad-2', color: 'var(--amber-400)' },
   discord: { label: 'Discord', icon: 'brand-discord', color: 'var(--blue-400)' },
-  steam: { label: 'Steam', icon: 'brand-steam', color: 'var(--info)' },
+  support: { label: 'Riot Support', icon: 'lifebuoy', color: 'var(--info)' },
   reddit: { label: 'Reddit', icon: 'brand-reddit', color: 'var(--red-500)' }
 };
 
@@ -3133,43 +3324,41 @@ const FB_ASSIGNEES = [
 // the community channels into one list. `topic` is what "Group by topic" clusters on.
 // Row 1 is the ticket the impersonation view drills into — keep them in sync.
 const FEEDBACK_ROWS = [
-  { id: 1, urgency: 'high', type: 'bug', ticket: '#BUG-47248', subject: 'Character clips into oak tree when entering farmhouse with axe equipped', topic: 'Collision & interaction', channel: 'ingame', clip: true, reporter: 'BerniceSun02', role: 'player', assignees: [1], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
-  { id: 2, urgency: 'high', type: 'bug', ticket: '#BUG-47251', subject: 'Save file corrupts after sleeping on Winter 28 of year 3', topic: 'Save & progression', channel: 'steam', clip: false, reporter: 'mossy_ancientfruit', role: null, assignees: [3, 1], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
-  { id: 3, urgency: 'high', type: 'bug', ticket: '#BUG-47249', subject: 'Fishing minigame bar freezes on Switch after ~30 consecutive casts', topic: 'Fishing & minigames', channel: 'ingame', clip: true, reporter: 'SwitchTessa', role: 'player', assignees: [1], date: 'Aug 2, 2026', dateSort: '2026-08-02' },
-  { id: 4, urgency: 'high', type: 'bug', ticket: '#BUG-47246', subject: 'Co-op guest loses full inventory when host exits to title during a festival', topic: 'Multiplayer & co-op', channel: 'discord', clip: false, reporter: 'coop_calla', role: 'modder', assignees: [1, 0], date: 'Aug 2, 2026', dateSort: '2026-08-02' },
-  { id: 5, urgency: 'medium', type: 'bug', ticket: '#BUG-47244', subject: 'Greenhouse sprinklers stop watering the back two rows after 1.6.9', topic: 'Farm systems', channel: 'steam', clip: false, reporter: 'valleyfarmer_kt', role: null, assignees: [0], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
-  { id: 6, urgency: 'medium', type: 'bug', ticket: '#BUG-47241', subject: 'Junimo Hut skips crops planted on tilled beach sand', topic: 'Farm systems', channel: 'discord', clip: false, reporter: 'junimo_jules', role: null, assignees: [1], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
-  { id: 7, urgency: 'medium', type: 'bug', ticket: '#BUG-47238', subject: 'Iridium Sprinkler duplicates via shipping bin on day rollover', topic: 'Exploits & balance', channel: 'ingame', clip: true, reporter: 'ironpickaxe', role: 'player', assignees: [3], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
-  { id: 8, urgency: 'medium', type: 'bug', ticket: '#BUG-47235', subject: 'Mine ladder spawns inside a rock cluster, blocking descent on floor 47', topic: 'Collision & interaction', channel: 'ingame', clip: true, reporter: 'deckhand_rui', role: null, assignees: [1], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
-  { id: 9, urgency: 'medium', type: 'feedback', ticket: '#FBK-1092', subject: 'Mod loader breaks on 1.6.9 — community asking for a stable API surface', topic: 'Mods & API', channel: 'reddit', clip: false, reporter: 'ridgeside_wren', role: 'modder', assignees: [3, 0], date: 'Jul 30, 2026', dateSort: '2026-07-30' },
-  { id: 10, urgency: 'low', type: 'bug', ticket: '#BUG-47230', subject: 'Controller rumble keeps running after quitting on Steam Deck', topic: 'Performance & input', channel: 'steam', clip: false, reporter: 'pelicanpete', role: null, assignees: [2], date: 'Jul 30, 2026', dateSort: '2026-07-30' },
-  { id: 11, urgency: 'low', type: 'bug', ticket: '#BUG-47228', subject: 'Museum donation counter resets to 0 in the collections tab', topic: 'UI & accessibility', channel: 'discord', clip: false, reporter: 'JojaHater99', role: 'player', assignees: [0], date: 'Jul 29, 2026', dateSort: '2026-07-29' },
-  { id: 12, urgency: 'low', type: 'bug', ticket: '#BUG-47225', subject: 'Community Center restoration cutscene plays its audio track twice', topic: 'Audio & cutscenes', channel: 'ingame', clip: true, reporter: 'lulu_starfruit', role: null, assignees: [1], date: 'Jul 29, 2026', dateSort: '2026-07-29' },
-  { id: 13, urgency: 'low', type: 'bug', ticket: '#BUG-47221', subject: 'Spouse repeats the same 10-heart dialogue line every morning', topic: 'NPCs & dialogue', channel: 'discord', clip: false, reporter: 'emily_stan_4ever', role: 'player', assignees: [2], date: 'Jul 28, 2026', dateSort: '2026-07-28' },
-  { id: 14, urgency: 'low', type: 'feedback', ticket: '#FBK-1088', subject: 'Requesting a search field in the crafting menu — 200+ recipes is unscannable', topic: 'UI & accessibility', channel: 'reddit', clip: false, reporter: 'saltwater_sam', role: null, assignees: [0], date: 'Jul 28, 2026', dateSort: '2026-07-28' },
-  { id: 15, urgency: 'low', type: 'feedback', ticket: '#FBK-1085', subject: 'Fishing bite indicator is unreadable for red-green colourblind players', topic: 'UI & accessibility', channel: 'discord', clip: false, reporter: 'harveys_clinic', role: 'creator', assignees: [0, 2], date: 'Jul 27, 2026', dateSort: '2026-07-27' },
-  { id: 16, urgency: 'low', type: 'feedback', ticket: '#FBK-1081', subject: 'Late-game money loop feels trivial once you pass 100 kegs', topic: 'Exploits & balance', channel: 'steam', clip: false, reporter: 'winterstar_gwen', role: null, assignees: [3], date: 'Jul 27, 2026', dateSort: '2026-07-27' },
-  { id: 17, urgency: 'low', type: 'feedback', ticket: '#FBK-1079', subject: 'Bundle hints are too vague for first-time players', topic: 'Onboarding', channel: 'steam', clip: false, reporter: 'firstyear_fran', role: null, assignees: [2], date: 'Jul 26, 2026', dateSort: '2026-07-26' },
-  { id: 18, urgency: 'low', type: 'feedback', ticket: '#FBK-1076', subject: 'Love the new pet options — can we rename a pet after adoption?', topic: 'Quality of life', channel: 'discord', clip: false, reporter: 'barn_owl_bee', role: 'player', assignees: [2], date: 'Jul 26, 2026', dateSort: '2026-07-26' }
+  { id: 1, urgency: 'high', type: 'bug', ticket: '#BUG-47248', subject: 'Champion stuck inside terrain after Flash into the Baron pit wall', topic: 'Collision & pathing', channel: 'ingame', clip: true, reporter: 'BerniceSun02', role: 'player', assignees: [1], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
+  { id: 2, urgency: 'high', type: 'bug', ticket: '#BUG-47251', subject: 'Ranked win does not award LP — 12.4k reports since 26.16', topic: 'Ranked & LP progression', channel: 'support', clip: false, reporter: 'mossy_midlaner', role: null, assignees: [3, 1], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
+  { id: 3, urgency: 'high', type: 'bug', ticket: '#BUG-47249', subject: 'Champ select hard-locks when a duo partner dodges, forcing a remake', topic: 'Matchmaking & lobbies', channel: 'ingame', clip: true, reporter: 'euw_tessa', role: 'player', assignees: [1], date: 'Aug 2, 2026', dateSort: '2026-08-02' },
+  { id: 4, urgency: 'high', type: 'bug', ticket: '#BUG-47246', subject: 'Client crashes to desktop on party dissolve during champ select', topic: 'Client & third-party API', channel: 'discord', clip: false, reporter: 'duoq_calla', role: 'creator', assignees: [1, 0], date: 'Aug 2, 2026', dateSort: '2026-08-02' },
+  { id: 5, urgency: 'medium', type: 'bug', ticket: '#BUG-47244', subject: 'Ambessa W shield scales off bonus AD twice after 26.14', topic: 'Champion balance', channel: 'support', clip: false, reporter: 'topgap_kt', role: null, assignees: [0], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
+  { id: 6, urgency: 'medium', type: 'bug', ticket: '#BUG-47241', subject: 'Smite credits the wrong epic monster when two junglers cast on the same tick', topic: 'Champion balance', channel: 'discord', clip: false, reporter: 'jungle_jules', role: null, assignees: [1], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
+  { id: 7, urgency: 'medium', type: 'bug', ticket: '#BUG-47238', subject: 'Shop duplicates Ornn upgrades when purchased during a death timer', topic: 'Anti-cheat & exploits', channel: 'ingame', clip: true, reporter: 'ironbaron', role: 'player', assignees: [3], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
+  { id: 8, urgency: 'medium', type: 'bug', ticket: '#BUG-47235', subject: 'Wards placed on the Baron pit lip fall through terrain and give no vision', topic: 'Collision & pathing', channel: 'ingame', clip: true, reporter: 'support_rui', role: null, assignees: [1], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
+  { id: 9, urgency: 'medium', type: 'feedback', ticket: '#FBK-1092', subject: 'match-v5 field rename breaks third-party trackers — asking for a compatibility shim', topic: 'Client & third-party API', channel: 'reddit', clip: false, reporter: 'tracker_wren', role: 'creator', assignees: [3, 0], date: 'Jul 30, 2026', dateSort: '2026-07-30' },
+  { id: 10, urgency: 'low', type: 'bug', ticket: '#BUG-47230', subject: 'Anti-cheat blocks a signed GPU driver on Windows 11 24H2', topic: 'Anti-cheat & exploits', channel: 'support', clip: false, reporter: 'pentakilpete', role: null, assignees: [2], date: 'Jul 30, 2026', dateSort: '2026-07-30' },
+  { id: 11, urgency: 'low', type: 'bug', ticket: '#BUG-47228', subject: 'Mastery counter resets to 0 on the champion profile tab', topic: 'UI & accessibility', channel: 'discord', clip: false, reporter: 'ScuttleHater99', role: 'player', assignees: [0], date: 'Jul 29, 2026', dateSort: '2026-07-29' },
+  { id: 12, urgency: 'low', type: 'bug', ticket: '#BUG-47225', subject: 'Baron steal announcer line plays twice on the same objective', topic: 'Audio & VFX', channel: 'ingame', clip: true, reporter: 'lulu_starfruit', role: null, assignees: [1], date: 'Jul 29, 2026', dateSort: '2026-07-29' },
+  { id: 13, urgency: 'low', type: 'bug', ticket: '#BUG-47221', subject: 'Frame time spikes to 45ms when three or more ultimates land together', topic: 'Performance & input', channel: 'discord', clip: false, reporter: 'lowspec_lars', role: 'player', assignees: [2], date: 'Jul 28, 2026', dateSort: '2026-07-28' },
+  { id: 14, urgency: 'low', type: 'feedback', ticket: '#FBK-1088', subject: 'Requesting a search field in the rune page picker — 60+ pages is unscannable', topic: 'UI & accessibility', channel: 'reddit', clip: false, reporter: 'saltwater_sam', role: null, assignees: [0], date: 'Jul 28, 2026', dateSort: '2026-07-28' },
+  { id: 15, urgency: 'low', type: 'feedback', ticket: '#FBK-1085', subject: 'Turret range indicator is unreadable for red-green colourblind players', topic: 'UI & accessibility', channel: 'discord', clip: false, reporter: 'vision_score_diff', role: 'creator', assignees: [0, 2], date: 'Jul 27, 2026', dateSort: '2026-07-27' },
+  { id: 16, urgency: 'low', type: 'feedback', ticket: '#FBK-1081', subject: 'Objective bounties make late-game comebacks feel unearned', topic: 'Champion balance', channel: 'support', clip: false, reporter: 'winterstar_gwen', role: null, assignees: [3], date: 'Jul 27, 2026', dateSort: '2026-07-27' },
+  { id: 17, urgency: 'low', type: 'feedback', ticket: '#FBK-1079', subject: 'New-player tutorial never explains wave management', topic: 'Onboarding', channel: 'support', clip: false, reporter: 'firstgame_fran', role: null, assignees: [2], date: 'Jul 26, 2026', dateSort: '2026-07-26' },
+  { id: 18, urgency: 'low', type: 'feedback', ticket: '#FBK-1076', subject: 'Love the Arena rotation — can we get a duo-only queue for it?', topic: 'Modes & rotating queues', channel: 'discord', clip: false, reporter: 'arena_bee', role: 'player', assignees: [2], date: 'Jul 26, 2026', dateSort: '2026-07-26' }
 ];
 
-const FB_TAG_ORDER = ['bug', 'feedback', 'ingame', 'discord', 'steam', 'reddit'];
+const FB_TAG_ORDER = ['bug', 'feedback', 'ingame', 'discord', 'support', 'reddit'];
 
 // Narrative summaries shown in "Group by topic" headers (Figma 212:23149).
 const FEEDBACK_TOPIC_SUMMARIES = {
-  'Collision & interaction': 'In the farmhouse entry, the player keeps clipping into world geometry',
-  'Save & progression': 'Save files corrupt on season-end sleep during late-game years',
-  'Fishing & minigames': 'Fishing minigame freezes after long consecutive cast sessions',
-  'Multiplayer & co-op': 'Co-op guests lose inventory when the host exits mid-festival',
-  'Farm systems': 'Sprinklers and Junimo Huts skip crops on edge or beach tiles',
-  'Exploits & balance': 'Shipping and keg loops are duplicating items or trivializing late-game money',
-  'Mods & API': 'Mod loaders break on 1.6.9 — community asking for a stable API surface',
-  'Performance & input': 'Controller rumble keeps running after quitting on handheld builds',
+  'Collision & pathing': 'Champions and wards pass through terrain around the Baron pit',
+  'Ranked & LP progression': 'Ranked wins are not crediting LP when a shard fails over mid-write',
+  'Matchmaking & lobbies': 'Champ select hard-locks when a duo partner dodges late',
+  'Client & third-party API': 'Party dissolve crashes the client, and a match-v5 rename broke trackers',
+  'Champion balance': 'Post-26.14 scaling and bounty pacing are reading as unfair to players',
+  'Anti-cheat & exploits': 'A shop duplication exploit is live, and anti-cheat is blocking a signed driver',
   'UI & accessibility': 'Menus and indicators are hard to scan or unreadable for colourblind players',
-  'Audio & cutscenes': 'Community Center restoration cutscene plays its audio track twice',
-  'NPCs & dialogue': 'Spouse repeats the same 10-heart dialogue line every morning',
-  'Onboarding': 'Bundle hints are too vague for first-time players',
-  'Quality of life': 'Players want to rename pets after adoption'
+  'Audio & VFX': 'The Baron steal announcer line plays twice on the same objective',
+  'Performance & input': 'Frame time spikes badly when several ultimates overlap in a teamfight',
+  'Onboarding': 'The new-player tutorial never covers wave management',
+  'Modes & rotating queues': 'Players want a duo-only option in the Arena rotation'
 };
 
 // A ticket is tagged with its kind first, then the channel it arrived on.
@@ -3177,7 +3366,56 @@ const fbRowTags = r => [r.type, r.channel];
 
 // Ask Ghost AI panel. Answers are generated from FEEDBACK_ROWS so the panel can never
 // contradict the table it is summarising.
-const PROFILE_FIRST_NAME = 'June';
+// Monogram fallback for a profile with no photo — first letter of the first and
+// last word, so "June Cho" reads as JC and a single name still yields one letter.
+function initialsOf(name) {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '?';
+  const first = parts[0][0];
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : '';
+  return (first + last).toUpperCase();
+}
+
+function firstNameOf(name) {
+  return String(name || '').trim().split(/\s+/)[0] || 'there';
+}
+
+// Built in JS rather than bound to a template `src`: an unresolved {{ }} placeholder
+// in a static src attribute gets fetched as a literal URL and 404s before hydration.
+function profileAvatarEl(person, size, opts) {
+  const o = opts || {};
+  const base = {
+    width: size,
+    height: size,
+    borderRadius: size >= 64 ? 'var(--radius-lg, 12px)' : 'var(--radius-md)',
+    flexShrink: 0
+  };
+  if (o.onClick) base.cursor = 'pointer';
+  if (person && person.photo) {
+    return React.createElement('img', {
+      src: person.photo,
+      alt: o.alt || '',
+      title: o.title,
+      onClick: o.onClick,
+      style: { ...base, objectFit: 'cover' }
+    });
+  }
+  return React.createElement('div', {
+    title: o.title,
+    onClick: o.onClick,
+    'aria-label': o.alt || undefined,
+    style: {
+      ...base,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'var(--bg-surface-2)',
+      border: '1px solid var(--border-default)',
+      color: 'var(--text-secondary)',
+      font: `600 ${Math.round(size / 2.9)}px/1 var(--font-body)`
+    }
+  }, initialsOf(person && person.name));
+}
 
 const GHOST_STARTERS = [
   { id: 'urgent', label: 'What is the most urgent task?' },
@@ -3202,17 +3440,17 @@ function ghostAnswer(id) {
 
   if (id === 'urgent') {
     const list = blocking.map(r => `\u2022 ${r.ticket} \u2014 ${r.subject}`).join('\n');
-    return `${blocking.length} tickets are sitting at P0.\n\n${list}\n\nI\u2019d start with the save corruption: it destroys a full playthrough and there\u2019s no workaround, while the other three are recoverable by restarting the session.`;
+    return `${blocking.length} tickets are sitting at P0.\n\n${list}\n\nI\u2019d start with the LP loss (#BUG-47251): it silently costs players ranked progress at 12.4k reports and counting, and there\u2019s no client-side workaround \u2014 the other three clear on a client restart or a lobby dodge.`;
   }
   if (id === 'cluster') {
     const top = ghostTopicCounts(rows).slice(0, 3)
       .map(t => `\u2022 ${t.topic} \u2014 ${t.count} ticket${t.count === 1 ? '' : 's'}`).join('\n');
-    return `Grouped by what they touch, the queue clusters like this:\n\n${top}\n\nThe two collision reports (#BUG-47248 and #BUG-47235) look like one defect, not two \u2014 both are interaction/collision ordering, and both have a clip attached. Worth fixing together.`;
+    return `Grouped by what they touch, the queue clusters like this:\n\n${top}\n\nThe two collision reports (#BUG-47248 and #BUG-47235) look like one defect, not two \u2014 both are terrain collision resolution around the Baron pit, and both have a clip attached. Worth fixing together.`;
   }
   if (id === 'players') {
     const themes = ghostTopicCounts(feedback)
       .map(t => `\u2022 ${t.topic} \u2014 ${t.count}`).join('\n');
-    return `${feedback.length} of the ${rows.length} tickets are feedback rather than defects:\n\n${themes}\n\nThe loudest single thread is the mod API request on Reddit (#FBK-1092) \u2014 it came from a modder and is blocking the community\u2019s 1.6.9 updates.`;
+    return `${feedback.length} of the ${rows.length} tickets are feedback rather than defects:\n\n${themes}\n\nThe loudest single thread is the match-v5 compatibility request on Reddit (#FBK-1092) \u2014 it came from a tracker maintainer and is blocking third-party sites on 26.16.`;
   }
   return `Here\u2019s the shape of this week: ${rows.length} open tickets \u2014 ${bugs.length} bugs and ${feedback.length} pieces of feedback. ${blocking.length} are P0, and ${clips.length} arrived with a recorded clip you can replay.\n\nAsk me about a specific ticket, a channel, or a topic and I\u2019ll dig in.`;
 }
@@ -3264,7 +3502,7 @@ function ghostReasoningPlan(id) {
     players: [
       `Separating bugs from player feedback (${n} total)`,
       'Tallying requests by topic and channel',
-      'Weighing modder vs. player signal',
+      'Weighing creator vs. player signal',
       'Summarizing what the community wants next'
     ],
     overview: [
@@ -3301,7 +3539,7 @@ const dashboardEntryPath = () => {
 
 class Component extends DCLogic {
   state = {
-    tab: 'overview', nav: isPlayerReportPath() ? 'player' : 'analytics', game: 'stardew', range: 'all', segment: 'all', collapsed: false, theme: 'dark',
+    tab: 'overview', nav: isPlayerReportPath() ? 'player' : 'analytics', game: 'league', range: 'all', segment: 'all', collapsed: false, theme: 'dark',
     // --- Feedback Report (Player Report) view state ---
     fbGroupByTopic: false,
     fbSelectedIds: {},
@@ -3322,9 +3560,22 @@ class Component extends DCLogic {
     railWasCollapsed: false,
     showGhostRefreshConfirm: false,
     dateRange: 'last7', rawSearch: '', rawSortKey: null, rawSortDir: null, selectedRawId: 6, rawPage: 0, rawDetailExpanded: false,
-    selectedKpi: 'Lifetime copies sold',
+    selectedKpi: 'Daily active players',
     summaryVariant: 0,
     regenerating: false,
+    // --- Profile editor (opened from the sidebar avatar) ---
+    // `profile` is the committed record the sidebar and Ghost greeting read from;
+    // `profileDraft` holds in-flight edits so Cancel can discard them.
+    profile: {
+      name: 'June Cho',
+      role: 'Game Developer',
+      email: 'june.cho@ghostai.gg',
+      timezone: 'America/Los_Angeles',
+      photo: 'assets/june-cho-avatar.jpg'
+    },
+    showProfileEditor: false,
+    profileDraft: null,
+    profileTouched: false,
     generatedAt: 'Generated Jul 30 2026',
     showNotif: false,
     notifUnread: true,
@@ -3370,6 +3621,7 @@ class Component extends DCLogic {
   viewportRef = React.createRef();
   canvasContainerRef = React.createRef();
   confInputRef = React.createRef();
+  photoInputRef = React.createRef();
   dragTaskIdx = null;
   _drag = null;
   spaceDown = false;
@@ -3389,6 +3641,7 @@ class Component extends DCLogic {
     document.addEventListener('mousemove', this.handleTaskMouseMove);
     document.addEventListener('mouseup', this.handleTaskMouseUp);
     document.addEventListener('keydown', this.handleTaskKeyDown);
+    document.addEventListener('keydown', this.handleProfileKeyDown);
     document.addEventListener('keyup', this.handleTaskKeyUp);
     this.attachTaskObservers();
   }
@@ -3403,6 +3656,7 @@ class Component extends DCLogic {
     document.removeEventListener('mousemove', this.handleTaskMouseMove);
     document.removeEventListener('mouseup', this.handleTaskMouseUp);
     document.removeEventListener('keydown', this.handleTaskKeyDown);
+    document.removeEventListener('keydown', this.handleProfileKeyDown);
     document.removeEventListener('keyup', this.handleTaskKeyUp);
     if (this._headerRO) this._headerRO.disconnect();
     if (this._blurEl) this._blurEl.removeEventListener('blur', this.commitConfidenceText);
@@ -3821,10 +4075,10 @@ class Component extends DCLogic {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'stardew-valley-raw-data.csv';
+    a.download = 'league-of-legends-raw-data.csv';
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    this.showToast('Exported stardew-valley-raw-data.csv');
+    this.showToast('Exported league-of-legends-raw-data.csv');
   };
 
   exportFeedbackCsv = () => {
@@ -3837,7 +4091,7 @@ class Component extends DCLogic {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'stardew-valley-feedback-report.csv';
+    a.download = 'league-of-legends-feedback-report.csv';
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     this.showToast(`Exported ${rows.length} tickets`);
@@ -4108,8 +4362,95 @@ class Component extends DCLogic {
     return rows;
   };
 
+  // ===== Profile editor =====
+  // Everything edits `profileDraft`; nothing reaches `profile` until Save validates.
+  handleProfileKeyDown = (e) => {
+    if (!this.state.showProfileEditor) return;
+    if (e.key === 'Escape') this.closeProfileEditor();
+  };
+
+  openProfileEditor = () => {
+    this.setState(s => ({
+      showProfileEditor: true,
+      profileDraft: { ...s.profile },
+      profileTouched: false,
+      showSettingsMenu: false,
+      showProjectMenu: false,
+      showNotif: false
+    }));
+  };
+
+  closeProfileEditor = () => {
+    this.setState({ showProfileEditor: false, profileDraft: null, profileTouched: false });
+  };
+
+  setProfileField = (field) => (e) => {
+    const value = e && e.target ? e.target.value : '';
+    this.setState(s => ({ profileDraft: { ...s.profileDraft, [field]: value } }));
+  };
+
+  pickProfilePhoto = () => {
+    const input = this.photoInputRef.current;
+    if (input) input.click();
+  };
+
+  onProfilePhotoPicked = (e) => {
+    const file = e && e.target && e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.setState(s => ({ profileDraft: { ...s.profileDraft, photo: reader.result } }));
+    };
+    reader.readAsDataURL(file);
+    // Clear the input so re-picking the same file still fires a change event.
+    e.target.value = '';
+  };
+
+  clearProfilePhoto = () => {
+    this.setState(s => ({ profileDraft: { ...s.profileDraft, photo: null } }));
+  };
+
+  profileErrors = (draft) => {
+    const d = draft || {};
+    return {
+      name: !String(d.name || '').trim(),
+      email: !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(d.email || '').trim())
+    };
+  };
+
+  saveProfile = () => {
+    const draft = this.state.profileDraft;
+    const errors = this.profileErrors(draft);
+    if (errors.name || errors.email) {
+      this.setState({ profileTouched: true });
+      return;
+    }
+    this.setState({
+      profile: {
+        ...draft,
+        name: String(draft.name).trim(),
+        role: String(draft.role || '').trim(),
+        email: String(draft.email).trim()
+      },
+      showProfileEditor: false,
+      profileDraft: null,
+      profileTouched: false
+    });
+    this.showToast('Profile updated');
+  };
+
   toggleSettingsMenu = () => {
-    this.setState(s => ({ showSettingsMenu: !s.showSettingsMenu, showProjectMenu: false, showNotif: false }));
+    this.setState(s => {
+      const opening = !s.showSettingsMenu;
+      return {
+        showSettingsMenu: opening,
+        showProjectMenu: false,
+        showNotif: false,
+        // Opening settings from the collapsed rail expands it too, so the menu has
+        // room to anchor against and the account it belongs to is readable.
+        collapsed: opening ? false : s.collapsed
+      };
+    });
   };
 
   logout = () => {
@@ -4185,17 +4526,17 @@ class Component extends DCLogic {
     const rawPage = Math.min(this.state.rawPage, rawTotalPages - 1);
     const rawPageRows = rawFiltered.slice(rawPage * rawPageSize, rawPage * rawPageSize + rawPageSize);
     const selectedRaw = RAW_ROWS.find(r => r.id === this.state.selectedRawId) || null;
-    const maxPlatform = Math.max(...PLATFORM_MIX.map(p => p.value));
-    const selectedChartType = !selectedRaw ? 'none' : CCU_METRIC_IDS.includes(selectedRaw.id) ? 'milestones' : PLATFORM_METRIC_IDS.includes(selectedRaw.id) ? 'platform' : 'none';
+    const maxRegion = Math.max(...REGION_MIX.map(p => p.value));
+    const selectedChartType = !selectedRaw ? 'none' : CCU_METRIC_IDS.includes(selectedRaw.id) ? 'milestones' : REGION_METRIC_IDS.includes(selectedRaw.id) ? 'platform' : 'none';
 
-    const defaultKpi = (cfg.kpis && cfg.kpis[0] && cfg.kpis[0].label) || 'Lifetime copies sold';
+    const defaultKpi = (cfg.kpis && cfg.kpis[0] && cfg.kpis[0].label) || 'Daily active players';
     const selectedKpi = (cfg.kpis || []).some(k => k.label === this.state.selectedKpi) ? this.state.selectedKpi : defaultKpi;
     const kpiView = KPI_VIEWS[selectedKpi] || null;
-    const isCopiesChart = selectedKpi === 'Lifetime copies sold';
-    const baseTrend = isCopiesChart
-      ? COPIES_TREND
-      : (kpiView ? kpiView.trend : (cfg.useCopiesTrend ? COPIES_TREND : MILESTONES));
-    const trendData = (isCopiesChart ? COPIES_TREND : sliceTrendByRange(baseTrend, this.state.dateRange))
+    const isDauChart = selectedKpi === 'Daily active players';
+    const baseTrend = isDauChart
+      ? DAU_TREND
+      : (kpiView ? kpiView.trend : (cfg.useDauTrend ? DAU_TREND : MILESTONES));
+    const trendData = (isDauChart ? DAU_TREND : sliceTrendByRange(baseTrend, this.state.dateRange))
       .map((d, i) => ({
         ...d,
         value: seriesValue(d),
@@ -4208,6 +4549,12 @@ class Component extends DCLogic {
       ? variantList[this.state.summaryVariant % variantList.length]
       : (kpiView && kpiView.summary) || cfg.ghostSummary || '';
     const chartHeadline = kpiView ? kpiView.headline : (cfg.chartHeadline || cfg.chartTitle || '');
+    // Profile editor: fall back to the committed record so the template can bind
+    // draft fields even while the dialog is closed.
+    const profile = this.state.profile;
+    const draft = this.state.profileDraft || profile;
+    const profileErrors = this.profileErrors(draft);
+    const showProfileErrors = this.state.profileTouched;
     const showAnalyticsBody = this.state.nav === 'analytics';
     const showMessagesBody = this.state.nav === 'messages';
     const showTasksBody = this.state.nav === 'tasks';
@@ -4512,7 +4859,7 @@ class Component extends DCLogic {
       tab: this.state.tab,
       setTab: v => this.setState({
         tab: v,
-        selectedKpi: (TAB_CONFIG[v].kpis && TAB_CONFIG[v].kpis[0] && TAB_CONFIG[v].kpis[0].label) || 'Lifetime copies sold',
+        selectedKpi: (TAB_CONFIG[v].kpis && TAB_CONFIG[v].kpis[0] && TAB_CONFIG[v].kpis[0].label) || 'Daily active players',
         summaryVariant: 0
       }),
       tabItems: TAB_ITEMS,
@@ -4529,6 +4876,41 @@ class Component extends DCLogic {
       showSettingsMenu: this.state.showSettingsMenu,
       toggleSettingsMenu: this.toggleSettingsMenu,
       logout: this.logout,
+
+      // --- Profile: committed values drive the sidebar identity block ---
+      profileName: profile.name,
+      profileRole: profile.role,
+      profileAvatarEl: profileAvatarEl(profile, 40, {
+        onClick: this.openProfileEditor,
+        title: 'Edit profile',
+        alt: profile.name
+      }),
+      openProfileEditor: this.openProfileEditor,
+      // --- Profile editor: draft values ---
+      showProfileEditor: this.state.showProfileEditor,
+      closeProfileEditor: this.closeProfileEditor,
+      stopPropagation: (e) => { if (e && e.stopPropagation) e.stopPropagation(); },
+      profileCloseIcon: navIcon('x', 14, false),
+      photoInputRef: this.photoInputRef,
+      pickProfilePhoto: this.pickProfilePhoto,
+      onProfilePhotoPicked: this.onProfilePhotoPicked,
+      clearProfilePhoto: this.clearProfilePhoto,
+      draftAvatarEl: profileAvatarEl(draft, 64, { alt: '' }),
+      draftHasPhoto: !!draft.photo,
+      draftName: draft.name || '',
+      draftRole: draft.role || '',
+      draftEmail: draft.email || '',
+      draftTimezone: draft.timezone || 'America/Los_Angeles',
+      setProfileName: this.setProfileField('name'),
+      setProfileRole: this.setProfileField('role'),
+      setProfileEmail: this.setProfileField('email'),
+      setProfileTimezone: this.setProfileField('timezone'),
+      // Errors only surface after a failed Save, not while the user is still typing.
+      nameError: showProfileErrors && profileErrors.name,
+      emailError: showProfileErrors && profileErrors.email,
+      nameInvalidClass: showProfileErrors && profileErrors.name ? 'is-invalid' : '',
+      emailInvalidClass: showProfileErrors && profileErrors.email ? 'is-invalid' : '',
+      saveProfile: this.saveProfile,
       arrowBarRightIcon: navIcon('arrowBarRight', 18, false),
       navDisplayItems: NAV_ITEMS.map(it => {
         const active = it.value === this.state.nav;
@@ -4551,12 +4933,12 @@ class Component extends DCLogic {
           animation: this.state.regenerating ? 'dc-spin 0.8s linear infinite' : 'none'
         }
       }, navIcon('refresh', 16, false)),
-      projectLabel: (GAME_OPTIONS.find(g => g.value === this.state.game) || {}).label || 'Stardew Valley',
+      projectLabel: (GAME_OPTIONS.find(g => g.value === this.state.game) || {}).label || 'League of Legends',
       showProjectMenu: this.state.showProjectMenu && !this.state.collapsed,
       toggleProjectMenu: () => this.setState(s => ({ showProjectMenu: !s.showProjectMenu, showNotif: false, showSettingsMenu: false })),
       projectMenuItems: GAME_OPTIONS.map(g => ({
         label: g.label,
-        logo: 'assets/stardew-valley-logo.png',
+        logo: 'assets/lol-logo.png',
         bg: g.value === this.state.game ? 'rgba(163,230,53,0.16)' : 'transparent',
         color: g.value === this.state.game ? '#a3e635' : 'var(--text-secondary)',
         onClick: (e) => {
@@ -4605,8 +4987,8 @@ class Component extends DCLogic {
       toggleNotif: () => this.setState(s => ({ showNotif: !s.showNotif, showProjectMenu: false, showSettingsMenu: false, showDateMenu: false })),
       markNotifRead: () => this.setState({ notifUnread: false, showNotif: false }),
       notifications: [
-        { title: '1.6 CCU peak still leading', body: '236,614 remains the all-time concurrent record.' },
-        { title: 'Wish list spike detected', body: '+120 adds in the last 7 days.' }
+        { title: 'Sentiment down a 4th straight patch', body: '70.8 / 100 on 26.16 — the slide starts at the 26.14 rework.' },
+        { title: 'Act III pass activations spiking', body: '120K on Jul 30, roughly 2× the prior in-month high.' }
       ],
       kpis: cfg.kpis.map(k => {
         const opensBugReport = k.label === 'Records';
@@ -4645,7 +5027,7 @@ class Component extends DCLogic {
       ghostThumbDownIcon: assetIcon('thumb-down', 16),
       ghostResetIcon: navIcon('refresh', 20, false),
       ghostSendIcon: taskIcon('chevronRight', 16),
-      ghostGreeting: `Hi ${PROFILE_FIRST_NAME} \u2014 I\u2019ve read this report`,
+      ghostGreeting: `Hi ${firstNameOf(profile.name)} \u2014 I\u2019ve read this report`,
       ghostIsEmpty: this.state.ghostMessages.length === 0 && !this.state.ghostThinking,
       ghostHasThread: this.state.ghostMessages.length > 0 || this.state.ghostThinking,
       ghostMessages: this.state.ghostMessages.map(m => ({
@@ -4729,7 +5111,7 @@ class Component extends DCLogic {
         { isSection: true, isOption: false, label: 'Type' },
         ...['bug', 'feedback'].map(fbTagFilterItem),
         { isSection: true, isOption: false, label: 'Channel' },
-        ...['ingame', 'discord', 'steam', 'reddit'].map(fbTagFilterItem)
+        ...['ingame', 'discord', 'support', 'reddit'].map(fbTagFilterItem)
       ],
       fbAssigneeFilterIcon: React.createElement(
         'span',
@@ -4859,7 +5241,7 @@ class Component extends DCLogic {
       headerTitle,
       showNavPlaceholder: false,
       navPlaceholderTitle: 'My Tasks',
-      navPlaceholderBody: 'Task triage for Stardew Valley will live here. Switch back to Dashboard for analytics.',
+      navPlaceholderBody: 'Task triage for League of Legends will live here. Switch back to Dashboard for analytics.',
       messageThreadViews,
       activeThreadName: activeContact.name || '',
       activeThreadAvatar: activeContact.avatar || '',
@@ -4886,8 +5268,8 @@ class Component extends DCLogic {
       trendData,
       trendFirstLabel: trendData[0] ? trendData[0].label : '',
       trendLastLabel: trendData.length ? trendData[trendData.length - 1].label : '',
-      chartEl: buildSmoothAreaChart(trendData, selectedKpi === 'Lifetime copies sold'
-        ? { height: 220, yTicks: COPIES_Y_TICKS, xTicks: COPIES_X_TICKS, xDomain: [1, 30], yMode: 'copies', chartKey: this.state.tab + '|' + selectedKpi + '|' + this.state.dateRange }
+      chartEl: buildSmoothAreaChart(trendData, selectedKpi === 'Daily active players'
+        ? { height: 220, yTicks: DAU_Y_TICKS, xTicks: DAU_X_TICKS, xDomain: [1, 30], yMode: 'millions', chartKey: this.state.tab + '|' + selectedKpi + '|' + this.state.dateRange }
         : { height: 220, yMode: valsAreLarge(trendData) ? 'm' : 'n', chartKey: this.state.tab + '|' + selectedKpi + '|' + this.state.dateRange }),
       chartHeadline,
       chartTitle: cfg.chartTitle,
@@ -4898,8 +5280,8 @@ class Component extends DCLogic {
       donutSub: cfg.donutSub,
       isPie: cfg.secondary === 'pie',
       isBar: cfg.secondary === 'bar',
-      pieData: PLATFORM_MIX,
-      pieLegend: PLATFORM_MIX,
+      pieData: REGION_MIX,
+      pieLegend: REGION_MIX,
       barData: MILESTONES,
       insights: (cfg.insights || []).map((i, idx, arr) => ({
         ...i,
@@ -4916,7 +5298,7 @@ class Component extends DCLogic {
       regenOpacity: this.state.regenerating ? '0.65' : '1',
       summaryOpacity: this.state.regenerating ? '0.45' : '1',
       showExtraRow: !!cfg.showExtraRow && showAnalyticsBody,
-      platformBars: PLATFORM_MIX.map(p => ({ ...p, pct: Math.round((p.value / maxPlatform) * 100) })),
+      platformBars: REGION_MIX.map(p => ({ ...p, pct: Math.round((p.value / maxRegion) * 100) })),
       milestoneList: PATCH_ROWS.map(r => ({ ...r, line: `${r.update} — ${r.peak} CCU`, meta: r.date })),
       tableTitle: this.state.tab === 'raw' ? 'Raw data export' : cfg.tableTitle,
       tableSub: cfg.chartSub || '',
