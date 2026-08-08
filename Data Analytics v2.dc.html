@@ -337,9 +337,16 @@
       background: #ffffff;
       border-color: #f4f4f5;
     }
+    /* One column that is at least as wide as the widest row and otherwise fills the
+       table. Both halves matter: max-content keeps the header, group bars and hover
+       backgrounds painting past the viewport edge once the table scrolls sideways,
+       and 1fr stops the rows falling short of the table's right edge when there is
+       room to spare. */
     .fb-scroll {
       width: 100%;
       overflow-x: auto;
+      display: grid;
+      grid-template-columns: minmax(max-content, 1fr);
     }
     .fb-row {
       display: flex;
@@ -382,9 +389,15 @@
     .fb-c-check { width: 38px; flex-shrink: 0; padding: 12px 0 12px 14px; }
     .fb-c-urgency { width: 25px; flex-shrink: 0; padding: 12px 0; }
     .fb-c-ticket { width: 145px; flex-shrink: 0; }
-    .fb-c-subject { flex: 1; min-width: 200px; }
+    /* A definite basis plus size containment keeps the title out of the grid's
+       max-content measurement — otherwise the table would widen to fit the longest
+       subject on the page. It still grows to fill spare width. */
+    .fb-c-subject { flex: 1 1 200px; min-width: 200px; contain: inline-size; }
     .fb-c-tags { width: 165px; flex-shrink: 0; justify-content: flex-end; gap: 6px; }
-    .fb-c-reporter { width: 200px; flex-shrink: 0; }
+    /* Squad and status take the width the reporter column used to hold — the reference
+       triage table routes on those two, and the reporter still shows in the ticket detail. */
+    .fb-c-squad { width: 104px; flex-shrink: 0; }
+    .fb-c-status { width: 128px; flex-shrink: 0; }
     .fb-c-assignee { width: 108px; flex-shrink: 0; justify-content: flex-end; gap: 6px; }
     .fb-c-date { width: 115px; flex-shrink: 0; justify-content: flex-end; }
     .fb-head-label {
@@ -499,6 +512,21 @@
       background: var(--neutral-100, #f5f5f5);
       color: var(--neutral-900, #171717);
     }
+    /* Workflow state, coloured by whether the ticket is actionable now, already
+       moving, or parked waiting on someone else. */
+    .fb-status {
+      font: 500 13px/18px var(--font-body);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* --success, not --accent: it darkens to lime-700 on light, where --accent's
+       lime-600 only reaches 3.1:1 against a white row. */
+    .fb-status.is-ready { color: var(--success); }
+    .fb-status.is-active { color: var(--info); }
+    /* --text-secondary matches the muted text the table already uses; --text-tertiary
+       drops to 2.7:1 on the dark row, which is too dim to read at 13px. */
+    .fb-status.is-waiting { color: var(--text-secondary); }
     .dc-menu-section {
       padding: 8px 8px 4px 32px;
       font: 600 10px/14px var(--font-body);
@@ -662,8 +690,15 @@
     @media (max-width: 1215px) {
       .fb-c-assignee { display: none; }
     }
+    /* Squad and status share the subject's row, so the clip badge drops its label
+       well before the old breakpoint — the icon alone still reads as "has a clip". */
+    @media (max-width: 1440px) {
+      .fb-clip-label { display: none; }
+      .fb-clip { padding: 4px 5px; }
+    }
     @media (max-width: 1120px) {
-      .fb-c-reporter { display: none; }
+      /* Status outranks squad here: it is the state a triager scans for. */
+      .fb-c-squad { display: none; }
       .fb-c-ticket { width: 118px; }
       .fb-c-subject { min-width: 220px; }
       .fb-c-tags { width: 100px; }
@@ -1089,7 +1124,7 @@
     @media (max-width: 1490px) { .has-ghost .fb-c-date { display: none; } }
     @media (max-width: 1375px) { .has-ghost .fb-c-assignee { display: none; } }
     @media (max-width: 1280px) {
-      .has-ghost .fb-c-reporter { display: none; }
+      .has-ghost .fb-c-squad { display: none; }
       .has-ghost .fb-tag-type { display: none; }
       .has-ghost .fb-clip-label { display: none; }
       .has-ghost .fb-clip { padding: 4px 5px; }
@@ -1605,7 +1640,8 @@
                 </div>
               </sc-if>
             </div>
-            <div class="fb-cell fb-c-reporter"><span class="fb-head-label">Reporter</span><span onClick="{{ sortFbReporter }}" class="fb-head-sort">{{ fbReporterSortIcon }}</span></div>
+            <div class="fb-cell fb-c-squad"><span class="fb-head-label">Squad</span><span onClick="{{ sortFbSquad }}" class="fb-head-sort">{{ fbSquadSortIcon }}</span></div>
+            <div class="fb-cell fb-c-status"><span class="fb-head-label">Status</span><span onClick="{{ sortFbStatus }}" class="fb-head-sort">{{ fbStatusSortIcon }}</span></div>
             <div class="fb-cell fb-c-assignee" style="position:relative">
               <span class="fb-head-label">Assignee</span>
               <span onClick="{{ toggleFbAssigneeMenu }}" class="fb-head-sort">{{ fbAssigneeFilterIcon }}</span>
@@ -1651,11 +1687,11 @@
                     <span class="{{ t.cls }}">{{ t.iconEl }}{{ t.label }}</span>
                   </sc-for>
                 </div>
-                <div class="fb-cell fb-c-reporter">
-                  <span class="fb-text" style="color:var(--foreground, var(--text-primary))">{{ r.reporter }}</span>
-                  <sc-if value="{{ r.hasRole }}" hint-placeholder-val="{{ false }}">
-                    <span class="fb-badge fb-badge-plain">{{ r.role }}</span>
-                  </sc-if>
+                <div class="fb-cell fb-c-squad">
+                  <span class="fb-text-muted">{{ r.squad }}</span>
+                </div>
+                <div class="fb-cell fb-c-status">
+                  <span class="{{ r.statusClass }}">{{ r.statusLabel }}</span>
                 </div>
                 <div class="fb-cell fb-c-assignee">{{ r.assigneeEl }}</div>
                 <div class="fb-cell fb-c-date"><span class="fb-text-muted">{{ r.date }}</span></div>
@@ -3397,6 +3433,21 @@ const FEEDBACK_ROWS = [
   { id: 18, urgency: 'p4', type: 'feedback', ticket: '#DATA-4391', subject: 'New-player tutorial never covers wave management', topic: 'Retention & onboarding', squad: 'Data', repro: null, status: 'Queued', channel: 'support', clip: false, reporter: 'firstgame_fran', role: null, assignees: [2], date: 'Jul 30, 2026', dateSort: '2026-07-30' }
 ];
 
+// Workflow order, so sorting by status walks the pipeline instead of the alphabet.
+const FB_STATUS_ORDER = ['Ready', 'In progress', 'Awaiting QA', 'Investigating', 'Queued', 'Waiting on data'];
+const FB_STATUS_CLASS = {
+  'Ready': 'is-ready',
+  'In progress': 'is-active',
+  'Awaiting QA': 'is-active',
+  'Investigating': 'is-active',
+  'Queued': 'is-waiting',
+  'Waiting on data': 'is-waiting'
+};
+const fbStatusRank = status => {
+  const i = FB_STATUS_ORDER.indexOf(status);
+  return String(i < 0 ? FB_STATUS_ORDER.length : i);
+};
+
 const FB_TAG_ORDER = ['bug', 'feedback', 'ingame', 'discord', 'support', 'reddit'];
 
 // Narrative summaries shown in "Group by topic" headers (Figma 212:23149).
@@ -4405,8 +4456,9 @@ class Component extends DCLogic {
     }
     if (s.fbSortKey && s.fbSortDir) {
       const key = s.fbSortKey === 'date' ? 'dateSort' : s.fbSortKey;
+      const val = r => key === 'status' ? fbStatusRank(r.status) : String(r[key]);
       rows = rows.slice().sort((a, b) => {
-        const cmp = String(a[key]).localeCompare(String(b[key]), undefined, { numeric: true });
+        const cmp = val(a).localeCompare(val(b), undefined, { numeric: true });
         return s.fbSortDir === 'asc' ? cmp : -cmp;
       });
     }
@@ -4659,6 +4711,7 @@ class Component extends DCLogic {
         urgencyLabel: [FEEDBACK_URGENCY_LABEL[r.urgency], r.squad, r.repro ? r.repro + ' repro' : null, r.status].filter(Boolean).join(' \u00b7 '),
         squad: r.squad,
         statusLabel: r.status,
+        statusClass: 'fb-status ' + (FB_STATUS_CLASS[r.status] || 'is-waiting'),
         rowClass: on ? 'fb-row fb-row-body fb-row-selected' : 'fb-row fb-row-body',
         checkClass: on ? 'fb-check fb-check-on' : 'fb-check',
         checkIcon: on ? taskIcon('check', 12) : null,
@@ -5144,10 +5197,12 @@ class Component extends DCLogic {
       fbAllCheckIcon: fbAllOn ? taskIcon('check', 12) : null,
       toggleFbAll: this.toggleFbAll,
       fbTicketSortIcon: fbSortIcon('ticket'),
-      fbReporterSortIcon: fbSortIcon('reporter'),
+      fbSquadSortIcon: fbSortIcon('squad'),
+      fbStatusSortIcon: fbSortIcon('status'),
       fbDateSortIcon: fbSortIcon('date'),
       sortFbTicket: this.toggleFbSort('ticket'),
-      sortFbReporter: this.toggleFbSort('reporter'),
+      sortFbSquad: this.toggleFbSort('squad'),
+      sortFbStatus: this.toggleFbSort('status'),
       sortFbDate: this.toggleFbSort('date'),
       fbFilterIcon: React.createElement(
         'span',
