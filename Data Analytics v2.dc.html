@@ -1344,8 +1344,8 @@
 
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid var(--border-default)">
             <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
-              <span style="font:500 13px/15.6px var(--font-body);color:var(--lime-300,#bef264)">#BUG-47248</span>
-              <span style="font:500 12px/16.2px var(--font-body);color:var(--text-secondary)">Reported: Aug 3, 2026</span>
+              <span style="font:500 13px/15.6px var(--font-body);color:var(--lime-300,#bef264)">#BUG-88213</span>
+              <span style="font:500 12px/16.2px var(--font-body);color:var(--text-secondary)">Reported: Aug 7, 2026</span>
             </div>
             <span style="font:500 12px/12px var(--font-body);color:var(--danger);background:var(--danger-muted);padding:4px 8px;border-radius:4px;flex-shrink:0">P0</span>
           </div>
@@ -1355,7 +1355,7 @@
               <span style="font:var(--text-h4);color:#fff">User Report Summary</span>
               <span style="align-self:flex-start;font:500 12px/16.2px var(--font-body);color:var(--warning);background:var(--warning-muted);padding:2px 8px;border-radius:4px">Behavior</span>
             </div>
-            <span style="font:400 14px/20px var(--font-body);color:#fff">Player flashed toward the Baron pit wall to escape a gank. The dash resolved past the wall and the champion snapped inside the terrain, then became stuck with no path out.</span>
+            <span style="font:400 14px/20px var(--font-body);color:#fff">Player cast Yuumi's passive shield and was interrupted mid-cast. The shield applied on the client but never registered server-side, so the ally took full damage through a shield that was visibly on them.</span>
             <div style="display:flex;align-items:flex-end;gap:8px">
               <img src="assets/bug-report/clip-thumb.png" alt="Clip thumbnail" style="width:42px;height:42px;border-radius:6px;object-fit:cover;flex-shrink:0">
               <span style="font:400 12px/16.2px var(--font-mono,ui-monospace,monospace);color:var(--text-secondary)">0:15</span>
@@ -1371,12 +1371,12 @@
                 <span style="font:500 12px/16px var(--font-body);color:#fff">Cursor Agent</span>
               </div>
             </div>
-            <span style="font:400 14px/20px var(--font-body);color:#fff">Based on the replay clip and player input history, this looks like a collision / pathing resolution bug — not a rendering issue.</span>
+            <span style="font:400 14px/20px var(--font-body);color:#fff">Based on the replay clip and player input history, this looks like a client/server state desync on cast interrupt — not a rendering issue.</span>
             <sc-if value="{{ analyzedExpanded }}" hint-placeholder-val="{{ false }}">
               <div style="display:flex;flex-direction:column;gap:10px;font:400 14px/20px var(--font-body);color:#fff">
-                <span>When Flash resolves, <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">SummonerFlash::resolve()</span> commits the destination before <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">NavMesh::clampToWalkable()</span> runs, so the champion lands inside the Baron pit wall’s collision volume.</span>
-                <span>Likely source: <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">src/Game/SpellSystem/SummonerSpells.cpp</span> around lines 418–461, called from <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">ChampionController.cpp</span>.</span>
-                <span style="color:var(--text-secondary)">Impersonate BerniceSun02 and reproduce with Flash → Baron pit wall to confirm.</span>
+                <span>When the cast is interrupted, <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">YuumiPassive::onCastComplete()</span> applies the shield locally before <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">AbilityState::syncToServer()</span> has confirmed it, so an interrupt leaves the two states diverged.</span>
+                <span>Likely source: <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">src/Game/Champions/Yuumi/YuumiPassive.cpp</span> around lines 418–461, called from <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">ChampionController.cpp</span>.</span>
+                <span style="color:var(--text-secondary)">Impersonate BerniceSun02 and reproduce with a cast interrupt to confirm.</span>
               </div>
               <span style="font:400 14px/20px var(--font-body);color:var(--text-secondary);text-decoration:underline;cursor:pointer">Go to Code</span>
             </sc-if>
@@ -1386,15 +1386,15 @@
           <div style="display:flex;flex-direction:column;gap:14px;padding:24px 20px;border-radius:12px;background:var(--bg-surface);border:1px solid var(--border-default);box-sizing:border-box">
             <span style="font:var(--text-h4);color:#fff">Player Log</span>
             <div style="display:flex;flex-direction:column;gap:6px;font:400 12px/16px var(--font-mono,ui-monospace,Menlo,monospace);color:var(--text-secondary)">
-              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:01</span><span style="color:#fff">MOVE cmd=(12402, 8180)</span></div>
-              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:02</span><span style="color:#fff">MOVE cmd=(12488, 8302)</span></div>
-              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:04</span><span style="color:#fff">CAST spell=SummonerFlash</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:01</span><span style="color:#fff">MOVE cmd=(7420, 6180)</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:02</span><span style="color:#fff">ATTACH ally=Ashe</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:04</span><span style="color:#fff">CAST spell=YuumiPassive</span></div>
               <sc-if value="{{ playerLogExpanded }}" hint-placeholder-val="{{ false }}">
-                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:05</span><span style="color:#fff">TARGET pos=(12610, 8455) through wall</span></div>
-                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:06</span><span style="color:var(--warning)">NAVMESH clamp target=baron_wall_03 → SKIPPED</span></div>
-                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:06</span><span style="color:var(--danger)">COLLISION resolve → terrain_baron_wall_03</span></div>
-                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:07</span><span style="color:#fff">MOVE_LEFT / MOVE_RIGHT (no effect)</span></div>
-                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:09</span><span style="color:var(--danger)">STATE stuck=true pos=(12610.5, 8455.0)</span></div>
+                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:05</span><span style="color:#fff">INTERRUPT source=Knockup</span></div>
+                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:06</span><span style="color:var(--warning)">SYNC AbilityState → SKIPPED</span></div>
+                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:06</span><span style="color:var(--danger)">SHIELD applied client-side only</span></div>
+                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:07</span><span style="color:#fff">DAMAGE ally=Ashe absorbed=0</span></div>
+                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:09</span><span style="color:var(--danger)">STATE desync=true shield_client=true shield_server=false</span></div>
               </sc-if>
             </div>
             <span onClick="{{ togglePlayerLog }}" style="font:400 14px/20px var(--font-body);color:var(--text-secondary);text-decoration:underline;cursor:pointer">{{ playerLogToggleLabel }}</span>
@@ -2301,7 +2301,7 @@ const TAB_ITEMS = [
   { value: 'overview', label: 'Overview' },
   { value: 'retention', label: 'Retention' },
   { value: 'engagement', label: 'Engagement' },
-  { value: 'raw', label: 'Raw data · 19' }
+  { value: 'raw', label: 'Raw data' }
 ];
 // ===== My Tasks view (canvas / timeline / task plan) — ported from the standalone reference =====
 const TASK_ICON_PATHS = {
@@ -2335,17 +2335,20 @@ const COLOR_MAP = {
   neutral: { border: 'var(--border-strong)', bg: 'var(--bg-surface-2)', chip: 'var(--text-secondary)' }
 };
 // `confidence` is how sure the model is that these notes belong in one bucket.
-// Tight, single-subject clusters score high; the platform-mix pair overlaps in
-// meaning, so the model is less certain they should stand apart.
+// A single role with one kind of work scores high; a lane that mixes coordination
+// with hands-on fixes scores lower, because the boundary is genuinely fuzzier.
+// This page belongs to the developer who owns the build, not to the producer running
+// the sprint. So the clusters are the defects and systems this developer is actually
+// holding — cross-team coordination, comms and investigation work live elsewhere.
 const TOPIC_GROUPS = [
-  { id: 'lobby', label: 'Champ select desync on accept', color: 'info', significant: false, x: 90, y: 90, confidence: 86 },
-  { id: 'crashes', label: 'Crash reports — 26.16', color: 'accent', significant: true, x: 560, y: 60, confidence: 94 },
-  { id: 'perf', label: 'Teamfight frame drops', color: 'warning', significant: true, x: 1030, y: 90, confidence: 81 },
-  { id: 'bug', label: 'Bug report — Baron pit terrain', color: 'danger', significant: true, x: 1500, y: 60, confidence: 97 },
-  { id: 'input', label: 'Controller & keybind conflicts', color: 'info', significant: false, x: 110, y: 490, confidence: 74 },
-  { id: 'locale', label: 'Localization defects', color: 'success', significant: false, x: 580, y: 510, confidence: 68 },
-  { id: 'ranked', label: 'LP not awarded after win', color: 'accent', significant: false, x: 1050, y: 490, confidence: 88 },
-  { id: 'api', label: 'Riot API rate-limit breakage', color: 'success', significant: false, x: 1520, y: 510, confidence: 79 }
+  { id: 'yuumi', label: 'Yuumi passive desync — P0', color: 'danger', significant: true, x: 90, y: 90, confidence: 97 },
+  { id: 'crash', label: 'Wild Rift cross-region crash', color: 'danger', significant: true, x: 560, y: 60, confidence: 94 },
+  { id: 'viego', label: 'Viego spellblade cooldown', color: 'accent', significant: true, x: 1030, y: 90, confidence: 92 },
+  { id: 'smolder', label: 'Smolder balance implementation', color: 'success', significant: false, x: 1500, y: 60, confidence: 86 },
+  { id: 'perf', label: 'Min-spec frame time', color: 'warning', significant: true, x: 110, y: 490, confidence: 81 },
+  { id: 'lp', label: 'LP write on shard failover', color: 'accent', significant: false, x: 580, y: 510, confidence: 88 },
+  { id: 'polish', label: 'Client polish defects (P3–P4)', color: 'info', significant: false, x: 1050, y: 490, confidence: 74 },
+  { id: 'release', label: 'Patch 26.04 release prep', color: 'info', significant: false, x: 1520, y: 510, confidence: 68 }
 ];
 const CONFIDENCE_DEFAULT = 80;
 const CONFIDENCE_MIN = 50, CONFIDENCE_MAX = 99;
@@ -2379,40 +2382,42 @@ const DAYS_AGO = {
   n17: 5, n18: 5, n19: 8, n20: 4, n21: 4, n22: 6
 };
 const NOTES = [
-  { id: 'n1', topicId: 'lobby', dx: 0, dy: 0, title: 'Desync on accept', body: 'Client and server champ-select state diverge after a dodge' },
-  { id: 'n2', topicId: 'lobby', dx: 200, dy: 40, title: 'Affected lobbies', body: '1,284 champ selects hard-locked since 26.16' },
-  { id: 'n3', topicId: 'lobby', dx: 70, dy: 170, title: 'Repro rate', body: '6 of 10 lobbies where a duo partner dodges inside 3s' },
-  { id: 'n4', topicId: 'crashes', dx: 0, dy: 0, title: 'Crash rate — 26.16', body: '0.42% of sessions, up from 0.11% on 26.15' },
-  { id: 'n5', topicId: 'crashes', dx: 200, dy: 40, title: 'Top stack', body: 'NullReference in LobbyService::onPartyDissolve() at champ select' },
-  { id: 'n6', topicId: 'crashes', dx: 70, dy: 170, title: 'Platform split', body: '78% Windows 11, 14% Windows 10, 8% macOS' },
-  { id: 'n7', topicId: 'perf', dx: 0, dy: 0, title: 'Teamfight frame time', body: '45ms median when 3+ ults overlap — target is 16ms' },
-  { id: 'n8', topicId: 'perf', dx: 200, dy: 40, title: 'Worst offender', body: 'VFX particle pooling scales O(n²) with concurrent ults' },
-  { id: 'n9', topicId: 'perf', dx: 70, dy: 170, title: 'Minimum spec', body: 'Drops to 24fps in Baron fights on min-spec hardware' },
-  { id: 'n10', topicId: 'bug', dx: 0, dy: 0, title: '#BUG-47248 · P0', body: 'Flash into the Baron pit wall → champion stuck inside terrain' },
-  { id: 'n11', topicId: 'bug', dx: 200, dy: 40, title: 'Root cause', body: 'Order of ops: SummonerFlash::resolve() races NavMesh::clampToWalkable()' },
-  { id: 'n12', topicId: 'bug', dx: 70, dy: 170, title: 'Reported by', body: 'Player BerniceSun02, Jul 14 2026 — replay clip attached' },
-  { id: 'n13', topicId: 'input', dx: 0, dy: 0, title: 'Keybinds reset', body: 'Custom keybinds lost after alt-tab on Windows' },
-  { id: 'n14', topicId: 'input', dx: 200, dy: 40, title: 'Controller defaults', body: 'Right stick unmapped in the default controller profile' },
-  { id: 'n15', topicId: 'locale', dx: 0, dy: 0, title: 'Truncated strings', body: 'German shop UI overflows on 3 of 12 item tooltips' },
-  { id: 'n16', topicId: 'locale', dx: 200, dy: 40, title: 'Missing keys', body: '17 strings added in 26.16 are untranslated in every locale' },
-  { id: 'n17', topicId: 'ranked', dx: 0, dy: 0, title: 'LP not awarded', body: '12,412 reports of a win that never credited LP' },
-  { id: 'n18', topicId: 'ranked', dx: 200, dy: 40, title: 'Trigger window', body: 'Only when the match-end write overlaps a shard failover' },
-  { id: 'n19', topicId: 'ranked', dx: 70, dy: 170, title: 'Recovery path', body: 'Replaying the match record restores LP in 9 of 10 cases' },
-  { id: 'n20', topicId: 'api', dx: 0, dy: 0, title: 'Trackers broken by 26.16', body: '23 of the top 100 third-party trackers fail to sync' },
-  { id: 'n21', topicId: 'api', dx: 200, dy: 40, title: 'Common cause', body: 'A match-v5 participant field was renamed with no compatibility shim' },
-  { id: 'n22', topicId: 'api', dx: 70, dy: 170, title: 'Tracker reports', body: '31% of new bug reports arrive via tracker integrations' }
+  { id: 'n1', topicId: 'yuumi', dx: 0, dy: 0, title: 'Repro', body: 'Interrupt the cast anywhere in the 0.25s window — 100% repro' },
+  { id: 'n2', topicId: 'yuumi', dx: 200, dy: 40, title: 'Root cause', body: 'onCastComplete() applies the shield before syncToServer() confirms it' },
+  { id: 'n3', topicId: 'yuumi', dx: 70, dy: 170, title: 'Blast radius', body: '2,140 games affected since 26.03 — replay clip attached' },
+  { id: 'n4', topicId: 'crash', dx: 0, dy: 0, title: 'Crash rate', body: '0.42% of sessions on 26.03, up from 0.11% on 26.02' },
+  { id: 'n5', topicId: 'crash', dx: 200, dy: 40, title: 'Top stack', body: 'Null deref in MatchmakingSvc::resolveCrossRegion()' },
+  { id: 'n6', topicId: 'crash', dx: 70, dy: 170, title: 'Still unowned', body: 'P0 at 78% repro with no assignee on day 8 of 14' },
+  { id: 'n7', topicId: 'viego', dx: 0, dy: 0, title: 'Symptom', body: 'Spellblade procs on every consecutive basic attack instead of once' },
+  { id: 'n8', topicId: 'viego', dx: 200, dy: 40, title: 'Expected', body: 'One proc, then a 1.5s item window — possession resets it to 0' },
+  { id: 'n9', topicId: 'smolder', dx: 0, dy: 0, title: 'Blocked', body: 'Cannot start until the design lock closes on day 7' },
+  { id: 'n10', topicId: 'smolder', dx: 200, dy: 40, title: 'Target band', body: 'Win rate has sat 18% above band since 26.03' },
+  { id: 'n11', topicId: 'smolder', dx: 70, dy: 170, title: 'Scope', body: 'Numbers only — no ability rework lands in this patch' },
+  { id: 'n12', topicId: 'perf', dx: 0, dy: 0, title: 'Frame time', body: '45ms median on min-spec during recall — target is 16ms' },
+  { id: 'n13', topicId: 'perf', dx: 200, dy: 40, title: 'Worst offender', body: 'Recall VFX allocates per frame instead of pooling' },
+  { id: 'n14', topicId: 'perf', dx: 70, dy: 170, title: 'Affected hardware', body: '45% repro on low-end, 0% at recommended spec' },
+  { id: 'n15', topicId: 'lp', dx: 0, dy: 0, title: 'Trigger window', body: 'Only when the match-end write overlaps a shard failover' },
+  { id: 'n16', topicId: 'lp', dx: 200, dy: 40, title: 'Repro', body: '34% in staging, higher during regional maintenance' },
+  { id: 'n17', topicId: 'lp', dx: 70, dy: 170, title: 'Recovery path', body: 'Replaying the match record restores LP in 9 of 10 cases' },
+  { id: 'n18', topicId: 'polish', dx: 0, dy: 0, title: 'Ward clipping', body: 'Wards on the Baron pit lip fall through and give no vision' },
+  { id: 'n19', topicId: 'polish', dx: 200, dy: 40, title: 'Hitbox mismatch', body: 'Aurelion Sol tornado — fix submitted, awaiting QA' },
+  { id: 'n20', topicId: 'polish', dx: 70, dy: 170, title: 'Shop search', body: 'Partial champion names return no results' },
+  { id: 'n21', topicId: 'release', dx: 0, dy: 0, title: 'Release gate', body: 'No P0 may be open at the day 13 sign-off' },
+  { id: 'n22', topicId: 'release', dx: 200, dy: 40, title: 'PBE window', body: 'Full regression pass runs day 11–13' }
 ];
+// Sprint 26.04 runs Aug 1–14, 2026 and today is day 8, so dueDays is measured from
+// there: the design lock (day 7) has passed and the patch ships in 6 days.
 const TASKS = [
-  { id: 't1', text: 'Fix the Flash + Baron pit terrain collision (#BUG-47248)', topicId: 'bug', dueDays: 2, estimate: '4 hrs' },
-  { id: 't2', text: 'Patch the LobbyService null deref crashing champ select', topicId: 'crashes', dueDays: 1, estimate: '1 day' },
-  { id: 't3', text: 'Guard the match-end LP write against shard failover', topicId: 'ranked', dueDays: 4, estimate: '3 days' },
-  { id: 't4', text: 'Reconcile champ-select state between client and server on dodge', topicId: 'lobby', dueDays: 9, estimate: '1 week' },
-  { id: 't5', text: 'Profile and flatten the O(n²) VFX particle pooling loop', topicId: 'perf', dueDays: 14, estimate: '4 days' },
-  { id: 't6', text: 'Ship a compatibility shim for the renamed match-v5 field', topicId: 'api', dueDays: 7, estimate: '2 days' },
-  { id: 't7', text: 'Restore custom keybinds across alt-tab', topicId: 'input', dueDays: 21, estimate: '1 day' },
-  { id: 't8', text: 'Fix German tooltip overflow and land the 17 missing strings', topicId: 'locale', dueDays: 30, estimate: '2 days' },
-  { id: 't9', text: 'Add a crash-rate regression gate to the patch build', topicId: 'crashes', dueDays: 45, estimate: '3 days' },
-  { id: 't10', text: 'Cut the 26.16 hotfix branch off main', topicId: 'bug', dueDays: -3, estimate: '1 hr' }
+  { id: 't1', text: 'Fix the Yuumi passive desync (#BUG-88213)', topicId: 'yuumi', dueDays: 1, estimate: '6 hrs' },
+  { id: 't2', text: 'Pick up the unowned Wild Rift cross-region crash (#BUG-88201)', topicId: 'crash', dueDays: 0, estimate: '2 days' },
+  { id: 't3', text: 'Push the Aurelion Sol hitbox fix to PBE for QA (#BUG-88190)', topicId: 'polish', dueDays: -1, estimate: '3 hrs' },
+  { id: 't4', text: 'Land the Viego spellblade cooldown fix (#BUG-88208)', topicId: 'viego', dueDays: 2, estimate: '1 day' },
+  { id: 't5', text: 'Implement the locked Smolder balance numbers', topicId: 'smolder', dueDays: 3, estimate: '1 day' },
+  { id: 't6', text: 'Guard the match-end LP write against shard failover (#BUG-88147)', topicId: 'lp', dueDays: 4, estimate: '3 days' },
+  { id: 't7', text: 'Pool the recall VFX allocation on min-spec (#BUG-88176)', topicId: 'perf', dueDays: 5, estimate: '2 days' },
+  { id: 't8', text: 'Fix partial-name matching in item shop search (#BUG-88164)', topicId: 'polish', dueDays: 6, estimate: '4 hrs' },
+  { id: 't9', text: 'Add a crash-rate regression gate to the 26.04 build', topicId: 'release', dueDays: 3, estimate: '1 day' },
+  { id: 't10', text: 'Run the PBE regression pass and sign off 26.04', topicId: 'release', dueDays: 5, estimate: '2 days' }
 ];
 const NOTE_W = 190, NOTE_H = 110, PAD = 46, GRID = 24;
 // How far a dragged note has to clear its bucket before the bucket lets go of it.
@@ -2436,7 +2441,7 @@ const DATE_RANGE_OPTIONS = [
 ];
 const RANGE_OPTIONS = [
   { value: 'all', label: 'All-time' },
-  { value: 'since2616', label: 'Since patch 26.16' },
+  { value: 'since2603', label: 'Since patch 26.03' },
   { value: '90d', label: 'Last 90 days' },
   { value: '30d', label: 'Last 30 days' }
 ];
@@ -2451,20 +2456,22 @@ const SEGMENT_OPTIONS = [
 // Peak concurrent players at season milestones. Riot does not publish a live CCU
 // feed the way a storefront does, so these are the disclosed seasonal peaks.
 const MILESTONES = [
-  { label: '2016 · S6', ccu: 5200000 },
-  { label: '2019 · S9', ccu: 8000000 },
-  { label: '2021 · S11', ccu: 7400000 },
-  { label: '2023 · S13', ccu: 6900000 },
-  { label: '2025 · Worlds', ccu: 8140000 },
-  { label: '2026 · today', ccu: 5620000 }
+  { label: '2019 · S9', ccu: 5100000 },
+  { label: '2021 · S11', ccu: 6400000 },
+  { label: '2023 · S13', ccu: 7200000 },
+  { label: '2025 · Worlds', ccu: 8100000 },
+  { label: '2026 · today', ccu: 8100000 }
 ];
 
-// Monthly actives split by shard region (134.2M total). Asia carries the majority,
-// largely on the Tencent-operated mainland China client.
+// Monthly actives by competitive region, keyed to the league that serves each shard.
 const REGION_MIX = [
-  { label: 'Asia (CN, KR, SEA, JP)', value: 71.5, display: '71.5M · 53%', color: 'var(--accent)' },
-  { label: 'Europe (EUW, EUNE, TR, RU)', value: 34.2, display: '34.2M · 26%', color: 'var(--info)' },
-  { label: 'Americas (NA, BR, LAN, LAS)', value: 28.5, display: '28.5M · 21%', color: 'var(--warning)' }
+  { label: 'China (LPL)', value: 30, display: '46.6M · 30%', color: 'var(--accent)' },
+  { label: 'EMEA (LEC)', value: 14, display: '21.7M · 14%', color: 'var(--info)' },
+  { label: 'Asia-Pacific (LCP)', value: 12, display: '18.6M · 12%', color: 'var(--warning)' },
+  { label: 'North America (LCS)', value: 10, display: '15.5M · 10%', color: 'var(--purple-400, #a78bfa)' },
+  { label: 'Korea (LCK)', value: 8, display: '12.4M · 8%', color: 'var(--blue-400, #60a5fa)' },
+  { label: 'Brazil (CBLOL)', value: 7, display: '10.9M · 7%', color: 'var(--pink-400, #f472b6)' },
+  { label: 'Other regions', value: 19, display: '29.5M · 19%', color: 'var(--zinc-600, #52525b)' }
 ];
 
 const PATCH_COLS = [
@@ -2474,15 +2481,13 @@ const PATCH_COLS = [
   { key: 'prior', label: 'Prior patch', align: 'right', mono: true },
   { key: 'change', label: 'Change', align: 'right' }
 ];
-// A two-week cadence means the table reads as a running health check, not a history
-// of landmark releases. 26.14 is the durability rework; 26.16 is the current build.
+// Two-week cadence. 26.04 is the patch the current sprint is building toward, so it
+// carries a scheduled date rather than a measured peak.
 const PATCH_ROWS = [
-  { id: 1, update: '26.11', date: 'May 20, 2026', peak: '5,412,880', prior: '5,388,140', change: '+0.5%' },
-  { id: 2, update: '26.12', date: 'Jun 3, 2026', peak: '5,504,210', prior: '5,412,880', change: '+1.7%' },
-  { id: 3, update: '26.13', date: 'Jun 17, 2026', peak: '5,731,905', prior: '5,504,210', change: '+4.1%' },
-  { id: 4, update: '26.14', date: 'Jul 1, 2026', peak: '6,048,332', prior: '5,731,905', change: '+5.5%' },
-  { id: 5, update: '26.15', date: 'Jul 15, 2026', peak: '5,884,617', prior: '6,048,332', change: '−2.7%' },
-  { id: 6, update: '26.16', date: 'Jul 29, 2026', peak: '5,620,441', prior: '5,884,617', change: '−4.5%' }
+  { id: 1, update: '26.01', date: 'Jun 19, 2026', peak: '7,845,200', prior: '7,798,410', change: '+0.6%' },
+  { id: 2, update: '26.02', date: 'Jul 3, 2026', peak: '7,912,660', prior: '7,845,200', change: '+0.9%' },
+  { id: 3, update: '26.03', date: 'Jul 17, 2026', peak: '8,104,930', prior: '7,912,660', change: '+2.4%' },
+  { id: 4, update: '26.04', date: 'Aug 14, 2026', peak: '—', prior: '8,104,930', change: 'scheduled' }
 ];
 
 const REGION_COLS = [
@@ -2492,19 +2497,23 @@ const REGION_COLS = [
   { key: 'notes', label: 'Notes' }
 ];
 const REGION_ROWS = [
-  { id: 1, region: 'Asia (CN, KR, SEA, JP)', players: '71.5M', share: '53%', notes: 'Mainland China runs on a separate Tencent client' },
-  { id: 2, region: 'Europe (EUW, EUNE, TR, RU)', players: '34.2M', share: '26%', notes: 'EUW alone carries roughly half the European base' },
-  { id: 3, region: 'Americas (NA, BR, LAN, LAS)', players: '28.5M', share: '21%', notes: 'Brazil is the largest single Americas shard' }
+  { id: 1, region: 'China (LPL)', players: '46.6M', share: '30%', notes: 'Operated separately by Tencent; reports on its own cadence' },
+  { id: 2, region: 'EMEA (LEC)', players: '21.7M', share: '14%', notes: 'EUW carries roughly half the European base' },
+  { id: 3, region: 'Asia-Pacific (LCP)', players: '18.6M', share: '12%', notes: 'Consolidated from the former PCS and VCS shards' },
+  { id: 4, region: 'North America (LCS)', players: '15.5M', share: '10%', notes: 'Highest ARPPU of the western regions' },
+  { id: 5, region: 'Korea (LCK)', players: '12.4M', share: '8%', notes: 'Small base, outsized esports viewership' },
+  { id: 6, region: 'Brazil (CBLOL)', players: '10.9M', share: '7%', notes: 'Largest single Americas shard outside NA' },
+  { id: 7, region: 'Other regions', players: '29.5M', share: '19%', notes: 'LAN, LAS, TR, RU, JP and OCE combined' }
 ];
 
-// July 2026 daily active players (millions). X is calendar day so ticks align to
-// real dates; the mid-month climb tracks the Split 2 ranked push.
+// July 2026 daily active users (millions). X is calendar day so ticks align to real
+// dates; DAU runs ~22.5% of the 155.2M monthly base.
 const DAU_TREND = [
-  { day: 1, label: 'Jul 1', value: 28.4 }, { day: 3, label: 'Jul 3', value: 29.1 }, { day: 5, label: 'Jul 5', value: 30.2 },
-  { day: 8, label: 'Jul 8', value: 29.6 }, { day: 10, label: 'Jul 10', value: 30.4 }, { day: 12, label: 'Jul 12', value: 31.1 },
-  { day: 15, label: 'Jul 15', value: 32.8 }, { day: 17, label: 'Jul 17', value: 33.4 }, { day: 19, label: 'Jul 19', value: 33.9 },
-  { day: 21, label: 'Jul 21', value: 34.6 }, { day: 23, label: 'Jul 23', value: 34.2 }, { day: 24, label: 'Jul 24', value: 33.5 },
-  { day: 26, label: 'Jul 26', value: 32.6 }, { day: 28, label: 'Jul 28', value: 31.9 }, { day: 30, label: 'Jul 30', value: 31.4 }
+  { day: 1, label: 'Jul 1', value: 33.1 }, { day: 3, label: 'Jul 3', value: 33.4 }, { day: 5, label: 'Jul 5', value: 34.0 },
+  { day: 8, label: 'Jul 8', value: 33.6 }, { day: 10, label: 'Jul 10', value: 33.9 }, { day: 12, label: 'Jul 12', value: 34.2 },
+  { day: 15, label: 'Jul 15', value: 34.4 }, { day: 17, label: 'Jul 17', value: 35.1 }, { day: 19, label: 'Jul 19', value: 35.4 },
+  { day: 21, label: 'Jul 21', value: 35.2 }, { day: 23, label: 'Jul 23', value: 34.8 }, { day: 24, label: 'Jul 24', value: 34.6 },
+  { day: 26, label: 'Jul 26', value: 34.5 }, { day: 28, label: 'Jul 28', value: 34.7 }, { day: 30, label: 'Jul 30', value: 34.9 }
 ];
 const DAU_X_TICKS = [
   { day: 1, label: 'JUL 1' },
@@ -2520,8 +2529,28 @@ const DAU_Y_TICKS = [
   { value: 30, label: '30M' },
   { value: 40, label: '40M' }
 ];
-// Daily battle pass activations, in thousands. The month-end spike is the Act III
-// pass going live alongside patch 26.16.
+// Monthly actives across July (millions) — the mid-season patch pulled MAU back up.
+const MAU_TREND = [
+  { day: 3, label: 'Jul 3', value: 151.2 }, { day: 10, label: 'Jul 10', value: 152.8 },
+  { day: 17, label: 'Jul 17', value: 154.0 }, { day: 24, label: 'Jul 24', value: 153.5 },
+  { day: 31, label: 'Jul 31', value: 155.2 }
+];
+// New-player retention curve, Q2 2026 cohort. D0 is the 100% baseline.
+const RETENTION_TREND = [
+  { day: 0, label: 'D0', value: 100 }, { day: 1, label: 'D1', value: 48 },
+  { day: 3, label: 'D3', value: 36 }, { day: 7, label: 'D7', value: 26 },
+  { day: 14, label: 'D14', value: 19 }, { day: 30, label: 'D30', value: 14 }
+];
+// Monthly revenue by category (% of the $110.4M July total).
+const REVENUE_MIX = [
+  { label: 'Skins (direct)', value: 58, display: '$64.0M · 58%' },
+  { label: 'Loot / gacha orbs', value: 16, display: '$17.7M · 16%' },
+  { label: 'Battle pass', value: 14, display: '$15.5M · 14%' },
+  { label: 'Chromas & bundles', value: 8, display: '$8.8M · 8%' },
+  { label: 'Other', value: 4, display: '$4.4M · 4%' }
+];
+// Daily battle pass activations, in thousands. The month-end spike is the Act II
+// pass reward restructure landing.
 const PASS_TREND = [
   { day: 1, label: 'Jul 1', value: 14 }, { day: 3, label: 'Jul 3', value: 22 }, { day: 5, label: 'Jul 5', value: 18 },
   { day: 7, label: 'Jul 7', value: 31 }, { day: 9, label: 'Jul 9', value: 27 }, { day: 11, label: 'Jul 11', value: 35 },
@@ -2529,98 +2558,98 @@ const PASS_TREND = [
   { day: 19, label: 'Jul 19', value: 44 }, { day: 21, label: 'Jul 21', value: 52 }, { day: 23, label: 'Jul 23', value: 48 },
   { day: 25, label: 'Jul 25', value: 61 }, { day: 27, label: 'Jul 27', value: 55 }, { day: 30, label: 'Jul 30', value: 120 }
 ];
-// Post-game survey sentiment, 0–100. The slide starts with the 26.14 durability
-// rework and has not recovered through 26.16.
+// Net player sentiment (NPS-style, −100..100). The drop follows the loot-orb
+// battle-pass restructure rather than any single balance change.
 const SENTIMENT_TREND = [
-  { day: 1, label: 'Jul 1', value: 74.1 }, { day: 5, label: 'Jul 5', value: 73.6 }, { day: 9, label: 'Jul 9', value: 72.8 },
-  { day: 13, label: 'Jul 13', value: 72.0 }, { day: 17, label: 'Jul 17', value: 71.5 }, { day: 21, label: 'Jul 21', value: 71.2 },
-  { day: 25, label: 'Jul 25', value: 71.0 }, { day: 30, label: 'Jul 30', value: 70.8 }
+  { day: 1, label: 'Mar', value: 11 }, { day: 2, label: 'Apr', value: 7 },
+  { day: 3, label: 'May', value: -6 }, { day: 4, label: 'Jun', value: -4 },
+  { day: 5, label: 'Jul', value: -2 }
 ];
-// r/leagueoflegends subscribers, in millions.
+// Daily unique esports viewers, in millions.
 const ENGAGE_TREND = [
-  { day: 1, label: 'Jul 1', value: 8.28 }, { day: 5, label: 'Jul 5', value: 8.31 }, { day: 9, label: 'Jul 9', value: 8.33 },
-  { day: 13, label: 'Jul 13', value: 8.35 }, { day: 17, label: 'Jul 17', value: 8.37 }, { day: 21, label: 'Jul 21', value: 8.38 },
-  { day: 25, label: 'Jul 25', value: 8.40 }, { day: 30, label: 'Jul 30', value: 8.41 }
+  { day: 1, label: 'Jul 3', value: 2.1 }, { day: 2, label: 'Jul 10', value: 2.3 },
+  { day: 3, label: 'Jul 17', value: 2.5 }, { day: 4, label: 'Jul 24', value: 2.4 },
+  { day: 5, label: 'Jul 31', value: 2.7 }
 ];
 
 const KPI_VIEWS = {
-  'Daily active players': {
-    headline: '+ 2.9M Since patch 26.14',
+  'Daily active users': {
+    headline: '34.9M daily · 22.5% of MAU',
     trend: DAU_TREND,
-    summary: 'Daily actives closed July at <b>31.4M</b>, up roughly <b>2.9M since patch 26.14</b>. The climb peaks at 34.6M on Jul 21 as Split 2 ranked runs toward its cutoff, then eases back to a normal weekday baseline.'
+    summary: 'Daily actives closed July at <b>34.9M</b>, about <b>22.5% of the 155.2M monthly base</b>. That stickiness ratio is the number to watch — it holds habitual play steady even in a mid-patch week with no content drop.'
   },
-  'Battle pass activations': {
-    headline: '120K activations · Jul 30',
+  'Monthly revenue': {
+    headline: '$110.4M · +15.8% MoM',
     trend: PASS_TREND,
-    summary: 'Battle pass activations spiked to <b>120K on Jul 30</b>, the day the Act III pass went live alongside patch 26.16. A launch-day spike is expected — the number worth watching is week-two retention on that cohort.'
+    summary: 'July revenue reached <b>$110.4M</b>, up <b>15.8% month-over-month</b> on skin releases. Skins carry 58% of the total; the battle pass is only 14% and shrinking after the loot-orb restructure.'
   },
   'Peak concurrent players': {
-    headline: 'All-time peak · 8.14M',
+    headline: 'All-time peak · 8.1M',
     trend: MILESTONES,
-    summary: 'Concurrent players peaked at <b>8.14M</b> during the <b>2025 Worlds final</b>, narrowly above the 8.0M record that had stood since S9. The current 5.62M baseline sits 31% off that peak — an ordinary between-event trough, not a decline.'
+    summary: 'In-client concurrency peaks at <b>8.1M</b>, a level first reached around Worlds 2025 and held since. This is distinct from esports viewership concurrency, which peaks far higher during Worlds.'
   },
-  'Player sentiment': {
-    headline: '70.8 / 100 · falling',
+  'Paying conversion': {
+    headline: '4.6% of actives spend',
+    trend: RETENTION_TREND,
+    summary: 'about <b>4.6%</b> of active players spend in a given month — typical for a cosmetic free-to-play model. Monthly ARPPU is <b>$15.40</b> against a blended ARPU of <b>$0.71</b>, so the spend distribution is heavily top-weighted.'
+  },
+  'Monthly active users': {
+    headline: '155.2M · +3.5% MoM',
+    trend: MAU_TREND,
+    summary: 'Monthly actives closed July at <b>155.2M</b>, up <b>3.5%</b> and above the 150M floor the title has held all year. The early-summer lull bottomed near 150M in late June before the mid-season patch pulled it back.'
+  },
+  'D1 retention': {
+    headline: '48% day-one return',
+    trend: RETENTION_TREND,
+    summary: 'New players return at <b>48% on day one</b> — strong for a competitive title this far into its life. The curve then follows the mature-game shape: 26% by D7 and 14% by D30.'
+  },
+  'D7 retention': {
+    headline: '26% day-seven return',
+    trend: RETENTION_TREND,
+    summary: '<b>26%</b> of new players are still returning a week in. This is the clearest onboarding and core-loop health indicator, and the tutorial gap flagged in triage sits directly upstream of it.'
+  },
+  'D30 retention': {
+    headline: '14% day-thirty return',
+    trend: RETENTION_TREND,
+    summary: 'The committed-core tail sits at <b>14% on day 30</b>. Ranked players retain well above this line, which is why the Diamond+ churn investigation matters more than the headline number.'
+  },
+  'Net player sentiment': {
+    headline: '−6 · post-orb change',
     trend: SENTIMENT_TREND,
-    summary: 'Post-game survey sentiment slid from <b>74.1 to 70.8</b> across July. The break starts with the <b>26.14 durability rework</b> and has not recovered through 26.16 — the clearest negative trend on the board.'
+    summary: 'Net sentiment turned negative in May, hitting <b>−6</b> after loot orbs replaced several battle pass skins. It has recovered to −2 but has not returned to the positive band it held before the restructure.'
   },
-  'Current concurrent players': {
-    headline: '5.62M concurrent · softening',
-    trend: MILESTONES,
-    summary: 'Current concurrents sit near <b>5.62M</b>, down <b>4.5% patch-over-patch</b> and 31% off the Worlds 2025 peak. Two consecutive down patches is the part that deserves attention, not the absolute number.'
-  },
-  'Vs. all-time peak': {
-    headline: '−31% vs Nov 2025 peak',
-    trend: MILESTONES,
-    summary: 'CCU is <b>31% below</b> the 8.14M Worlds 2025 high. Off-season troughs of this depth are normal for the title; concurrency has historically recovered with the pre-season patch.'
-  },
-  'Monthly active players': {
-    headline: '134.2M monthly actives',
-    trend: MILESTONES,
-    summary: 'Monthly actives hold at <b>134.2M</b> unique logins on a rolling 30-day window. Asia contributes 53% of that base, most of it on the separately operated mainland China client.'
-  },
-  'Day-30 return rate': {
-    headline: '68% day-30 return',
-    trend: MILESTONES,
-    summary: 'The Split 2 cohort returns at <b>68% on day 30</b>, up 3 points on Split 1. The ranked split structure keeps mid-term retention strong even while sentiment softens.'
-  },
-  'Reddit subscribers': {
-    headline: '8.41M r/leagueoflegends',
+  'Daily esports viewers': {
+    headline: '2.7M daily viewers',
     trend: ENGAGE_TREND,
-    summary: 'Community reach on Reddit is at <b>8.41M subscribers</b>, a durable off-client audience that stays active between patches — and the first place balance complaints surface.'
+    summary: 'Daily unique viewers climbed to <b>2.7M</b> through the summer-split playoff race. MSI lifted this above 4M in May — the annual pattern is that tournaments, not patches, drive viewership.'
   },
-  'Twitch watched hours': {
-    headline: '112.4M Twitch hours',
-    trend: ENGAGE_TREND.map((d, i) => ({ day: d.day, label: d.label, value: 104000000 + i * 1200000 })),
-    summary: 'Twitch watched hours reached <b>112.4M</b> for the month — creators and league broadcasts keep the game discoverable well outside the client.'
-  },
-  'TikTok posts': {
-    headline: '14.2M #leagueoflegends posts',
-    trend: ENGAGE_TREND.map((d, i) => ({ day: d.day, label: d.label, value: 13400 + i * 115 })),
-    summary: 'TikTok activity around <b>#leagueoflegends</b> sits near <b>14.2M posts</b>, extending reach into short-form discovery well beyond the active player base.'
+  'Battle pass attach rate': {
+    headline: '17.9% attach · −1.3pp',
+    trend: PASS_TREND,
+    summary: 'Pass attach fell to <b>17.9%</b> and completion to <b>38%</b> (down ~4pp) after loot orbs replaced several pass skins. Attach and sentiment moved together, which points at the reward structure rather than pricing.'
   }
 };
 
 const SUMMARY_VARIANTS = {
-  'Daily active players': [
-    'Daily actives closed July at <b>31.4M</b>, up roughly <b>2.9M since patch 26.14</b>. The climb peaks at 34.6M on Jul 21 as Split 2 ranked runs toward its cutoff, then eases back to a normal weekday baseline.',
-    'Engagement is holding: <b>31.4M daily actives</b> with the month’s high at 34.6M. The shape is the usual ranked-split curve rather than anything patch-driven.',
-    'Ghost AI re-scored the DAU series: the mid-July lift is a genuine ranked-split effect, not a one-off event spike, and the settle back to 31.4M is on trend.'
+  'Daily active users': [
+    'Daily actives closed July at <b>34.9M</b>, about <b>22.5% of the 155.2M monthly base</b>. That stickiness ratio is the number to watch — it holds habitual play steady even in a mid-patch week with no content drop.',
+    'Engagement is holding: <b>34.9M daily actives</b> on a 155.2M monthly base. The shape is an ordinary mid-patch week rather than anything content-driven.',
+    'Ghost AI re-scored the DAU series: the late-July lift is within the normal weekly band, and stickiness at 22.5% is unchanged from June.'
   ],
-  'Battle pass activations': [
-    'Battle pass activations spiked to <b>120K on Jul 30</b>, the day the Act III pass went live alongside patch 26.16. A launch-day spike is expected — the number worth watching is week-two retention on that cohort.',
-    'Act III opened strong — <b>120K activations</b> in a single day, roughly 2× the prior in-month high. Conversion quality won’t be readable until the second week.',
-    'Re-run complete: the month-end activation spike is pass-launch driven and consistent with the Act I and Act II openings, not an anomaly.'
+  'Monthly revenue': [
+    'July revenue reached <b>$110.4M</b>, up <b>15.8% month-over-month</b> on skin releases. Skins carry 58% of the total; the battle pass is only 14% and shrinking after the loot-orb restructure.',
+    'Revenue is skin-led: <b>$110.4M</b> in July with 58% direct skin sales and a trailing-twelve-month total of <b>$1.39B</b>.',
+    'Re-run complete: the month-over-month lift is release-driven, not a pricing effect — attach rate actually fell over the same window.'
   ],
   'Peak concurrent players': [
-    'Concurrent players peaked at <b>8.14M</b> during the <b>2025 Worlds final</b>, narrowly above the 8.0M record that had stood since S9. The current 5.62M baseline sits 31% off that peak — an ordinary between-event trough, not a decline.',
-    'Season peaks still tell the story: <b>Worlds 2025</b> set the all-time high at <b>8.14M</b>, edging out a record that had held since 2019.',
-    'Regenerated take: the gap between the Worlds peak and today’s baseline is seasonal, and the 2026 pre-season patch is the natural recovery point.'
+    'In-client concurrency peaks at <b>8.1M</b>, a level first reached around Worlds 2025 and held since. This is distinct from esports viewership concurrency, which peaks far higher during Worlds.',
+    'Concurrency has plateaued at <b>8.1M</b> — the ceiling has not moved since Worlds 2025, which is what you would expect from a mature title between content seasons.',
+    'Regenerated take: the flat peak is not stagnation. MAU grew 3.5% over the same period, so the base is widening even where concurrency is capped.'
   ],
-  'Player sentiment': [
-    'Post-game survey sentiment slid from <b>74.1 to 70.8</b> across July. The break starts with the <b>26.14 durability rework</b> and has not recovered through 26.16 — the clearest negative trend on the board.',
-    'Sentiment is down <b>3.3 points</b> in a month, and the inflection lines up cleanly with the 26.14 durability changes rather than with any single champion.',
-    'Fresh pass: the decline is real and sustained across four patches — not survey noise. Balance perception, not client stability, is what the responses are penalising.'
+  'Paying conversion': [
+    'about <b>4.6%</b> of active players spend in a given month — typical for a cosmetic free-to-play model. Monthly ARPPU is <b>$15.40</b> against a blended ARPU of <b>$0.71</b>, so the spend distribution is heavily top-weighted.',
+    'Monetisation rests on a narrow base: <b>4.6% paying conversion</b>, ARPPU <b>$15.40</b>, ARPU <b>$0.71</b>. Small movements in conversion move revenue more than price changes do.',
+    'Fresh pass: conversion is stable, but pass attach fell 1.3pp over the same window — worth separating the recurring spend from the one-off skin buyers.'
   ]
 };
 
@@ -3010,72 +3039,72 @@ function buildSmoothAreaChart(data, opts) {
 const TAB_CONFIG = {
   overview: {
     kpis: [
-      { icon: 'device-gamepad-2', label: 'Daily active players', value: '31.4M', dir: 'up', trend: '+2.9M since patch 26.14' },
-      { icon: 'shopping-bag-heart', label: 'Battle pass activations', value: '120K', dir: 'flat', trend: 'Act III pass · Jul 30 peak' },
-      { icon: 'users', label: 'Peak concurrent players', value: '8.14M', dir: 'flat', trend: 'All-time record · Nov 2, 2025' },
-      { icon: 'text-scan-2', label: 'Player sentiment', value: '70.8', dir: 'down', trend: 'Post-game surveys · patch 26.16' }
+      { icon: 'device-gamepad-2', label: 'Daily active users', value: '34.9M', dir: 'up', trend: '22.5% of MAU · stickiness' },
+      { icon: 'shopping-bag-heart', label: 'Monthly revenue', value: '$110.4M', dir: 'up', trend: '+15.8% MoM on skin releases' },
+      { icon: 'users', label: 'Peak concurrent players', value: '8.1M', dir: 'flat', trend: 'In-client peak · Jul 2026' },
+      { icon: 'text-scan-2', label: 'Paying conversion', value: '4.6%', dir: 'up', trend: 'Share of actives who spend' }
     ],
-    chartHeadline: '+ 2.9M Since patch 26.14',
-    chartTitle: 'Concurrent players by patch',
+    chartHeadline: '34.9M daily · 22.5% of MAU',
+    chartTitle: 'Concurrent players by season',
     chartSub: 'Season peaks · all-time (Riot disclosures)',
     tableTitle: 'Patch impact on concurrent players',
     tableCols: PATCH_COLS,
     tableRows: PATCH_ROWS,
-    ghostSummary: 'Concurrency has fallen for two straight patches since the <b>26.14 durability rework</b> — 6.05M down to 5.62M, or −7.1% across the pair. Sentiment broke on the same patch, which points at balance perception rather than client stability.',
+    ghostSummary: 'Revenue is up <b>15.8% month-over-month</b> on skin releases while battle pass attach fell 1.3pp — the money is shifting from recurring pass spend toward one-off cosmetics. Sentiment has been negative since the loot-orb restructure that caused it.',
     showExtraRow: true,
     useDauTrend: true,
     insights: []
   },
   retention: {
     kpis: [
-      { icon: 'users', label: 'Current concurrent players', value: '5.62M', dir: 'down', trend: '−4.5% patch-over-patch' },
-      { icon: 'trendUp', label: 'Vs. all-time peak', value: '−31%', dir: 'down', trend: '8.14M peak on Nov 2, 2025' },
-      { icon: 'box', label: 'Monthly active players', value: '134.2M', dir: 'flat', trend: 'Rolling 30-day unique logins' },
-      { icon: 'star', label: 'Day-30 return rate', value: '68%', dir: 'up', trend: 'Split 2 cohort — up 3pts on Split 1' }
+      { icon: 'users', label: 'Monthly active users', value: '155.2M', dir: 'up', trend: '+3.5% MoM · above the 150M floor' },
+      { icon: 'trendUp', label: 'D1 retention', value: '48%', dir: 'flat', trend: 'New players · Q2 2026' },
+      { icon: 'box', label: 'D7 retention', value: '26%', dir: 'flat', trend: 'Onboarding & core-loop health' },
+      { icon: 'star', label: 'D30 retention', value: '14%', dir: 'down', trend: 'The committed-core tail' }
     ],
-    chartHeadline: 'Concurrent players by season',
-    chartTitle: 'Concurrent players by patch',
+    chartHeadline: 'New-player retention curve',
+    chartTitle: 'Concurrent players by season',
     chartSub: 'Season peaks · all-time (Riot disclosures)',
-    tableTitle: 'Post-patch player retention',
+    tableTitle: 'Patch impact on concurrent players',
     tableCols: PATCH_COLS,
     tableRows: PATCH_ROWS,
-    ghostSummary: 'Mid-term retention is healthy — the Split 2 cohort returns at <b>68% on day 30</b>, up 3 points on Split 1. Short-term concurrency is the weak spot: two consecutive down patches while the return rate holds suggests session frequency, not churn.',
+    ghostSummary: 'New-player retention runs <b>48% / 26% / 14%</b> at D1 / D7 / D30 — the mature-title shape. The live risk is not the headline curve but the <b>Diamond+ D7 drop from 22% to 16%</b>, which is a committed-core signal and is already an open investigation.',
     insights: [
-      { title: 'Day-30 return is up 3 points while concurrency falls', body: 'Returning players are not leaving — they are playing fewer sessions per week. The 68% Split 2 return rate against a −4.5% CCU patch means shorter play windows, not a shrinking base.', flag: false },
-      { title: 'Per-region churn cohorts — need more data', body: 'Riot does not publish per-shard retention. Regional CCU splits would separate a global balance reaction from a localised one (a KR-only drop reads very differently to a flat global dip).', flag: true }
+      { title: 'Diamond+ D7 retention fell 22% to 16%', body: 'Blended retention looks stable, so this only shows up when the cohort is split by rank. Ranked players normally retain well above the 26% blended D7 line — this cohort dropped below it. Investigation is queued with the Data squad.', flag: false },
+      { title: 'Per-region churn cohorts — need more data', body: 'Retention is aggregated globally in this pass. A regional split would separate a global reaction from a localised one — a KR-only drop reads very differently to a flat global dip.', flag: true }
     ]
   },
   engagement: {
     kpis: [
-      { icon: 'star', label: 'Player sentiment', value: '70.8', dir: 'down', trend: 'Post-game surveys · −3.3 in July' },
-      { icon: 'users', label: 'Reddit subscribers', value: '8.41M', dir: 'up', trend: 'r/leagueoflegends' },
-      { icon: 'trendUp', label: 'Twitch watched hours', value: '112.4M', dir: 'up', trend: 'Monthly total, 2026' },
-      { icon: 'box', label: 'TikTok posts', value: '14.2M', dir: 'up', trend: '#leagueoflegends' }
+      { icon: 'star', label: 'Net player sentiment', value: '−6', dir: 'down', trend: 'Community survey · post-orb change' },
+      { icon: 'users', label: 'Daily esports viewers', value: '2.7M', dir: 'up', trend: 'Summer split · unique viewers' },
+      { icon: 'trendUp', label: 'Battle pass attach rate', value: '17.9%', dir: 'down', trend: 'Season 2026 Act II · −1.3pp' },
+      { icon: 'box', label: 'Worlds 2025 peak viewers', value: '6.9M', dir: 'flat', trend: 'Excl. China co-streams' }
     ],
-    chartHeadline: 'Community reach over time',
-    chartTitle: 'Concurrent players by patch',
+    chartHeadline: 'Net sentiment since the orb change',
+    chartTitle: 'Concurrent players by season',
     chartSub: 'Season peaks · all-time (Riot disclosures)',
     tableTitle: 'Monthly actives by region',
     tableCols: REGION_COLS,
     tableRows: REGION_ROWS,
-    ghostSummary: 'Off-client reach keeps growing while in-client sentiment falls: <b>8.41M Reddit subscribers</b> and <b>112.4M Twitch hours</b> against a sentiment score down 3.3 points. Attention is not the problem — satisfaction is.',
+    ghostSummary: 'Sentiment turned negative in May at <b>−6</b> and has only recovered to −2. Pass attach fell <b>1.3pp</b> and completion ~4pp over the same window — three independent measures all pointing at the loot-orb reward restructure.',
     insights: [
-      { title: 'Reach is rising while sentiment falls', body: 'Reddit subscribers and Twitch hours both grew through July even as survey sentiment dropped 3.3 points. A louder audience is not a happier one — the discourse volume is partly the balance complaints themselves.', flag: false },
-      { title: 'Sentiment by region and rank — need more data', body: 'Post-game surveys are aggregated globally in this pass. Splitting by shard and by rank tier would show whether the 26.14 reaction is concentrated in high-elo play, where durability changes bite hardest.', flag: true }
+      { title: 'Sentiment, attach and completion all broke on the same change', body: 'Net sentiment −6, attach −1.3pp, completion −4pp — all dated to the loot-orb restructure that replaced several battle pass skins. Three separate measures moving together is a structural signal, not survey noise.', flag: false },
+      { title: 'Sentiment by region and rank — need more data', body: 'The community survey is aggregated globally. Splitting by shard and rank tier would show whether the reaction concentrates in the high-elo players who buy the most passes.', flag: true }
     ]
   },
   raw: {
     kpis: [
-      { icon: 'box', label: 'Records', value: '19', dir: 'flat', trend: 'bugs are screen recorded' },
-      { icon: 'trendUp', label: 'Date range covered', value: '2009–2026', dir: 'flat', trend: 'Launch through current patch' },
-      { icon: 'users', label: 'Sources', value: '9', dir: 'flat', trend: 'Riot, ActivePlayer, OP.GG, Twitch & more' },
-      { icon: 'star', label: 'Last refreshed', value: 'Patch 26.16', dir: 'flat', trend: 'Manual pull, not a live feed' }
+      { icon: 'box', label: 'Records', value: '26', dir: 'flat', trend: 'bugs are screen recorded' },
+      { icon: 'trendUp', label: 'Date range covered', value: '2019–2026', dir: 'flat', trend: 'Season 9 through the current patch' },
+      { icon: 'users', label: 'Sources', value: '9', dir: 'flat', trend: 'Analytics, Finance, Telemetry & more' },
+      { icon: 'star', label: 'Last refreshed', value: 'Patch 26.03', dir: 'flat', trend: 'Manual pull, not a live feed' }
     ],
     insights: []
   }
 };
 
-const SOURCE_LINE = 'Sources: Riot Games dev blog, ActivePlayer.io, LoLalytics, OP.GG, U.GG, Twitch Tracker, Esports Charts, SubredditStats, TikTok.';
+const SOURCE_LINE = 'Sources: Internal Analytics, Finance, Telemetry, Match Svc, Matchmaking Svc, Content Ops, Community Survey, Riot Press, Esports Charts.';
 
 const RAW_COLS = [
   { key: 'metric', label: 'Metric', sortable: true },
@@ -3084,43 +3113,57 @@ const RAW_COLS = [
   { key: 'source', label: 'Source' }
 ];
 const RAW_ROWS = [
-  { id: 1, metric: 'Concurrent players — all-time peak', value: '8,140,000', period: '2025-11-02', source: 'Esports Charts' },
-  { id: 2, metric: 'Concurrent players — S9 peak (prior record)', value: '8,000,000', period: '2019', source: 'Riot Games dev blog' },
-  { id: 3, metric: 'Concurrent players — S11 peak', value: '7,400,000', period: '2021', source: 'ActivePlayer.io' },
-  { id: 4, metric: 'Concurrent players — S13 peak', value: '6,900,000', period: '2023', source: 'ActivePlayer.io' },
-  { id: 5, metric: 'Concurrent players — patch 26.14 peak', value: '6,048,332', period: '2026-07-01', source: 'ActivePlayer.io' },
-  { id: 6, metric: 'Concurrent players — current (24h peak)', value: '5,620,441', period: '2026-07-29', source: 'ActivePlayer.io' },
-  { id: 7, metric: 'Concurrent players — live now', value: '3,214,880', period: '2026', source: 'ActivePlayer.io' },
-  { id: 8, metric: 'Monthly active players — all regions', value: '134,200,000', period: '2026-07', source: 'Riot Games dev blog' },
-  { id: 9, metric: 'Monthly actives — Asia (CN, KR, SEA, JP)', value: '71,500,000', period: '2026-07', source: 'Riot Games dev blog' },
-  { id: 10, metric: 'Monthly actives — Europe (EUW, EUNE, TR, RU)', value: '34,200,000', period: '2026-07', source: 'Riot Games dev blog' },
-  { id: 11, metric: 'Monthly actives — Americas (NA, BR, LAN, LAS)', value: '28,500,000', period: '2026-07', source: 'Derived (134.2M − Asia − Europe)' },
-  { id: 12, metric: 'Gross revenue — skins, passes & RP', value: '$1,780,000,000', period: '2025 (FY)', source: 'Third-party estimate' },
-  { id: 13, metric: 'Net revenue (est., after platform & regional cuts)', value: '$1,240,000,000', period: '2025 (FY)', source: 'Third-party estimate' },
-  { id: 14, metric: 'Player sentiment — post-game surveys', value: '70.8 / 100', period: '2026-07 (patch 26.16)', source: 'Riot Games dev blog' },
-  { id: 15, metric: 'Games played per day', value: '26,800,000', period: '2026-07', source: 'Riot Games dev blog' },
-  { id: 16, metric: 'Ranked players — Split 2 placements complete', value: '41,900,000', period: '2026-07', source: 'OP.GG' },
-  { id: 17, metric: 'Twitch watched hours', value: '112,400,000', period: '2026-07', source: 'Twitch Tracker' },
-  { id: 18, metric: 'Reddit subscribers — r/leagueoflegends', value: '8,412,600', period: '2026', source: 'SubredditStats' },
-  { id: 19, metric: 'TikTok posts — #leagueoflegends', value: '14,205,000', period: '2026', source: 'TikTok' }
+  { id: 1, metric: 'Monthly active users', value: '155,200,000', period: 'Jul 2026', source: 'Internal Analytics' },
+  { id: 2, metric: 'Daily active users', value: '34,900,000', period: 'Jul 2026', source: 'Internal Analytics' },
+  { id: 3, metric: 'Stickiness (DAU/MAU)', value: '22.5%', period: 'Jul 2026', source: 'Internal Analytics' },
+  { id: 4, metric: 'Peak concurrent players', value: '8,100,000', period: 'Jul 2026', source: 'Internal Analytics' },
+  { id: 5, metric: 'Registered accounts (lifetime)', value: '520,000,000+', period: 'Cumulative', source: 'Riot Press' },
+  { id: 6, metric: 'Monthly revenue', value: '$110,400,000', period: 'Jul 2026', source: 'Finance' },
+  { id: 7, metric: 'Trailing-12-mo revenue', value: '$1,390,000,000', period: 'Aug 2025–Jul 2026', source: 'Finance' },
+  { id: 8, metric: 'Paying conversion rate', value: '4.6%', period: 'Jul 2026', source: 'Internal Analytics' },
+  { id: 9, metric: 'ARPPU (monthly)', value: '$15.40', period: 'Jul 2026', source: 'Finance' },
+  { id: 10, metric: 'ARPU (monthly)', value: '$0.71', period: 'Jul 2026', source: 'Finance' },
+  { id: 11, metric: 'Skins released', value: '34', period: 'TTM', source: 'Content Ops' },
+  { id: 12, metric: 'Top skin line revenue', value: '$41,000,000', period: 'Q2 2026', source: 'Finance' },
+  { id: 13, metric: 'Battle pass attach rate', value: '17.9%', period: 'Season 2026 Act II', source: 'Internal Analytics' },
+  { id: 14, metric: 'Battle pass completion rate', value: '38%', period: 'Season 2026 Act II', source: 'Internal Analytics' },
+  { id: 15, metric: 'Loot orb open rate (per active)', value: '1.9', period: 'Jul 2026', source: 'Internal Analytics' },
+  { id: 16, metric: 'D1 retention (new players)', value: '48%', period: 'Q2 2026', source: 'Internal Analytics' },
+  { id: 17, metric: 'D7 retention (new players)', value: '26%', period: 'Q2 2026', source: 'Internal Analytics' },
+  { id: 18, metric: 'D30 retention (new players)', value: '14%', period: 'Q2 2026', source: 'Internal Analytics' },
+  { id: 19, metric: 'D7 retention — Diamond+ cohort', value: '16%', period: 'Q2 2026', source: 'Internal Analytics' },
+  { id: 20, metric: 'Worlds 2025 peak viewers', value: '6,900,000', period: 'Nov 2025', source: 'Esports Charts' },
+  { id: 21, metric: 'Worlds 2025 hours watched', value: '182,000,000', period: 'Oct–Nov 2025', source: 'Esports Charts' },
+  { id: 22, metric: 'Avg ranked queue time', value: '2m 40s', period: 'Jul 2026', source: 'Matchmaking Svc' },
+  { id: 23, metric: 'Avg match length', value: '28m 12s', period: 'Jul 2026', source: 'Match Svc' },
+  { id: 24, metric: 'Remake / AFK rate', value: '3.1%', period: 'Jul 2026', source: 'Match Svc' },
+  { id: 25, metric: 'Client crash rate', value: '0.42%', period: 'Patch 26.03', source: 'Telemetry' },
+  { id: 26, metric: 'Net player sentiment', value: '−6', period: 'May 2026', source: 'Community Survey' }
 ];
 
 // Editorial notes shown in the raw-data detail panel — only where we have real supporting context.
 const RAW_NOTES = {
-  1: 'Set during the Worlds 2025 final on Nov 2, 2025 — the first time the S9 record had been beaten in six years. Event peaks are not comparable to a normal-day baseline.',
-  2: 'The 2019 record, disclosed by Riot at the time and unbeaten until Worlds 2025.',
-  5: 'The last patch before the two-patch slide; 26.14 shipped the durability rework that sentiment tracks against.',
-  6: 'Down 4.5% on 26.15 and 7.1% across the two patches since 26.14. Still a historically strong baseline for a title in its 17th year.',
-  7: 'A live sample rather than a 24-hour peak — useful only for intraday comparisons, not against the peak figures above.',
-  9: 'Mainland China runs on a separately operated Tencent client; its figures are reported on a different cadence and folded in here.',
-  11: 'Not an official figure — derived by subtracting the Asia and Europe totals from the 134.2M global monthly actives.',
-  13: 'Estimated by third-party analysis, not disclosed directly by Riot. Platform cuts vary sharply by region, so treat the spread as wide.',
-  14: 'Aggregated globally in this pass. Splitting by shard and rank tier is the obvious next cut — durability changes bite hardest in high elo.',
-  16: 'Placement completions, not unique ranked players; a player who completes placements in two queues is counted twice.'
+  1: 'Up 3.5% month-over-month; held above the 150M floor across the full trailing year.',
+  2: 'Roughly 22.5% of MAU log in on a given day — healthy stickiness for a mature title.',
+  3: 'Ratio of daily to monthly actives; a core measure of habitual engagement.',
+  4: 'In-client concurrent peak, distinct from esports viewership concurrency during Worlds.',
+  5: 'Cumulative registrations since launch; not an active-player figure and not comparable to MAU.',
+  6: 'Up 15.8% MoM on skin releases; excludes one-time expansion-style events.',
+  8: 'Share of active players who spend — typical for a cosmetic free-to-play model.',
+  9: 'Average revenue per paying user; the spend distribution is heavily top-weighted.',
+  12: 'Pandemonium — the best-performing line of the quarter, sold direct after the pass shift.',
+  13: 'Down 1.3pp after loot orbs replaced several pass skins.',
+  14: 'Fell ~4pp alongside the reward restructure, moving with attach rather than independently.',
+  18: 'The committed-core tail; ranked players normally retain well above this line.',
+  19: 'Down from 22% — the reason the blended D30 figure understates the risk. Investigation queued.',
+  20: 'Peak concurrent viewers excluding China co-streams, so the true figure is higher.',
+  24: 'Games ended early or affected by inactive players.',
+  25: 'Technical-health leading indicator, measured per patch.',
+  26: 'Dropped after the loot-orb battle pass restructure; still negative three months later.'
 };
 const RAW_NOTE_FALLBACK = 'No additional editorial context captured for this metric yet — need more data.';
-const CCU_METRIC_IDS = [1, 2, 3, 4, 5, 6, 7];
-const REGION_METRIC_IDS = [8, 9, 10, 11, 12, 13];
+const CCU_METRIC_IDS = [1, 2, 3, 4, 5];
+const REGION_METRIC_IDS = [6, 7, 8, 9, 10];
 
 const MESSAGE_CONTACTS = [
   { id: 'qa', name: 'QA Team', avatar: 'QA', color: '#a78bfa' },
@@ -3135,7 +3178,7 @@ const MESSAGE_THREADS_SEED = [
     contactId: 'qa',
     unread: 2,
     messages: [
-      { from: 'them', text: 'Repro rate on the champ-select hard-lock is holding at 3% on EUW.', time: '9:12 AM' },
+      { from: 'them', text: 'Repro rate on the Wild Rift cross-region crash is holding at 78%.', time: '9:12 AM' },
       { from: 'me', text: 'Got it — flagging as P1 for the next patch.', time: '9:15 AM' },
       { from: 'them', text: 'Sounds good. I’ll attach the latest crash logs to the bug report.', time: '9:20 AM' }
     ]
@@ -3145,7 +3188,7 @@ const MESSAGE_THREADS_SEED = [
     contactId: 'player-support',
     unread: 1,
     messages: [
-      { from: 'them', text: 'Getting a spike in tickets about ranked wins not awarding LP since 26.16.', time: 'Yesterday' },
+      { from: 'them', text: 'Getting a spike in tickets about ranked wins not awarding LP since 26.03.', time: 'Yesterday' },
       { from: 'them', text: 'Can we get a pinned FAQ post out today?', time: 'Yesterday' }
     ]
   },
@@ -3154,7 +3197,7 @@ const MESSAGE_THREADS_SEED = [
     contactId: 'marketing',
     unread: 0,
     messages: [
-      { from: 'them', text: 'Act III pass activations are up 40% since the champion teaser went live.', time: 'Mon' },
+      { from: 'them', text: 'Arena engagement is up 40% since the Season 3 rotation teaser went live.', time: 'Mon' },
       { from: 'me', text: 'Nice! Let’s keep pushing that thread through the weekend.', time: 'Mon' }
     ]
   },
@@ -3163,7 +3206,7 @@ const MESSAGE_THREADS_SEED = [
     contactId: 'balance',
     unread: 0,
     messages: [
-      { from: 'them', text: 'Sentiment numbers for the 26.14 durability retro look great, thanks for pulling those together.', time: 'Last week' }
+      { from: 'them', text: 'Sentiment numbers for the loot-orb retro look great, thanks for pulling those together.', time: 'Last week' }
     ]
   }
 ];
@@ -3280,12 +3323,12 @@ function navIcon(value, size, centered) {
 // (The dashboard keeps its sales KPIs; those belong there, not on a bug list.)
 function feedbackKpiTiles() {
   const bugs = FEEDBACK_ROWS.filter(r => r.type === 'bug').length;
-  const blocking = FEEDBACK_ROWS.filter(r => r.urgency === 'high').length;
+  const blocking = FEEDBACK_ROWS.filter(r => r.urgency === 'p0' || r.urgency === 'p1').length;
   const feedback = FEEDBACK_ROWS.filter(r => r.type === 'feedback').length;
   const clips = FEEDBACK_ROWS.filter(r => r.clip).length;
   return [
     { icon: 'bug', label: 'Open bug reports', value: String(bugs), dir: 'up' },
-    { icon: 'text-scan-2', label: 'P0 blocking', value: String(blocking), dir: 'up' },
+    { icon: 'text-scan-2', label: 'P0 / P1', value: String(blocking), dir: 'up' },
     { icon: 'message-2', label: 'Player feedback', value: String(feedback), dir: 'flat' },
     { icon: 'video', label: 'Reports with clips', value: String(clips), dir: 'flat' }
   ];
@@ -3302,14 +3345,23 @@ const FEEDBACK_TAGS = {
   reddit: { label: 'Reddit', icon: 'brand-reddit', color: 'var(--red-500)' }
 };
 
-// Three-bar urgency meter: filled bars carry the severity colour, the rest stay hairline.
+// Three-bar severity meter. Five levels onto three bars, so hue carries the class
+// (red / amber / grey) and fill carries the magnitude within it.
 const FEEDBACK_URGENCY = {
-  high: ['var(--red-500)', 'var(--red-500)', 'var(--red-500)'],
-  medium: ['var(--amber-500)', 'var(--amber-500)', 'var(--border-default)'],
-  low: ['var(--zinc-600)', 'var(--border-default)', 'var(--border-default)']
+  p0: ['var(--red-500)', 'var(--red-500)', 'var(--red-500)'],
+  p1: ['var(--red-400)', 'var(--red-400)', 'var(--border-default)'],
+  p2: ['var(--amber-500)', 'var(--amber-500)', 'var(--border-default)'],
+  p3: ['var(--zinc-500)', 'var(--zinc-500)', 'var(--border-default)'],
+  p4: ['var(--zinc-600)', 'var(--border-default)', 'var(--border-default)']
 };
 
-const FEEDBACK_URGENCY_LABEL = { high: 'P0 — blocking', medium: 'P1 — major', low: 'P2 — minor' };
+const FEEDBACK_URGENCY_LABEL = {
+  p0: 'P0 — game crash / blocker',
+  p1: 'P1 — high, breaks core gameplay',
+  p2: 'P2 — medium, noticeable but not blocking',
+  p3: 'P3 — low, minor gameplay impact',
+  p4: 'P4 — minor visual clipping'
+};
 
 // The people tickets get assigned to. `photo` wins; the monogram fallback below is
 // kept for any assignee added later without a headshot.
@@ -3321,44 +3373,43 @@ const FB_ASSIGNEES = [
 ];
 
 // Triage queue: bug reports and player feedback funnelled from the in-game reporter and
-// the community channels into one list. `topic` is what "Group by topic" clusters on.
+// the community channels into one list. `topic` is what "Group by topic" clusters on;
+// `squad` is the routing target and `repro` the reproduction rate established at triage.
 // Row 1 is the ticket the impersonation view drills into — keep them in sync.
 const FEEDBACK_ROWS = [
-  { id: 1, urgency: 'high', type: 'bug', ticket: '#BUG-47248', subject: 'Champion stuck inside terrain after Flash into the Baron pit wall', topic: 'Collision & pathing', channel: 'ingame', clip: true, reporter: 'BerniceSun02', role: 'player', assignees: [1], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
-  { id: 2, urgency: 'high', type: 'bug', ticket: '#BUG-47251', subject: 'Ranked win does not award LP — 12.4k reports since 26.16', topic: 'Ranked & LP progression', channel: 'support', clip: false, reporter: 'mossy_midlaner', role: null, assignees: [3, 1], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
-  { id: 3, urgency: 'high', type: 'bug', ticket: '#BUG-47249', subject: 'Champ select hard-locks when a duo partner dodges, forcing a remake', topic: 'Matchmaking & lobbies', channel: 'ingame', clip: true, reporter: 'euw_tessa', role: 'player', assignees: [1], date: 'Aug 2, 2026', dateSort: '2026-08-02' },
-  { id: 4, urgency: 'high', type: 'bug', ticket: '#BUG-47246', subject: 'Client crashes to desktop on party dissolve during champ select', topic: 'Client & third-party API', channel: 'discord', clip: false, reporter: 'duoq_calla', role: 'creator', assignees: [1, 0], date: 'Aug 2, 2026', dateSort: '2026-08-02' },
-  { id: 5, urgency: 'medium', type: 'bug', ticket: '#BUG-47244', subject: 'Ambessa W shield scales off bonus AD twice after 26.14', topic: 'Champion balance', channel: 'support', clip: false, reporter: 'topgap_kt', role: null, assignees: [0], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
-  { id: 6, urgency: 'medium', type: 'bug', ticket: '#BUG-47241', subject: 'Smite credits the wrong epic monster when two junglers cast on the same tick', topic: 'Champion balance', channel: 'discord', clip: false, reporter: 'jungle_jules', role: null, assignees: [1], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
-  { id: 7, urgency: 'medium', type: 'bug', ticket: '#BUG-47238', subject: 'Shop duplicates Ornn upgrades when purchased during a death timer', topic: 'Anti-cheat & exploits', channel: 'ingame', clip: true, reporter: 'ironbaron', role: 'player', assignees: [3], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
-  { id: 8, urgency: 'medium', type: 'bug', ticket: '#BUG-47235', subject: 'Wards placed on the Baron pit lip fall through terrain and give no vision', topic: 'Collision & pathing', channel: 'ingame', clip: true, reporter: 'support_rui', role: null, assignees: [1], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
-  { id: 9, urgency: 'medium', type: 'feedback', ticket: '#FBK-1092', subject: 'match-v5 field rename breaks third-party trackers — asking for a compatibility shim', topic: 'Client & third-party API', channel: 'reddit', clip: false, reporter: 'tracker_wren', role: 'creator', assignees: [3, 0], date: 'Jul 30, 2026', dateSort: '2026-07-30' },
-  { id: 10, urgency: 'low', type: 'bug', ticket: '#BUG-47230', subject: 'Anti-cheat blocks a signed GPU driver on Windows 11 24H2', topic: 'Anti-cheat & exploits', channel: 'support', clip: false, reporter: 'pentakilpete', role: null, assignees: [2], date: 'Jul 30, 2026', dateSort: '2026-07-30' },
-  { id: 11, urgency: 'low', type: 'bug', ticket: '#BUG-47228', subject: 'Mastery counter resets to 0 on the champion profile tab', topic: 'UI & accessibility', channel: 'discord', clip: false, reporter: 'ScuttleHater99', role: 'player', assignees: [0], date: 'Jul 29, 2026', dateSort: '2026-07-29' },
-  { id: 12, urgency: 'low', type: 'bug', ticket: '#BUG-47225', subject: 'Baron steal announcer line plays twice on the same objective', topic: 'Audio & VFX', channel: 'ingame', clip: true, reporter: 'lulu_starfruit', role: null, assignees: [1], date: 'Jul 29, 2026', dateSort: '2026-07-29' },
-  { id: 13, urgency: 'low', type: 'bug', ticket: '#BUG-47221', subject: 'Frame time spikes to 45ms when three or more ultimates land together', topic: 'Performance & input', channel: 'discord', clip: false, reporter: 'lowspec_lars', role: 'player', assignees: [2], date: 'Jul 28, 2026', dateSort: '2026-07-28' },
-  { id: 14, urgency: 'low', type: 'feedback', ticket: '#FBK-1088', subject: 'Requesting a search field in the rune page picker — 60+ pages is unscannable', topic: 'UI & accessibility', channel: 'reddit', clip: false, reporter: 'saltwater_sam', role: null, assignees: [0], date: 'Jul 28, 2026', dateSort: '2026-07-28' },
-  { id: 15, urgency: 'low', type: 'feedback', ticket: '#FBK-1085', subject: 'Turret range indicator is unreadable for red-green colourblind players', topic: 'UI & accessibility', channel: 'discord', clip: false, reporter: 'vision_score_diff', role: 'creator', assignees: [0, 2], date: 'Jul 27, 2026', dateSort: '2026-07-27' },
-  { id: 16, urgency: 'low', type: 'feedback', ticket: '#FBK-1081', subject: 'Objective bounties make late-game comebacks feel unearned', topic: 'Champion balance', channel: 'support', clip: false, reporter: 'winterstar_gwen', role: null, assignees: [3], date: 'Jul 27, 2026', dateSort: '2026-07-27' },
-  { id: 17, urgency: 'low', type: 'feedback', ticket: '#FBK-1079', subject: 'New-player tutorial never explains wave management', topic: 'Onboarding', channel: 'support', clip: false, reporter: 'firstgame_fran', role: null, assignees: [2], date: 'Jul 26, 2026', dateSort: '2026-07-26' },
-  { id: 18, urgency: 'low', type: 'feedback', ticket: '#FBK-1076', subject: 'Love the Arena rotation — can we get a duo-only queue for it?', topic: 'Modes & rotating queues', channel: 'discord', clip: false, reporter: 'arena_bee', role: 'player', assignees: [2], date: 'Jul 26, 2026', dateSort: '2026-07-26' }
+  { id: 1, urgency: 'p0', type: 'bug', ticket: '#BUG-88213', subject: 'Yuumi passive desync on cast interrupt', topic: 'Champion behaviour', squad: 'Champions', repro: '100%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'BerniceSun02', role: 'player', assignees: [1], date: 'Aug 7, 2026', dateSort: '2026-08-07' },
+  { id: 2, urgency: 'p0', type: 'bug', ticket: '#BUG-88201', subject: 'Client crash on Wild Rift cross-region matchmaking', topic: 'Client & crashes', squad: 'Engine', repro: '78%', status: 'Ready', channel: 'support', clip: false, reporter: 'mossy_midlaner', role: null, assignees: [3, 1], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
+  { id: 3, urgency: 'p1', type: 'bug', ticket: '#BUG-88208', subject: 'Viego passive breaks Trinity Force spellblade cooldown', topic: 'Champion behaviour', squad: 'Champions', repro: '100%', status: 'In progress', channel: 'ingame', clip: true, reporter: 'euw_tessa', role: 'player', assignees: [1], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
+  { id: 4, urgency: 'p2', type: 'bug', ticket: '#BUG-88155', subject: 'Champion select lock-in fails when a duo partner dodges', topic: 'Client & crashes', squad: 'Engine', repro: '62%', status: 'Ready', channel: 'discord', clip: false, reporter: 'duoq_calla', role: 'creator', assignees: [1, 0], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
+  { id: 5, urgency: 'p2', type: 'bug', ticket: '#BUG-88147', subject: 'Ranked win does not award LP during a shard failover', topic: 'Ranked & progression', squad: 'Engine', repro: '34%', status: 'In progress', channel: 'support', clip: false, reporter: 'topgap_kt', role: null, assignees: [0], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
+  { id: 6, urgency: 'p2', type: 'bug', ticket: '#BUG-88120', subject: 'Anti-cheat blocks a signed GPU driver on Windows 11 24H2', topic: 'Client & crashes', squad: 'Engine', repro: '12%', status: 'Investigating', channel: 'support', clip: false, reporter: 'pentakilpete', role: null, assignees: [2], date: 'Aug 4, 2026', dateSort: '2026-08-04' },
+  { id: 7, urgency: 'p2', type: 'bug', ticket: '#BUG-88190', subject: 'Aurelion Sol tornado hitbox mismatch', topic: 'Champion behaviour', squad: 'Champions', repro: '100%', status: 'Awaiting QA', channel: 'ingame', clip: true, reporter: 'jungle_jules', role: null, assignees: [1], date: 'Aug 4, 2026', dateSort: '2026-08-04' },
+  { id: 8, urgency: 'p3', type: 'bug', ticket: '#BUG-88176', subject: 'Recall animation stutters on low-end hardware', topic: 'Performance & hardware', squad: 'Engine', repro: '45%', status: 'Ready', channel: 'discord', clip: false, reporter: 'lowspec_lars', role: 'player', assignees: [2], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
+  { id: 9, urgency: 'p3', type: 'bug', ticket: '#BUG-88139', subject: 'Baron steal announcer line plays twice on the same objective', topic: 'Audio & VFX', squad: 'Engine', repro: '88%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'lulu_starfruit', role: null, assignees: [1], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
+  { id: 10, urgency: 'p4', type: 'bug', ticket: '#BUG-88164', subject: 'Item shop search misses partial champion names', topic: 'UI & accessibility', squad: 'UI/UX', repro: '100%', status: 'Ready', channel: 'reddit', clip: false, reporter: 'saltwater_sam', role: null, assignees: [0], date: 'Aug 2, 2026', dateSort: '2026-08-02' },
+  { id: 11, urgency: 'p4', type: 'bug', ticket: '#BUG-88131', subject: 'Ward placed on the Baron pit lip falls through terrain', topic: 'Terrain & collision', squad: 'Engine', repro: '100%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'support_rui', role: null, assignees: [1], date: 'Aug 2, 2026', dateSort: '2026-08-02' },
+  { id: 12, urgency: 'p2', type: 'feedback', ticket: '#DATA-4402', subject: 'Smolder win rate 18% above target band since 26.03', topic: 'Balance & meta', squad: 'Data', repro: null, status: 'Investigating', channel: 'ingame', clip: false, reporter: 'liveops_telemetry', role: null, assignees: [3], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
+  { id: 13, urgency: 'p2', type: 'feedback', ticket: '#DATA-4398', subject: 'Diamond+ D7 retention dropped 22% to 16%', topic: 'Retention & onboarding', squad: 'Data', repro: null, status: 'Queued', channel: 'ingame', clip: false, reporter: 'liveops_telemetry', role: null, assignees: [3, 0], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
+  { id: 14, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-2210', subject: '6 junglers below 2% pick rate for 3 patches', topic: 'Balance & meta', squad: 'Design', repro: null, status: 'Waiting on data', channel: 'reddit', clip: false, reporter: 'tracker_wren', role: 'creator', assignees: [0], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
+  { id: 15, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-2204', subject: 'Turret range indicator is unreadable for red-green colourblind players', topic: 'UI & accessibility', squad: 'Design', repro: null, status: 'Waiting on data', channel: 'discord', clip: false, reporter: 'vision_score_diff', role: 'creator', assignees: [0, 2], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
+  { id: 16, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-2198', subject: 'Objective bounties make late-game comebacks feel unearned', topic: 'Balance & meta', squad: 'Design', repro: null, status: 'Queued', channel: 'support', clip: false, reporter: 'winterstar_gwen', role: null, assignees: [3], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
+  { id: 17, urgency: 'p4', type: 'feedback', ticket: '#DESIGN-2191', subject: 'Rune page picker needs a search field — 60+ pages is unscannable', topic: 'UI & accessibility', squad: 'UI/UX', repro: null, status: 'Ready', channel: 'reddit', clip: false, reporter: 'arena_bee', role: 'player', assignees: [2], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
+  { id: 18, urgency: 'p4', type: 'feedback', ticket: '#DATA-4391', subject: 'New-player tutorial never covers wave management', topic: 'Retention & onboarding', squad: 'Data', repro: null, status: 'Queued', channel: 'support', clip: false, reporter: 'firstgame_fran', role: null, assignees: [2], date: 'Jul 30, 2026', dateSort: '2026-07-30' }
 ];
 
 const FB_TAG_ORDER = ['bug', 'feedback', 'ingame', 'discord', 'support', 'reddit'];
 
 // Narrative summaries shown in "Group by topic" headers (Figma 212:23149).
 const FEEDBACK_TOPIC_SUMMARIES = {
-  'Collision & pathing': 'Champions and wards pass through terrain around the Baron pit',
-  'Ranked & LP progression': 'Ranked wins are not crediting LP when a shard fails over mid-write',
-  'Matchmaking & lobbies': 'Champ select hard-locks when a duo partner dodges late',
-  'Client & third-party API': 'Party dissolve crashes the client, and a match-v5 rename broke trackers',
-  'Champion balance': 'Post-26.14 scaling and bounty pacing are reading as unfair to players',
-  'Anti-cheat & exploits': 'A shop duplication exploit is live, and anti-cheat is blocking a signed driver',
-  'UI & accessibility': 'Menus and indicators are hard to scan or unreadable for colourblind players',
+  'Champion behaviour': 'Yuumi, Viego and Aurelion Sol are all mis-resolving ability state',
+  'Client & crashes': 'Cross-region matchmaking and champ select are crashing or hard-locking the client',
+  'Ranked & progression': 'Ranked wins are not crediting LP when a shard fails over mid-write',
+  'Performance & hardware': 'Recall animation stutters on low-end hardware',
   'Audio & VFX': 'The Baron steal announcer line plays twice on the same objective',
-  'Performance & input': 'Frame time spikes badly when several ultimates overlap in a teamfight',
-  'Onboarding': 'The new-player tutorial never covers wave management',
-  'Modes & rotating queues': 'Players want a duo-only option in the Arena rotation'
+  'UI & accessibility': 'Menus and indicators are hard to scan or unreadable for colourblind players',
+  'Terrain & collision': 'Wards placed on the Baron pit lip fall through terrain',
+  'Balance & meta': 'Smolder is above its win-rate band while six junglers sit below 2% pick rate',
+  'Retention & onboarding': 'Diamond+ D7 retention fell 22% to 16%, and the tutorial skips wave management'
 };
 
 // A ticket is tagged with its kind first, then the channel it arrived on.
@@ -3435,22 +3486,22 @@ function ghostAnswer(id) {
   const rows = FEEDBACK_ROWS;
   const bugs = rows.filter(r => r.type === 'bug');
   const feedback = rows.filter(r => r.type === 'feedback');
-  const blocking = rows.filter(r => r.urgency === 'high');
+  const blocking = rows.filter(r => r.urgency === 'p0' || r.urgency === 'p1');
   const clips = rows.filter(r => r.clip);
 
   if (id === 'urgent') {
     const list = blocking.map(r => `\u2022 ${r.ticket} \u2014 ${r.subject}`).join('\n');
-    return `${blocking.length} tickets are sitting at P0.\n\n${list}\n\nI\u2019d start with the LP loss (#BUG-47251): it silently costs players ranked progress at 12.4k reports and counting, and there\u2019s no client-side workaround \u2014 the other three clear on a client restart or a lobby dodge.`;
+    return `${blocking.length} tickets are sitting at P0.\n\n${list}\n\nI\u2019d start with #BUG-88201: it is a P0 with 78% repro and still has no owner on day 8 of 14, so it is the one actually putting the sprint goal at risk.`;
   }
   if (id === 'cluster') {
     const top = ghostTopicCounts(rows).slice(0, 3)
       .map(t => `\u2022 ${t.topic} \u2014 ${t.count} ticket${t.count === 1 ? '' : 's'}`).join('\n');
-    return `Grouped by what they touch, the queue clusters like this:\n\n${top}\n\nThe two collision reports (#BUG-47248 and #BUG-47235) look like one defect, not two \u2014 both are terrain collision resolution around the Baron pit, and both have a clip attached. Worth fixing together.`;
+    return `Grouped by what they touch, the queue clusters like this:\n\n${top}\n\nThe three Champion-squad tickets (#BUG-88213, #BUG-88208 and #BUG-88190) all resolve ability state a frame too early \u2014 same root shape, three surfaces. Worth routing them as one investigation.`;
   }
   if (id === 'players') {
     const themes = ghostTopicCounts(feedback)
       .map(t => `\u2022 ${t.topic} \u2014 ${t.count}`).join('\n');
-    return `${feedback.length} of the ${rows.length} tickets are feedback rather than defects:\n\n${themes}\n\nThe loudest single thread is the match-v5 compatibility request on Reddit (#FBK-1092) \u2014 it came from a tracker maintainer and is blocking third-party sites on 26.16.`;
+    return `${feedback.length} of the ${rows.length} tickets are feedback rather than defects:\n\n${themes}\n\nThe loudest single thread is the Smolder win-rate investigation (#DATA-4402) \u2014 it is 18% above its target band since 26.03 and is blocking the design work that depends on it.`;
   }
   return `Here\u2019s the shape of this week: ${rows.length} open tickets \u2014 ${bugs.length} bugs and ${feedback.length} pieces of feedback. ${blocking.length} are P0, and ${clips.length} arrived with a recorded clip you can replay.\n\nAsk me about a specific ticket, a channel, or a topic and I\u2019ll dig in.`;
 }
@@ -3560,7 +3611,7 @@ class Component extends DCLogic {
     railWasCollapsed: false,
     showGhostRefreshConfirm: false,
     dateRange: 'last7', rawSearch: '', rawSortKey: null, rawSortDir: null, selectedRawId: 6, rawPage: 0, rawDetailExpanded: false,
-    selectedKpi: 'Daily active players',
+    selectedKpi: 'Daily active users',
     summaryVariant: 0,
     regenerating: false,
     // --- Profile editor (opened from the sidebar avatar) ---
@@ -4082,7 +4133,7 @@ class Component extends DCLogic {
   };
 
   exportFeedbackCsv = () => {
-    const cols = ['ticket', 'urgency', 'type', 'channel', 'topic', 'subject', 'reporter', 'clip', 'date'];
+    const cols = ['ticket', 'urgency', 'squad', 'repro', 'status', 'type', 'channel', 'topic', 'subject', 'reporter', 'clip', 'date'];
     const rows = this.visibleFeedbackRows();
     const csv = [cols.join(',')].concat(
       rows.map(r => cols.map(c => `"${String(r[c]).replace(/"/g, '""')}"`).join(','))
@@ -4529,10 +4580,10 @@ class Component extends DCLogic {
     const maxRegion = Math.max(...REGION_MIX.map(p => p.value));
     const selectedChartType = !selectedRaw ? 'none' : CCU_METRIC_IDS.includes(selectedRaw.id) ? 'milestones' : REGION_METRIC_IDS.includes(selectedRaw.id) ? 'platform' : 'none';
 
-    const defaultKpi = (cfg.kpis && cfg.kpis[0] && cfg.kpis[0].label) || 'Daily active players';
+    const defaultKpi = (cfg.kpis && cfg.kpis[0] && cfg.kpis[0].label) || 'Daily active users';
     const selectedKpi = (cfg.kpis || []).some(k => k.label === this.state.selectedKpi) ? this.state.selectedKpi : defaultKpi;
     const kpiView = KPI_VIEWS[selectedKpi] || null;
-    const isDauChart = selectedKpi === 'Daily active players';
+    const isDauChart = selectedKpi === 'Daily active users';
     const baseTrend = isDauChart
       ? DAU_TREND
       : (kpiView ? kpiView.trend : (cfg.useDauTrend ? DAU_TREND : MILESTONES));
@@ -4605,7 +4656,9 @@ class Component extends DCLogic {
         assigneeEl,
         date: r.date,
         u1: bars[0], u2: bars[1], u3: bars[2],
-        urgencyLabel: FEEDBACK_URGENCY_LABEL[r.urgency],
+        urgencyLabel: [FEEDBACK_URGENCY_LABEL[r.urgency], r.squad, r.repro ? r.repro + ' repro' : null, r.status].filter(Boolean).join(' \u00b7 '),
+        squad: r.squad,
+        statusLabel: r.status,
         rowClass: on ? 'fb-row fb-row-body fb-row-selected' : 'fb-row fb-row-body',
         checkClass: on ? 'fb-check fb-check-on' : 'fb-check',
         checkIcon: on ? taskIcon('check', 12) : null,
@@ -4859,10 +4912,11 @@ class Component extends DCLogic {
       tab: this.state.tab,
       setTab: v => this.setState({
         tab: v,
-        selectedKpi: (TAB_CONFIG[v].kpis && TAB_CONFIG[v].kpis[0] && TAB_CONFIG[v].kpis[0].label) || 'Daily active players',
+        selectedKpi: (TAB_CONFIG[v].kpis && TAB_CONFIG[v].kpis[0] && TAB_CONFIG[v].kpis[0].label) || 'Daily active users',
         summaryVariant: 0
       }),
-      tabItems: TAB_ITEMS,
+      // Row count is stamped on at render so the tab can never drift from the table.
+      tabItems: TAB_ITEMS.map(t => t.value === 'raw' ? { ...t, label: `${t.label} \u00b7 ${RAW_ROWS.length}` } : t),
       navItems: NAV_ITEMS,
       navValue: this.state.nav,
       setNav: this.selectNav,
@@ -4987,8 +5041,8 @@ class Component extends DCLogic {
       toggleNotif: () => this.setState(s => ({ showNotif: !s.showNotif, showProjectMenu: false, showSettingsMenu: false, showDateMenu: false })),
       markNotifRead: () => this.setState({ notifUnread: false, showNotif: false }),
       notifications: [
-        { title: 'Sentiment down a 4th straight patch', body: '70.8 / 100 on 26.16 — the slide starts at the 26.14 rework.' },
-        { title: 'Act III pass activations spiking', body: '120K on Jul 30, roughly 2× the prior in-month high.' }
+        { title: 'Net sentiment still negative', body: '−6 since May — the slide starts at the loot-orb change.' },
+        { title: 'Unassigned P0 in the sprint', body: '#BUG-88201 still has no owner on day 8 of 14.' }
       ],
       kpis: cfg.kpis.map(k => {
         const opensBugReport = k.label === 'Records';
@@ -5268,7 +5322,7 @@ class Component extends DCLogic {
       trendData,
       trendFirstLabel: trendData[0] ? trendData[0].label : '',
       trendLastLabel: trendData.length ? trendData[trendData.length - 1].label : '',
-      chartEl: buildSmoothAreaChart(trendData, selectedKpi === 'Daily active players'
+      chartEl: buildSmoothAreaChart(trendData, selectedKpi === 'Daily active users'
         ? { height: 220, yTicks: DAU_Y_TICKS, xTicks: DAU_X_TICKS, xDomain: [1, 30], yMode: 'millions', chartKey: this.state.tab + '|' + selectedKpi + '|' + this.state.dateRange }
         : { height: 220, yMode: valsAreLarge(trendData) ? 'm' : 'n', chartKey: this.state.tab + '|' + selectedKpi + '|' + this.state.dateRange }),
       chartHeadline,
@@ -5299,7 +5353,7 @@ class Component extends DCLogic {
       summaryOpacity: this.state.regenerating ? '0.45' : '1',
       showExtraRow: !!cfg.showExtraRow && showAnalyticsBody,
       platformBars: REGION_MIX.map(p => ({ ...p, pct: Math.round((p.value / maxRegion) * 100) })),
-      milestoneList: PATCH_ROWS.map(r => ({ ...r, line: `${r.update} — ${r.peak} CCU`, meta: r.date })),
+      milestoneList: PATCH_ROWS.map(r => ({ ...r, line: r.peak === '—' ? `${r.update} — scheduled` : `${r.update} — ${r.peak} CCU`, meta: r.date })),
       tableTitle: this.state.tab === 'raw' ? 'Raw data export' : cfg.tableTitle,
       tableSub: cfg.chartSub || '',
       hasTableSub: this.state.tab !== 'raw' && !!cfg.chartSub,
