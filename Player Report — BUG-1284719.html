@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>#BUG-1284719 — Yuumi passive desync</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root {
+  --zinc-950: #09090b; --zinc-925: #101012; --zinc-900: #18181b; --zinc-850: #1f1f23;
+  --zinc-800: #27272a; --zinc-700: #3f3f46; --zinc-600: #52525b; --zinc-500: #71717a;
+  --zinc-400: #a1a1aa; --zinc-300: #d4d4d8; --zinc-200: #e4e4e7; --zinc-100: #f4f4f5; --zinc-50: #fafafa;
+  --lime-950: #1a2e05; --lime-800: #3f6212; --lime-700: #4d7c0f; --lime-600: #65a30d;
+  --lime-500: #84cc16; --lime-400: #a3e635; --lime-300: #bef264; --lime-50: #f7fee7;
+  --red-700: #b91c1c; --red-600: #dc2626; --red-500: #ef4444; --red-400: #f87171; --red-100: #fef2f2;
+  --amber-500: #f59e0b; --amber-100: #fef3c7; --amber-400: #fbbf24;
+  --neutral-50: #fafafa; --neutral-100: #f5f5f5; --neutral-800: #262626; --neutral-900: #171717; --neutral-950: #0a0a0a;
+
+  --bg-canvas: var(--zinc-950);
+  --bg-surface: var(--zinc-925);
+  --bg-surface-2: var(--zinc-900);
+  --border-default: var(--zinc-800);
+  --border-strong: var(--zinc-700);
+  --border-hairline: rgba(244, 244, 245, 0.08);
+  --text-primary: var(--zinc-50);
+  --text-secondary: var(--zinc-400);
+  --text-tertiary: var(--zinc-600);
+  --text-on-accent: var(--zinc-950);
+  --accent: var(--lime-400);
+  --accent-hover: var(--lime-400);
+  --accent-border: var(--lime-700);
+  --danger: var(--red-500);
+  --danger-muted: #2a0f0f;
+  --warning: var(--amber-500);
+  --warning-muted: #2a1f06;
+  --secondary-btn: var(--neutral-800);
+  --primary-btn: var(--lime-400);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.45);
+
+  --font-body: 'Geist', -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+  --text-h1: 600 30px/1.2 var(--font-body);
+  --text-h4: 600 16px/1.3 var(--font-body);
+  --text-mono-sm: 400 12px/1.4 var(--font-mono);
+  --tracking-tight: -0.02em;
+  --radius-sm: 4px; --radius-md: 6px; --radius-lg: 8px; --radius-xl: 10px; --radius-2xl: 12px; --radius-full: 9999px;
+}
+:root[data-theme="light"] {
+  --bg-canvas: var(--zinc-50);
+  --bg-surface: #ffffff;
+  --bg-surface-2: var(--zinc-100);
+  --border-default: var(--zinc-200);
+  --border-strong: var(--zinc-400);
+  --border-hairline: rgba(9, 9, 11, 0.08);
+  --text-primary: var(--zinc-950);
+  --text-secondary: var(--zinc-600);
+  --text-tertiary: var(--zinc-500);
+  --accent: var(--lime-600);
+  --accent-hover: var(--lime-700);
+  --accent-border: var(--lime-300);
+  --danger: var(--red-600);
+  --danger-muted: var(--red-100);
+  --warning: #b45309;
+  --warning-muted: var(--amber-100);
+  --secondary-btn: var(--neutral-100);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  font: 400 14px/1.5 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  height: 100%;
+}
+button { font-family: inherit; }
+.dash-shell { background: #000; display: flex; height: 100vh; height: 100dvh; width: 100%; }
+.dash-main { background: #000; flex: 1; min-width: 0; display: flex; padding: 24px 24px 24px 8px; box-sizing: border-box; }
+.dash-panel { background: #171717; flex: 1; min-width: 0; border-radius: 18px; overflow: auto; }
+.dash-panel-body { width: 100%; padding: 16px 14px 40px; display: flex; flex-direction: column; gap: 16px; box-sizing: border-box; }
+:root[data-theme="light"] .dash-shell,
+:root[data-theme="light"] .dash-main { background: #ffffff; }
+:root[data-theme="light"] .dash-panel,
+:root[data-theme="light"] .dash-panel-body { background: #fafafa; }
+:root[data-theme="light"] .dash-panel { box-shadow: inset 0 0 0 1px var(--border-default); }
+
+.dash-header-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.theme-toggle {
+  width: 44px; height: 24px; border-radius: var(--radius-full); border: none;
+  box-shadow: inset 0 0 0 1px var(--border-strong); padding: 2px; display: flex; align-items: center;
+  background: var(--bg-surface-2); cursor: pointer; flex-shrink: 0;
+}
+.theme-thumb {
+  width: 20px; height: 20px; border-radius: var(--radius-full); box-shadow: var(--shadow-sm);
+  display: flex; align-items: center; justify-content: center;
+  background: #09090b; color: var(--accent);
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  flex-shrink: 0;
+}
+:root[data-theme="light"] .theme-thumb { background: #ffffff; color: #09090b; transform: translateX(20px); }
+
+.td-back {
+  display: inline-flex; align-items: center; gap: 4px; align-self: flex-start;
+  padding: 0; border: none; background: transparent; color: var(--text-tertiary);
+  font: 500 13px/18px var(--font-body); cursor: pointer;
+}
+.td-back:hover { color: var(--text-primary); }
+.td-page { display: flex; flex-direction: column; gap: 26px; padding: 4px 6px 8px; }
+.td-hero { display: flex; align-items: flex-start; justify-content: space-between; gap: 28px; flex-wrap: wrap; row-gap: 16px; }
+.td-hero-main { display: flex; flex-direction: column; gap: 10px; min-width: 0; flex: 1; }
+.td-id-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.td-id { font: var(--text-mono-sm); color: var(--text-tertiary); letter-spacing: 0.02em; }
+.td-prio { display: inline-flex; align-items: center; gap: 6px; font: 500 12px/16px var(--font-body); white-space: nowrap; color: var(--danger); }
+.td-prio-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; background: var(--danger); }
+.td-rule { width: 1px; height: 12px; background: var(--border-strong); flex-shrink: 0; }
+.td-subject { font: 500 26px/34px var(--font-body); letter-spacing: var(--tracking-tight); color: var(--text-primary); max-width: 54ch; }
+.td-byline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font: 400 13px/20px var(--font-body); color: var(--text-secondary); }
+.td-byline-item { display: inline-flex; align-items: center; gap: 5px; min-width: 0; }
+.td-byline-sep { color: var(--border-strong); user-select: none; }
+.td-role {
+  font: 500 11px/16px var(--font-body); color: var(--text-tertiary); background: var(--secondary-btn);
+  padding: 1px 6px; border-radius: var(--radius-full);
+}
+.td-imp-btn {
+  display: inline-flex; align-items: center; gap: 7px; height: 40px; padding: 0 18px; border: none;
+  border-radius: var(--radius-lg); background: var(--accent); color: var(--text-on-accent);
+  font: 600 14px/20px var(--font-body); cursor: pointer; flex-shrink: 0; white-space: nowrap;
+}
+.td-imp-btn:hover { filter: brightness(1.06); }
+.td-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 40px; align-items: start; }
+@media (max-width: 1060px) { .td-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; } }
+.td-col { display: flex; flex-direction: column; gap: 26px; min-width: 0; }
+.td-section { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.td-section + .td-section { padding-top: 26px; border-top: 1px solid var(--border-hairline); }
+.td-label-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.td-label { font: 600 13px/18px var(--font-body); color: var(--text-primary); }
+.td-quote { border-left: 2px solid var(--accent-border); padding-left: 16px; font: 400 15px/25px var(--font-body); color: var(--text-primary); }
+.td-lead { font: 400 15px/25px var(--font-body); color: var(--text-primary); }
+.td-body { font: 400 14px/23px var(--font-body); color: var(--text-secondary); }
+.td-agent {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px 3px 6px; border-radius: var(--radius-full);
+  background: var(--bg-surface-2); font: 500 11px/16px var(--font-body); color: var(--text-secondary);
+}
+.td-source {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
+  padding: 7px 11px; border-radius: var(--radius-md); border: 1px solid var(--border-default);
+  background: var(--bg-canvas); font: var(--text-mono-sm); color: var(--accent); word-break: break-all;
+}
+.td-source-icon { color: var(--text-tertiary); display: flex; flex-shrink: 0; }
+.td-clip {
+  position: relative; width: 100%; aspect-ratio: 16 / 10; border-radius: 12px; overflow: hidden;
+  background: #171717; border: 1px solid var(--border-default); cursor: pointer; padding: 0; display: block;
+}
+.td-clip video { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1); }
+.td-clip:hover video { transform: scale(1.03); }
+.td-clip-scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0) 55%); pointer-events: none; }
+.td-clip-play {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 46px; height: 46px;
+  border-radius: 50%; background: rgba(9, 9, 11, 0.55); backdrop-filter: blur(6px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22); display: flex; align-items: center; justify-content: center;
+  color: #fff; pointer-events: none;
+}
+.td-clip:hover .td-clip-play { background: rgba(9, 9, 11, 0.75); }
+.td-clip-foot {
+  position: absolute; left: 12px; right: 12px; bottom: 11px; display: flex; align-items: center;
+  justify-content: space-between; gap: 8px; font: 500 12px/16px var(--font-body); color: rgba(255,255,255,0.92); pointer-events: none;
+}
+.td-clip-time { font: var(--text-mono-sm); padding: 2px 6px; border-radius: 4px; background: rgba(9, 9, 11, 0.6); }
+.td-caption { font: 400 13px/20px var(--font-body); color: var(--text-tertiary); }
+.td-log {
+  display: flex; flex-direction: column; gap: 6px; padding: 14px; border-radius: var(--radius-md);
+  background: var(--bg-canvas); border: 1px solid var(--border-hairline); font: var(--text-mono-sm); min-width: 0;
+}
+.td-log-row { display: flex; gap: 12px; align-items: baseline; min-width: 0; }
+.td-log-t { color: var(--text-tertiary); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.td-log-m { min-width: 0; overflow-wrap: anywhere; }
+
+.fb-badge {
+  box-sizing: border-box; display: flex; flex-direction: row; justify-content: center; align-items: center;
+  padding: 2px 6px; gap: 4px; height: 24px; background: #000; border: 1px solid #27272A; border-radius: 8px;
+  font: 500 12px/16px var(--font-body); color: var(--text-secondary); white-space: nowrap; flex-shrink: 0;
+}
+:root[data-theme="light"] .fb-badge { background: #ffffff; border-color: #e4e4e7; }
+.fb-badge svg { width: 14px; height: 14px; flex-shrink: 0; }
+.fb-avatar { width: 20px; height: 20px; border-radius: var(--radius-full); object-fit: cover; flex-shrink: 0; box-shadow: 0 0 0 2px var(--bg-surface); }
+.fb-avatar-stack { display: flex; align-items: center; flex-shrink: 0; }
+
+.imp-shell { display: none; height: 100%; width: 100%; min-height: 0; }
+.imp-shell.is-on { display: flex; }
+.imp-video-wrap { flex: 1; min-width: 0; padding: 24px; box-sizing: border-box; display: flex; }
+.imp-video-frame { flex: 1; min-width: 0; border-radius: 18px; overflow: hidden; background: #171717; position: relative; }
+.imp-video-frame video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.imp-rail {
+  width: 340px; flex-shrink: 0; align-self: stretch; display: flex; flex-direction: column;
+  min-height: 0; box-sizing: border-box; background: #000; position: relative;
+}
+.imp-close {
+  position: absolute; top: 28px; right: 18px; z-index: 3; width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center; border: none; border-radius: var(--radius-md);
+  color: var(--text-secondary); cursor: pointer; padding: 0; background: transparent;
+}
+.imp-close:hover { background: var(--bg-surface-2); color: var(--text-primary); }
+.imp-scroll { flex: 1; min-height: 0; overflow: auto; padding: 32px 20px 16px; display: flex; flex-direction: column; gap: 8px; }
+.imp-card {
+  display: flex; flex-direction: column; gap: 14px; padding: 24px 20px; border-radius: 12px;
+  background: var(--bg-surface); border: 1px solid var(--border-default);
+}
+.imp-link { font: 400 14px/20px var(--font-body); color: var(--text-secondary); text-decoration: underline; cursor: pointer; background: none; border: none; padding: 0; text-align: left; }
+.imp-foot {
+  flex-shrink: 0; position: sticky; bottom: 0; z-index: 2; display: flex; align-items: center; gap: 8px;
+  padding: 16px 20px 20px; background: var(--bg-surface-2, #18181b); border-top: 1px solid var(--border-default);
+}
+.mono { font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
+.is-hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="dash-shell" id="detail-shell">
+  <div class="dash-main">
+    <div class="dash-panel">
+      <div class="dash-panel-body">
+        <div class="dash-header-row">
+          <button type="button" class="td-back" id="back-btn" title="Standalone export — table lives in the full dashboard">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            Player Report
+          </button>
+          <button type="button" class="theme-toggle" id="theme-btn" aria-label="Toggle light mode">
+            <span class="theme-thumb" id="theme-thumb">
+              <svg id="icon-moon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              <svg id="icon-sun" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="is-hidden"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+            </span>
+          </button>
+        </div>
+
+        <div class="td-page">
+          <div class="td-hero">
+            <div class="td-hero-main">
+              <div class="td-id-row">
+                <span class="td-id">#BUG-1284719</span>
+                <span class="td-prio"><span class="td-prio-dot"></span>P0 — game crash / blocker</span>
+                <span class="td-rule"></span>
+                <span class="fb-badge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9v-1a3 3 0 0 1 6 0v1"/><path d="M8 9h8a6 6 0 0 1 1 3v3a5 5 0 0 1-10 0v-3a6 6 0 0 1 1-3"/><path d="M3 13h4M17 13h4M12 20v-6M4 19l3.35-2M20 19l-3.35-2M4 7l3.75 2.4M20 7l-3.75 2.4"/></svg>
+                  Bug
+                </span>
+                <span class="fb-badge">
+                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4.17h2.92a4.17 4.17 0 0 1 0 8.33H8.33L4.99 16.02a1.67 1.67 0 0 1-2.27-.7 1.67 1.67 0 0 1 .09-1.99l1.36-6.81A4.17 4.17 0 0 1 7.17 4.17H10z"/><path d="M11.67 12.5l3.39 3.57a1.67 1.67 0 0 0 2.27.38 1.67 1.67 0 0 0 .61-1.57l-1.33-6.86"/><path d="M6.67 7.5v1.67M5.83 8.33h1.67M11.67 8.33h1.67"/></svg>
+                  In-game
+                </span>
+              </div>
+              <span class="td-subject">Yuumi passive desync on cast interrupt</span>
+              <div class="td-byline">
+                <span class="td-byline-item">@BerniceSun02</span>
+                <span class="td-role">player</span>
+                <span class="td-byline-sep">·</span>
+                <span class="td-byline-item">Aug 7, 2026</span>
+                <span class="td-byline-sep">·</span>
+                <span class="td-byline-item">Champion behaviour</span>
+                <span class="td-byline-sep">·</span>
+                <span class="td-byline-item">
+                  <span class="fb-avatar-stack"><img class="fb-avatar" src="assets/Bernice.jpg" alt="Bernice"></span>
+                  Bernice
+                </span>
+              </div>
+            </div>
+            <button type="button" class="td-imp-btn" id="enter-imp">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 10h.01M15 10h.01M12 2a8 8 0 0 0-8 8v12l3-3 2.5 1.5L12 19l2.5 1.5L17 19l3 3V10a8 8 0 0 0-8-8z"/></svg>
+              Impersonation mode
+            </button>
+          </div>
+
+          <div class="td-grid">
+            <div class="td-col">
+              <div class="td-section">
+                <div class="td-label-row">
+                  <span class="td-label">What the player reported</span>
+                  <span class="td-role">Behavior</span>
+                </div>
+                <span class="td-quote">Player cast Yuumi’s passive shield and was interrupted mid-cast. The shield applied on the client but never registered server-side, so the ally took full damage through a shield that was visibly on them.</span>
+              </div>
+              <div class="td-section">
+                <div class="td-label-row">
+                  <span class="td-label">Ghost AI analysis</span>
+                  <span class="td-agent"><img src="assets/bug-report/cursor-agent.png" alt="" width="13" height="13" style="width:13px;height:13px;object-fit:cover;flex-shrink:0">Cursor Agent</span>
+                </div>
+                <span class="td-lead">Based on the replay clip and player input history, this looks like a client/server state desync on cast interrupt — not a rendering issue.</span>
+                <span class="td-body">When the cast is interrupted, YuumiPassive::onCastComplete() applies the shield locally before AbilityState::syncToServer() has confirmed it, so an interrupt leaves the two states diverged.</span>
+                <span class="td-body">Reproduce by attaching to an ally, starting the passive cast, then taking a knockup mid-cast.</span>
+                <span class="td-source">
+                  <span class="td-source-icon">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/></svg>
+                  </span>
+                  src/Game/Champions/Yuumi/YuumiPassive.cpp:418–461
+                </span>
+              </div>
+            </div>
+            <div class="td-col">
+              <div class="td-section">
+                <span class="td-label">Recorded session</span>
+                <button type="button" class="td-clip" id="clip-btn" aria-label="Replay the recorded session">
+                  <video src="assets/Bug.mp4" autoplay muted loop playsinline></video>
+                  <span class="td-clip-scrim"></span>
+                  <span class="td-clip-play">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="display:block;margin-left:2px"><path d="M8 5.14v13.72a1 1 0 0 0 1.54.84l10.28-6.86a1 1 0 0 0 0-1.68L9.54 4.3A1 1 0 0 0 8 5.14z"/></svg>
+                  </span>
+                  <span class="td-clip-foot"><span>@BerniceSun02</span><span class="td-clip-time">0:15</span></span>
+                </button>
+                <span class="td-caption">Step into this session to reproduce it yourself.</span>
+              </div>
+              <div class="td-section">
+                <span class="td-label">Player log</span>
+                <div class="td-log">
+                  <div class="td-log-row"><span class="td-log-t">14:32:01</span><span class="td-log-m">MOVE cmd=(7420, 6180)</span></div>
+                  <div class="td-log-row"><span class="td-log-t">14:32:02</span><span class="td-log-m">ATTACH ally=Ashe</span></div>
+                  <div class="td-log-row"><span class="td-log-t">14:32:04</span><span class="td-log-m">CAST spell=YuumiPassive</span></div>
+                  <div class="td-log-row"><span class="td-log-t">14:32:05</span><span class="td-log-m">INTERRUPT source=Knockup</span></div>
+                  <div class="td-log-row"><span class="td-log-t">14:32:06</span><span class="td-log-m" style="color:var(--warning)">SYNC AbilityState → SKIPPED</span></div>
+                  <div class="td-log-row"><span class="td-log-t">14:32:06</span><span class="td-log-m" style="color:var(--danger)">SHIELD applied client-side only</span></div>
+                  <div class="td-log-row"><span class="td-log-t">14:32:07</span><span class="td-log-m">DAMAGE ally=Ashe absorbed=0</span></div>
+                  <div class="td-log-row"><span class="td-log-t">14:32:09</span><span class="td-log-m" style="color:var(--danger)">STATE desync=true shield_client=true shield_server=false</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="dash-shell imp-shell" id="imp-shell">
+  <div class="imp-video-wrap">
+    <div class="imp-video-frame">
+      <video src="assets/Bug.mp4" autoplay muted loop playsinline></video>
+    </div>
+  </div>
+  <div class="imp-rail">
+    <button type="button" class="imp-close" id="exit-imp" title="End impersonation" aria-label="End impersonation">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="imp-scroll">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px">
+        <span style="color:var(--accent);display:flex">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 10h.01M15 10h.01M12 2a8 8 0 0 0-8 8v12l3-3 2.5 1.5L12 19l2.5 1.5L17 19l3 3V10a8 8 0 0 0-8-8z"/></svg>
+        </span>
+        <span style="font:600 18px/28px var(--font-body);color:#fff">Ghost AI</span>
+      </div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid var(--border-default)">
+        <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+          <span style="font:500 13px/15.6px var(--font-body);color:var(--lime-300,#bef264)">#BUG-1284719</span>
+          <span style="font:500 12px/16.2px var(--font-body);color:var(--text-secondary)">Reported: Aug 7, 2026</span>
+        </div>
+        <span style="font:500 12px/12px var(--font-body);color:var(--danger);background:var(--danger-muted);padding:4px 8px;border-radius:4px">P0</span>
+      </div>
+      <div class="imp-card">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font:var(--text-h4);color:#fff">User Report Summary</span>
+          <span style="align-self:flex-start;font:500 12px/16.2px var(--font-body);color:var(--warning);background:var(--warning-muted);padding:2px 8px;border-radius:4px">Behavior</span>
+        </div>
+        <span style="font:400 14px/20px var(--font-body);color:#fff">Player cast Yuumi's passive shield and was interrupted mid-cast. The shield applied on the client but never registered server-side, so the ally took full damage through a shield that was visibly on them.</span>
+        <div style="display:flex;align-items:flex-end;gap:8px">
+          <img src="assets/bug-report/clip-thumb.png" alt="" style="width:42px;height:42px;border-radius:6px;object-fit:cover">
+          <span style="font:400 12px/16.2px var(--font-mono);color:var(--text-secondary)">0:15</span>
+        </div>
+        <button type="button" class="imp-link" id="see-detail">See more details</button>
+      </div>
+      <div class="imp-card">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font:var(--text-h4);color:#fff">Analyzed Problem</span>
+          <div style="align-self:flex-start;display:inline-flex;align-items:center;gap:10px;padding:4px 8px;border-radius:4px;background:var(--bg-surface-2)">
+            <img src="assets/bug-report/cursor-agent.png" alt="" width="14" height="14" style="width:14px;height:14px;object-fit:cover">
+            <span style="font:500 12px/16px var(--font-body);color:#fff">Cursor Agent</span>
+          </div>
+        </div>
+        <span style="font:400 14px/20px var(--font-body);color:#fff">Based on the replay clip and player input history, this looks like a client/server state desync on cast interrupt — not a rendering issue.</span>
+        <div id="analyzed-more" class="is-hidden" style="display:flex;flex-direction:column;gap:10px;font:400 14px/20px var(--font-body);color:#fff">
+          <span>When the cast is interrupted, <span class="mono">YuumiPassive::onCastComplete()</span> applies the shield locally before <span class="mono">AbilityState::syncToServer()</span> has confirmed it, so an interrupt leaves the two states diverged.</span>
+          <span>Likely source: <span class="mono">src/Game/Champions/Yuumi/YuumiPassive.cpp</span> around lines 418–461.</span>
+          <span style="color:var(--text-secondary)">Impersonate BerniceSun02 and reproduce with a cast interrupt to confirm.</span>
+        </div>
+        <button type="button" class="imp-link" id="toggle-analyzed">See more</button>
+      </div>
+      <div class="imp-card">
+        <span style="font:var(--text-h4);color:#fff">Player Log</span>
+        <div style="display:flex;flex-direction:column;gap:6px;font:400 12px/16px var(--font-mono);color:var(--text-secondary)">
+          <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary)">14:32:01</span><span style="color:#fff">MOVE cmd=(7420, 6180)</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary)">14:32:02</span><span style="color:#fff">ATTACH ally=Ashe</span></div>
+          <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary)">14:32:04</span><span style="color:#fff">CAST spell=YuumiPassive</span></div>
+          <div id="log-more" class="is-hidden" style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary)">14:32:05</span><span style="color:#fff">INTERRUPT source=Knockup</span></div>
+            <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary)">14:32:06</span><span style="color:var(--warning)">SYNC AbilityState → SKIPPED</span></div>
+            <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary)">14:32:06</span><span style="color:var(--danger)">SHIELD applied client-side only</span></div>
+            <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary)">14:32:07</span><span style="color:#fff">DAMAGE ally=Ashe absorbed=0</span></div>
+            <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary)">14:32:09</span><span style="color:var(--danger)">STATE desync=true shield_client=true shield_server=false</span></div>
+          </div>
+        </div>
+        <button type="button" class="imp-link" id="toggle-log">See more</button>
+      </div>
+    </div>
+    <div class="imp-foot">
+      <div style="width:40px;height:40px;border-radius:var(--radius-md);background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <span style="font:600 14px/20px var(--font-body);color:#09090b">B</span>
+      </div>
+      <div style="display:flex;flex-direction:column;min-width:0">
+        <span style="font:600 14px/20px var(--font-body);color:#fff">User id: BerniceSun02</span>
+        <span style="font:500 13px/18px var(--font-body);color:var(--text-secondary)">Currently impersonating…</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const root = document.documentElement;
+const detail = document.getElementById('detail-shell');
+const imp = document.getElementById('imp-shell');
+function showImp(on) {
+  detail.classList.toggle('is-hidden', on);
+  imp.classList.toggle('is-on', on);
+}
+document.getElementById('enter-imp').onclick = () => showImp(true);
+document.getElementById('clip-btn').onclick = () => showImp(true);
+document.getElementById('exit-imp').onclick = () => showImp(false);
+document.getElementById('see-detail').onclick = () => showImp(false);
+document.getElementById('back-btn').onclick = () => {
+  if (window.history.length > 1) window.history.back();
+};
+document.getElementById('theme-btn').onclick = () => {
+  const light = root.getAttribute('data-theme') !== 'light';
+  root.toggleAttribute('data-theme', light);
+  if (light) root.setAttribute('data-theme', 'light');
+  else root.removeAttribute('data-theme');
+  document.getElementById('icon-moon').classList.toggle('is-hidden', light);
+  document.getElementById('icon-sun').classList.toggle('is-hidden', !light);
+};
+function toggle(id, btn) {
+  const el = document.getElementById(id);
+  const open = el.classList.toggle('is-hidden');
+  btn.textContent = open ? 'See more' : 'See less';
+}
+document.getElementById('toggle-analyzed').onclick = function () { toggle('analyzed-more', this); };
+document.getElementById('toggle-log').onclick = function () { toggle('log-more', this); };
+</script>
+</body>
+</html>

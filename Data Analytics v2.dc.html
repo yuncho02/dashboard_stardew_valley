@@ -388,7 +388,7 @@
     }
     .fb-c-check { width: 38px; flex-shrink: 0; padding: 12px 0 12px 14px; }
     .fb-c-urgency { width: 25px; flex-shrink: 0; padding: 12px 0; }
-    .fb-c-ticket { width: 145px; flex-shrink: 0; }
+    .fb-c-ticket { width: 158px; flex-shrink: 0; }
     /* A definite basis plus size containment keeps the title out of the grid's
        max-content measurement — otherwise the table would widen to fit the longest
        subject on the page. It still grows to fill spare width. */
@@ -693,8 +693,8 @@
     /* Squad and status share the subject's row, so the clip badge drops its label
        well before the old breakpoint — the icon alone still reads as "has a clip". */
     @media (max-width: 1440px) {
-      .fb-clip-label { display: none; }
-      .fb-clip { padding: 4px 5px; }
+      .fb-row .fb-clip-label { display: none; }
+      .fb-row .fb-clip { padding: 4px 5px; }
     }
     @media (max-width: 1120px) {
       /* Status outranks squad here: it is the state a triager scans for. */
@@ -704,9 +704,9 @@
       .fb-c-tags { width: 100px; }
       .fb-cell { padding: 12px 10px; }
       /* Reclaim width for the subject: type badge is redundant, clip goes icon-only. */
-      .fb-tag-type { display: none; }
-      .fb-clip-label { display: none; }
-      .fb-clip { padding: 4px 5px; }
+      .fb-row .fb-tag-type { display: none; }
+      .fb-row .fb-clip-label { display: none; }
+      .fb-row .fb-clip { padding: 4px 5px; }
     }
     /* Feedback Report KPI cards: muted label, full-contrast value (Figma 218:22552). */
     .fb-kpi .kpi-value,
@@ -727,6 +727,317 @@
     }
     :root[data-theme="light"] .dash-kpi.fb-kpi:hover {
       background: var(--muted, #fafafa);
+    }
+    /* ===== Ticket detail page — sits between the report table and impersonation =====
+       Deliberately NOT a stack of equal cards: one hero, one reading column, one
+       evidence rail. Hierarchy comes from type scale and whitespace, not borders. */
+    .td-page {
+      display: flex;
+      flex-direction: column;
+      gap: 26px;
+      padding: 4px 6px 8px;
+      box-sizing: border-box;
+    }
+    .td-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      align-self: flex-start;
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: var(--text-tertiary);
+      font: 500 13px/18px var(--font-body);
+      cursor: pointer;
+      transition: color 120ms ease;
+    }
+    .td-back:hover { color: var(--text-primary); }
+
+    .td-hero {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 28px;
+      flex-wrap: wrap;
+      row-gap: 16px;
+    }
+    .td-hero-main {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 0;
+      flex: 1;
+    }
+    .td-id-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .td-id {
+      font: var(--text-mono-sm);
+      color: var(--text-tertiary);
+      letter-spacing: 0.02em;
+    }
+    /* Priority reads as a signal, not another filled chip competing with the tags. */
+    .td-prio {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font: 500 12px/16px var(--font-body);
+      white-space: nowrap;
+    }
+    .td-prio-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .td-rule {
+      width: 1px;
+      height: 12px;
+      background: var(--border-strong);
+      flex-shrink: 0;
+    }
+    .td-subject {
+      font: 500 26px/34px var(--font-body);
+      letter-spacing: var(--tracking-tight);
+      color: var(--text-primary);
+      max-width: 54ch;
+    }
+    /* One inline byline instead of a five-cell boxed meta grid. */
+    .td-byline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font: 400 13px/20px var(--font-body);
+      color: var(--text-secondary);
+    }
+    .td-byline-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+    }
+    .td-byline-sep {
+      color: var(--border-strong);
+      user-select: none;
+    }
+    .td-byline .fb-avatar,
+    .td-byline .fb-avatar-mono {
+      width: 20px;
+      height: 20px;
+      box-shadow: none;
+    }
+    .td-role {
+      font: 500 11px/16px var(--font-body);
+      color: var(--text-tertiary);
+      background: var(--secondary-btn);
+      padding: 1px 6px;
+      border-radius: var(--radius-full);
+    }
+    .td-imp-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      height: 40px;
+      padding: 0 18px;
+      border: none;
+      border-radius: var(--radius-lg, 10px);
+      background: var(--accent);
+      color: var(--text-on-accent);
+      font: 600 14px/20px var(--font-body);
+      cursor: pointer;
+      flex-shrink: 0;
+      white-space: nowrap;
+      transition: filter 120ms ease;
+    }
+    .td-imp-btn:hover { filter: brightness(1.06); }
+
+    .td-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+      gap: 40px;
+      align-items: start;
+    }
+    @media (max-width: 1060px) {
+      .td-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+    }
+    .td-col {
+      display: flex;
+      flex-direction: column;
+      gap: 26px;
+      min-width: 0;
+    }
+    /* Sections are separated by air and a hairline, not by nested boxes. */
+    .td-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 0;
+    }
+    .td-section + .td-section {
+      padding-top: 26px;
+      border-top: 1px solid var(--border-hairline);
+    }
+    .td-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .td-label {
+      font: 600 13px/18px var(--font-body);
+      color: var(--text-primary);
+    }
+    /* The report is the player's own words — set it as a quote. */
+    .td-quote {
+      border-left: 2px solid var(--accent-border);
+      padding-left: 16px;
+      font: 400 15px/25px var(--font-body);
+      color: var(--text-primary);
+    }
+    .td-lead {
+      font: 400 15px/25px var(--font-body);
+      color: var(--text-primary);
+    }
+    .td-body {
+      font: 400 14px/23px var(--font-body);
+      color: var(--text-secondary);
+    }
+    .td-agent {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px 3px 6px;
+      border-radius: var(--radius-full);
+      background: var(--bg-surface-2);
+      font: 500 11px/16px var(--font-body);
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+    .td-source {
+      align-self: flex-start;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 100%;
+      padding: 7px 11px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-default);
+      background: var(--bg-canvas);
+      font: var(--text-mono-sm);
+      color: var(--accent);
+      word-break: break-all;
+    }
+    .td-source-icon { color: var(--text-tertiary); display: flex; flex-shrink: 0; }
+    .td-empty {
+      display: block;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      border: 1px dashed var(--border-strong);
+      background: transparent;
+      font: 400 13px/20px var(--font-body);
+      color: var(--text-tertiary);
+    }
+
+    /* Evidence rail: the clip is the hero object, so it gets no card chrome. */
+    .td-clip {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      border-radius: var(--radius-xl, 12px);
+      overflow: hidden;
+      background: #171717;
+      border: 1px solid var(--border-default);
+      cursor: pointer;
+      padding: 0;
+      display: block;
+    }
+    .td-clip video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .td-clip:hover video { transform: scale(1.03); }
+    .td-clip-scrim {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0) 55%);
+      pointer-events: none;
+    }
+    .td-clip-play {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: rgba(9, 9, 11, 0.55);
+      backdrop-filter: blur(6px);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      pointer-events: none;
+      transition: background-color 160ms ease;
+    }
+    .td-clip:hover .td-clip-play { background: rgba(9, 9, 11, 0.75); }
+    .td-clip-foot {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font: 500 12px/16px var(--font-body);
+      color: rgba(255, 255, 255, 0.92);
+      pointer-events: none;
+    }
+    .td-clip-time {
+      font: var(--text-mono-sm);
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(9, 9, 11, 0.6);
+    }
+    .td-caption {
+      font: 400 13px/20px var(--font-body);
+      color: var(--text-tertiary);
+    }
+    /* Log sits in an inset well so it reads as raw data, not prose. */
+    .td-log {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 14px;
+      border-radius: var(--radius-md);
+      background: var(--bg-canvas);
+      border: 1px solid var(--border-hairline);
+      font: var(--text-mono-sm);
+      min-width: 0;
+    }
+    .td-log-row {
+      display: flex;
+      gap: 12px;
+      align-items: baseline;
+      min-width: 0;
+    }
+    .td-log-t {
+      color: var(--text-tertiary);
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .td-log-m {
+      min-width: 0;
+      overflow-wrap: anywhere;
     }
     /* ===== Ask Ghost AI side panel — Figma node 237:24158 (374px, sidebar collapses) ===== */
     .ghost-panel-slot {
@@ -1125,9 +1436,9 @@
     @media (max-width: 1375px) { .has-ghost .fb-c-assignee { display: none; } }
     @media (max-width: 1280px) {
       .has-ghost .fb-c-squad { display: none; }
-      .has-ghost .fb-tag-type { display: none; }
-      .has-ghost .fb-clip-label { display: none; }
-      .has-ghost .fb-clip { padding: 4px 5px; }
+      .has-ghost .fb-row .fb-tag-type { display: none; }
+      .has-ghost .fb-row .fb-clip-label { display: none; }
+      .has-ghost .fb-row .fb-clip { padding: 4px 5px; }
     }
     .fb-ask-btn {
       display: inline-flex;
@@ -1379,10 +1690,10 @@
 
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid var(--border-default)">
             <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
-              <span style="font:500 13px/15.6px var(--font-body);color:var(--lime-300,#bef264)">#BUG-88213</span>
-              <span style="font:500 12px/16.2px var(--font-body);color:var(--text-secondary)">Reported: Aug 7, 2026</span>
+              <span style="font:500 13px/15.6px var(--font-body);color:var(--lime-300,#bef264)">{{ tdTicket }}</span>
+              <span style="font:500 12px/16.2px var(--font-body);color:var(--text-secondary)">Reported: {{ tdDate }}</span>
             </div>
-            <span style="font:500 12px/12px var(--font-body);color:var(--danger);background:var(--danger-muted);padding:4px 8px;border-radius:4px;flex-shrink:0">P0</span>
+            <span style="font:500 12px/12px var(--font-body);color:{{ tdPrioColor }};background:{{ tdPrioBg }};padding:4px 8px;border-radius:4px;flex-shrink:0">{{ tdPrioShort }}</span>
           </div>
 
           <div style="display:flex;flex-direction:column;gap:14px;padding:24px 20px;border-radius:12px;background:var(--bg-surface);border:1px solid var(--border-default);box-sizing:border-box">
@@ -1438,10 +1749,10 @@
 
         <div style="flex-shrink:0;position:sticky;bottom:0;z-index:2;display:flex;align-items:center;gap:8px;padding:16px 20px 20px;background:var(--bg-surface-2,#18181b);border-top:1px solid var(--border-default);box-sizing:border-box">
           <div style="width:40px;height:40px;border-radius:var(--radius-md);background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <span style="font:600 14px/20px var(--font-body);color:#09090b">B</span>
+            <span style="font:600 14px/20px var(--font-body);color:#09090b">{{ tdReporterInitial }}</span>
           </div>
           <div style="display:flex;flex-direction:column;min-width:0">
-            <span style="font:600 14px/20px var(--font-body);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">User id: BerniceSun02</span>
+            <span style="font:600 14px/20px var(--font-body);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">User id: {{ tdReporter }}</span>
             <span style="font:500 13px/18px var(--font-body);color:var(--text-secondary)">Currently impersonating…</span>
           </div>
         </div>
@@ -1511,8 +1822,13 @@
       <div class="dash-panel-body" style="width:100%;padding:16px 14px 40px;display:flex;flex-direction:column;gap:16px;box-sizing:border-box">
 
       <div class="dash-header-row" style="display:flex;align-items:center;justify-content:space-between;gap:16px">
-        <span style="font:var(--text-h1);letter-spacing:var(--tracking-tight)">{{ headerTitle }}</span>
-        <div class="dash-header-actions" style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+        <sc-if value="{{ showAppHeader }}" hint-placeholder-val="{{ true }}">
+          <span style="font:var(--text-h1);letter-spacing:var(--tracking-tight)">{{ headerTitle }}</span>
+        </sc-if>
+        <sc-if value="{{ showTicketDetail }}" hint-placeholder-val="{{ false }}">
+          <button type="button" onClick="{{ backToReport }}" class="td-back">{{ tdBackIcon }}{{ headerTitle }}</button>
+        </sc-if>
+        <div class="dash-header-actions" style="display:flex;align-items:center;gap:10px">
           <button type="button" onClick="{{ toggleTheme }}" aria-label="Toggle light mode" aria-pressed="{{ isLight }}" style="width:44px;height:24px;border-radius:var(--radius-full);border:none;box-shadow:inset 0 0 0 1px var(--border-strong);padding:2px;display:flex;align-items:center;position:relative;background:var(--bg-surface-2);cursor:pointer;flex-shrink:0;box-sizing:border-box">
             <span class="theme-thumb" style="width:20px;height:20px;border-radius:var(--radius-full);box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;transition:transform 180ms cubic-bezier(0.22, 1, 0.36, 1);transform:{{ thumbTransform }};flex-shrink:0">{{ currentIcon }}</span>
           </button>
@@ -1586,6 +1902,106 @@
           </sc-if>
         </div>
       </div>
+
+      <!-- ===== Ticket detail — the step between the report table and impersonation ===== -->
+      <sc-if value="{{ showTicketDetail }}" hint-placeholder-val="{{ false }}">
+      <div class="td-page">
+        <div class="td-hero">
+          <div class="td-hero-main">
+            <div class="td-id-row">
+              <span class="td-id">{{ tdTicket }}</span>
+              <span class="td-prio" style="color:{{ tdPrioColor }}"><span class="td-prio-dot" style="background:{{ tdPrioColor }}"></span>{{ tdPrioLabel }}</span>
+              <span class="td-rule"></span>
+              <sc-for list="{{ tdTags }}" as="t" hint-placeholder-count="2">
+                <span class="{{ t.cls }}">{{ t.iconEl }}{{ t.label }}</span>
+              </sc-for>
+            </div>
+            <span class="td-subject">{{ tdSubject }}</span>
+            <div class="td-byline">
+              <span class="td-byline-item">{{ tdReporterHandle }}</span>
+              <sc-if value="{{ tdHasRole }}" hint-placeholder-val="{{ true }}">
+                <span class="td-role">{{ tdRole }}</span>
+              </sc-if>
+              <span class="td-byline-sep">·</span>
+              <span class="td-byline-item">{{ tdDate }}</span>
+              <span class="td-byline-sep">·</span>
+              <span class="td-byline-item">{{ tdTopic }}</span>
+              <span class="td-byline-sep">·</span>
+              <span class="td-byline-item">{{ tdAssigneeEl }}{{ tdAssigneeNames }}</span>
+            </div>
+          </div>
+          <button type="button" onClick="{{ enterImpersonation }}" class="td-imp-btn">{{ tdImpIcon }}Impersonation mode</button>
+        </div>
+
+        <div class="td-grid">
+          <div class="td-col">
+            <div class="td-section">
+              <div class="td-label-row">
+                <span class="td-label">What the player reported</span>
+                <sc-if value="{{ tdHasKind }}" hint-placeholder-val="{{ true }}">
+                  <span class="td-role">{{ tdKind }}</span>
+                </sc-if>
+              </div>
+              <span class="td-quote">{{ tdSummary }}</span>
+            </div>
+
+            <div class="td-section">
+              <div class="td-label-row">
+                <span class="td-label">Ghost AI analysis</span>
+                <sc-if value="{{ tdAnalysed }}" hint-placeholder-val="{{ true }}">
+                  <span class="td-agent"><img src="assets/bug-report/cursor-agent.png" alt="" style="width:13px;height:13px;object-fit:cover;flex-shrink:0">Cursor Agent</span>
+                </sc-if>
+              </div>
+              <sc-if value="{{ tdAnalysed }}" hint-placeholder-val="{{ true }}">
+                <span class="td-lead">{{ tdAnalysis }}</span>
+                <sc-for list="{{ tdAnalysisDetail }}" as="p" hint-placeholder-count="2">
+                  <span class="td-body">{{ p.text }}</span>
+                </sc-for>
+                <sc-if value="{{ tdHasSource }}" hint-placeholder-val="{{ true }}">
+                  <span class="td-source"><span class="td-source-icon">{{ tdSourceIcon }}</span>{{ tdSource }}</span>
+                </sc-if>
+              </sc-if>
+              <sc-if value="{{ tdNotAnalysed }}" hint-placeholder-val="{{ false }}">
+                <span class="td-empty">Not analysed yet — this report is queued behind the P0 tickets.</span>
+              </sc-if>
+            </div>
+          </div>
+
+          <div class="td-col">
+            <sc-if value="{{ tdHasClip }}" hint-placeholder-val="{{ true }}">
+              <div class="td-section">
+                <span class="td-label">Recorded session</span>
+                <button type="button" onClick="{{ enterImpersonation }}" class="td-clip" aria-label="Replay the recorded session">
+                  <video src="assets/Bug.mp4" autoplay muted loop playsinline></video>
+                  <span class="td-clip-scrim"></span>
+                  <span class="td-clip-play">{{ tdPlayIcon }}</span>
+                  <span class="td-clip-foot"><span>{{ tdReporterHandle }}</span><span class="td-clip-time">{{ tdClipLength }}</span></span>
+                </button>
+                <span class="td-caption">Step into this session to reproduce it yourself.</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{ tdNoClip }}" hint-placeholder-val="{{ false }}">
+              <div class="td-section">
+                <span class="td-label">Recorded session</span>
+                <span class="td-empty">Came in from {{ tdChannelLabel }}, so there is no in-game recording. Impersonation starts a fresh session as this player.</span>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ tdHasLog }}" hint-placeholder-val="{{ true }}">
+              <div class="td-section">
+                <span class="td-label">Player log</span>
+                <div class="td-log">
+                  <sc-for list="{{ tdLog }}" as="l" hint-placeholder-count="6">
+                    <div class="td-log-row"><span class="td-log-t">{{ l.t }}</span><span class="td-log-m" style="color:{{ l.color }}">{{ l.m }}</span></div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
 
       <sc-if value="{{ showAnalyticsBody }}" hint-placeholder-val="{{ true }}">
       <x-import component-from-global-scope="GhostAIDesignSystem_84ae0c.Tabs" tabs="{{ tabItems }}" value="{{ tab }}" on-change="{{ setTab }}" hint-size="100%,42px"></x-import>
@@ -2444,14 +2860,14 @@ const NOTES = [
 // Sprint 26.04 runs Aug 1–14, 2026 and today is day 8, so dueDays is measured from
 // there: the design lock (day 7) has passed and the patch ships in 6 days.
 const TASKS = [
-  { id: 't1', text: 'Fix the Yuumi passive desync (#BUG-88213)', topicId: 'yuumi', dueDays: 1, estimate: '6 hrs' },
-  { id: 't2', text: 'Pick up the unowned Wild Rift cross-region crash (#BUG-88201)', topicId: 'crash', dueDays: 0, estimate: '2 days' },
-  { id: 't3', text: 'Push the Aurelion Sol hitbox fix to PBE for QA (#BUG-88190)', topicId: 'polish', dueDays: -1, estimate: '3 hrs' },
-  { id: 't4', text: 'Land the Viego spellblade cooldown fix (#BUG-88208)', topicId: 'viego', dueDays: 2, estimate: '1 day' },
+  { id: 't1', text: 'Fix the Yuumi passive desync (#BUG-1284719)', topicId: 'yuumi', dueDays: 1, estimate: '6 hrs' },
+  { id: 't2', text: 'Pick up the unowned Wild Rift cross-region crash (#BUG-1283904)', topicId: 'crash', dueDays: 0, estimate: '2 days' },
+  { id: 't3', text: 'Push the Aurelion Sol hitbox fix to PBE for QA (#BUG-1282198)', topicId: 'polish', dueDays: -1, estimate: '3 hrs' },
+  { id: 't4', text: 'Land the Viego spellblade cooldown fix (#BUG-1284561)', topicId: 'viego', dueDays: 2, estimate: '1 day' },
   { id: 't5', text: 'Implement the locked Smolder balance numbers', topicId: 'smolder', dueDays: 3, estimate: '1 day' },
-  { id: 't6', text: 'Guard the match-end LP write against shard failover (#BUG-88147)', topicId: 'lp', dueDays: 4, estimate: '3 days' },
-  { id: 't7', text: 'Pool the recall VFX allocation on min-spec (#BUG-88176)', topicId: 'perf', dueDays: 5, estimate: '2 days' },
-  { id: 't8', text: 'Fix partial-name matching in item shop search (#BUG-88164)', topicId: 'polish', dueDays: 6, estimate: '4 hrs' },
+  { id: 't6', text: 'Guard the match-end LP write against shard failover (#BUG-1278610)', topicId: 'lp', dueDays: 4, estimate: '3 days' },
+  { id: 't7', text: 'Pool the recall VFX allocation on min-spec (#BUG-1275104)', topicId: 'perf', dueDays: 5, estimate: '2 days' },
+  { id: 't8', text: 'Fix partial-name matching in item shop search (#BUG-1269840)', topicId: 'polish', dueDays: 6, estimate: '4 hrs' },
   { id: 't9', text: 'Add a crash-rate regression gate to the 26.04 build', topicId: 'release', dueDays: 3, estimate: '1 day' },
   { id: 't10', text: 'Run the PBE regression pass and sign off 26.04', topicId: 'release', dueDays: 5, estimate: '2 days' }
 ];
@@ -3413,25 +3829,125 @@ const FB_ASSIGNEES = [
 // `squad` is the routing target and `repro` the reproduction rate established at triage.
 // Row 1 is the ticket the impersonation view drills into — keep them in sync.
 const FEEDBACK_ROWS = [
-  { id: 1, urgency: 'p0', type: 'bug', ticket: '#BUG-88213', subject: 'Yuumi passive desync on cast interrupt', topic: 'Champion behaviour', squad: 'Champions', repro: '100%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'BerniceSun02', role: 'player', assignees: [1], date: 'Aug 7, 2026', dateSort: '2026-08-07' },
-  { id: 2, urgency: 'p0', type: 'bug', ticket: '#BUG-88201', subject: 'Client crash on Wild Rift cross-region matchmaking', topic: 'Client & crashes', squad: 'Engine', repro: '78%', status: 'Ready', channel: 'support', clip: false, reporter: 'mossy_midlaner', role: null, assignees: [3, 1], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
-  { id: 3, urgency: 'p1', type: 'bug', ticket: '#BUG-88208', subject: 'Viego passive breaks Trinity Force spellblade cooldown', topic: 'Champion behaviour', squad: 'Champions', repro: '100%', status: 'In progress', channel: 'ingame', clip: true, reporter: 'euw_tessa', role: 'player', assignees: [1], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
-  { id: 4, urgency: 'p2', type: 'bug', ticket: '#BUG-88155', subject: 'Champion select lock-in fails when a duo partner dodges', topic: 'Client & crashes', squad: 'Engine', repro: '62%', status: 'Ready', channel: 'discord', clip: false, reporter: 'duoq_calla', role: 'creator', assignees: [1, 0], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
-  { id: 5, urgency: 'p2', type: 'bug', ticket: '#BUG-88147', subject: 'Ranked win does not award LP during a shard failover', topic: 'Ranked & progression', squad: 'Engine', repro: '34%', status: 'In progress', channel: 'support', clip: false, reporter: 'topgap_kt', role: null, assignees: [0], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
-  { id: 6, urgency: 'p2', type: 'bug', ticket: '#BUG-88120', subject: 'Anti-cheat blocks a signed GPU driver on Windows 11 24H2', topic: 'Client & crashes', squad: 'Engine', repro: '12%', status: 'Investigating', channel: 'support', clip: false, reporter: 'pentakilpete', role: null, assignees: [2], date: 'Aug 4, 2026', dateSort: '2026-08-04' },
-  { id: 7, urgency: 'p2', type: 'bug', ticket: '#BUG-88190', subject: 'Aurelion Sol tornado hitbox mismatch', topic: 'Champion behaviour', squad: 'Champions', repro: '100%', status: 'Awaiting QA', channel: 'ingame', clip: true, reporter: 'jungle_jules', role: null, assignees: [1], date: 'Aug 4, 2026', dateSort: '2026-08-04' },
-  { id: 8, urgency: 'p3', type: 'bug', ticket: '#BUG-88176', subject: 'Recall animation stutters on low-end hardware', topic: 'Performance & hardware', squad: 'Engine', repro: '45%', status: 'Ready', channel: 'discord', clip: false, reporter: 'lowspec_lars', role: 'player', assignees: [2], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
-  { id: 9, urgency: 'p3', type: 'bug', ticket: '#BUG-88139', subject: 'Baron steal announcer line plays twice on the same objective', topic: 'Audio & VFX', squad: 'Engine', repro: '88%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'lulu_starfruit', role: null, assignees: [1], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
-  { id: 10, urgency: 'p4', type: 'bug', ticket: '#BUG-88164', subject: 'Item shop search misses partial champion names', topic: 'UI & accessibility', squad: 'UI/UX', repro: '100%', status: 'Ready', channel: 'reddit', clip: false, reporter: 'saltwater_sam', role: null, assignees: [0], date: 'Aug 2, 2026', dateSort: '2026-08-02' },
-  { id: 11, urgency: 'p4', type: 'bug', ticket: '#BUG-88131', subject: 'Ward placed on the Baron pit lip falls through terrain', topic: 'Terrain & collision', squad: 'Engine', repro: '100%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'support_rui', role: null, assignees: [1], date: 'Aug 2, 2026', dateSort: '2026-08-02' },
-  { id: 12, urgency: 'p2', type: 'feedback', ticket: '#DATA-4402', subject: 'Smolder win rate 18% above target band since 26.03', topic: 'Balance & meta', squad: 'Data', repro: null, status: 'Investigating', channel: 'ingame', clip: false, reporter: 'liveops_telemetry', role: null, assignees: [3], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
-  { id: 13, urgency: 'p2', type: 'feedback', ticket: '#DATA-4398', subject: 'Diamond+ D7 retention dropped 22% to 16%', topic: 'Retention & onboarding', squad: 'Data', repro: null, status: 'Queued', channel: 'ingame', clip: false, reporter: 'liveops_telemetry', role: null, assignees: [3, 0], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
-  { id: 14, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-2210', subject: '6 junglers below 2% pick rate for 3 patches', topic: 'Balance & meta', squad: 'Design', repro: null, status: 'Waiting on data', channel: 'reddit', clip: false, reporter: 'tracker_wren', role: 'creator', assignees: [0], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
-  { id: 15, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-2204', subject: 'Turret range indicator is unreadable for red-green colourblind players', topic: 'UI & accessibility', squad: 'Design', repro: null, status: 'Waiting on data', channel: 'discord', clip: false, reporter: 'vision_score_diff', role: 'creator', assignees: [0, 2], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
-  { id: 16, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-2198', subject: 'Objective bounties make late-game comebacks feel unearned', topic: 'Balance & meta', squad: 'Design', repro: null, status: 'Queued', channel: 'support', clip: false, reporter: 'winterstar_gwen', role: null, assignees: [3], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
-  { id: 17, urgency: 'p4', type: 'feedback', ticket: '#DESIGN-2191', subject: 'Rune page picker needs a search field — 60+ pages is unscannable', topic: 'UI & accessibility', squad: 'UI/UX', repro: null, status: 'Ready', channel: 'reddit', clip: false, reporter: 'arena_bee', role: 'player', assignees: [2], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
-  { id: 18, urgency: 'p4', type: 'feedback', ticket: '#DATA-4391', subject: 'New-player tutorial never covers wave management', topic: 'Retention & onboarding', squad: 'Data', repro: null, status: 'Queued', channel: 'support', clip: false, reporter: 'firstgame_fran', role: null, assignees: [2], date: 'Jul 30, 2026', dateSort: '2026-07-30' }
+  { id: 1, urgency: 'p0', type: 'bug', ticket: '#BUG-1284719', subject: 'Yuumi passive desync on cast interrupt', topic: 'Champion behaviour', squad: 'Champions', repro: '100%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'BerniceSun02', role: 'player', assignees: [1], date: 'Aug 7, 2026', dateSort: '2026-08-07' },
+  { id: 2, urgency: 'p0', type: 'bug', ticket: '#BUG-1283904', subject: 'Client crash on Wild Rift cross-region matchmaking', topic: 'Client & crashes', squad: 'Engine', repro: '78%', status: 'Ready', channel: 'support', clip: false, reporter: 'mossy_midlaner', role: null, assignees: [3, 1], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
+  { id: 3, urgency: 'p1', type: 'bug', ticket: '#BUG-1284561', subject: 'Viego passive breaks Trinity Force spellblade cooldown', topic: 'Champion behaviour', squad: 'Champions', repro: '100%', status: 'In progress', channel: 'ingame', clip: true, reporter: 'euw_tessa', role: 'player', assignees: [1], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
+  { id: 4, urgency: 'p2', type: 'bug', ticket: '#BUG-1279842', subject: 'Champion select lock-in fails when a duo partner dodges', topic: 'Client & crashes', squad: 'Engine', repro: '62%', status: 'Ready', channel: 'discord', clip: false, reporter: 'duoq_calla', role: 'creator', assignees: [1, 0], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
+  { id: 5, urgency: 'p2', type: 'bug', ticket: '#BUG-1278610', subject: 'Ranked win does not award LP during a shard failover', topic: 'Ranked & progression', squad: 'Engine', repro: '34%', status: 'In progress', channel: 'support', clip: false, reporter: 'topgap_kt', role: null, assignees: [0], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
+  { id: 6, urgency: 'p2', type: 'bug', ticket: '#BUG-1276403', subject: 'Anti-cheat blocks a signed GPU driver on Windows 11 24H2', topic: 'Client & crashes', squad: 'Engine', repro: '12%', status: 'Investigating', channel: 'support', clip: false, reporter: 'pentakilpete', role: null, assignees: [2], date: 'Aug 4, 2026', dateSort: '2026-08-04' },
+  { id: 7, urgency: 'p2', type: 'bug', ticket: '#BUG-1282198', subject: 'Aurelion Sol tornado hitbox mismatch', topic: 'Champion behaviour', squad: 'Champions', repro: '100%', status: 'Awaiting QA', channel: 'ingame', clip: true, reporter: 'jungle_jules', role: null, assignees: [1], date: 'Aug 4, 2026', dateSort: '2026-08-04' },
+  { id: 8, urgency: 'p3', type: 'bug', ticket: '#BUG-1275104', subject: 'Recall animation stutters on low-end hardware', topic: 'Performance & hardware', squad: 'Engine', repro: '45%', status: 'Ready', channel: 'discord', clip: false, reporter: 'lowspec_lars', role: 'player', assignees: [2], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
+  { id: 9, urgency: 'p3', type: 'bug', ticket: '#BUG-1273981', subject: 'Baron steal announcer line plays twice on the same objective', topic: 'Audio & VFX', squad: 'Engine', repro: '88%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'lulu_starfruit', role: null, assignees: [1], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
+  { id: 10, urgency: 'p4', type: 'bug', ticket: '#BUG-1269840', subject: 'Item shop search misses partial champion names', topic: 'UI & accessibility', squad: 'UI/UX', repro: '100%', status: 'Ready', channel: 'reddit', clip: false, reporter: 'saltwater_sam', role: null, assignees: [0], date: 'Aug 2, 2026', dateSort: '2026-08-02' },
+  { id: 11, urgency: 'p4', type: 'bug', ticket: '#BUG-1268715', subject: 'Ward placed on the Baron pit lip falls through terrain', topic: 'Terrain & collision', squad: 'Engine', repro: '100%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'support_rui', role: null, assignees: [1], date: 'Aug 2, 2026', dateSort: '2026-08-02' },
+  { id: 12, urgency: 'p2', type: 'feedback', ticket: '#DATA-18402', subject: 'Smolder win rate 18% above target band since 26.03', topic: 'Balance & meta', squad: 'Data', repro: null, status: 'Investigating', channel: 'ingame', clip: false, reporter: 'liveops_telemetry', role: null, assignees: [3], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
+  { id: 13, urgency: 'p2', type: 'feedback', ticket: '#DATA-18391', subject: 'Diamond+ D7 retention dropped 22% to 16%', topic: 'Retention & onboarding', squad: 'Data', repro: null, status: 'Queued', channel: 'ingame', clip: false, reporter: 'liveops_telemetry', role: null, assignees: [3, 0], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
+  { id: 14, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-92104', subject: '6 junglers below 2% pick rate for 3 patches', topic: 'Balance & meta', squad: 'Design', repro: null, status: 'Waiting on data', channel: 'reddit', clip: false, reporter: 'tracker_wren', role: 'creator', assignees: [0], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
+  { id: 15, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-91847', subject: 'Turret range indicator is unreadable for red-green colourblind players', topic: 'UI & accessibility', squad: 'Design', repro: null, status: 'Waiting on data', channel: 'discord', clip: false, reporter: 'vision_score_diff', role: 'creator', assignees: [0, 2], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
+  { id: 16, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-91082', subject: 'Objective bounties make late-game comebacks feel unearned', topic: 'Balance & meta', squad: 'Design', repro: null, status: 'Queued', channel: 'support', clip: false, reporter: 'winterstar_gwen', role: null, assignees: [3], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
+  { id: 17, urgency: 'p4', type: 'feedback', ticket: '#DESIGN-90715', subject: 'Rune page picker needs a search field — 60+ pages is unscannable', topic: 'UI & accessibility', squad: 'UI/UX', repro: null, status: 'Ready', channel: 'reddit', clip: false, reporter: 'arena_bee', role: 'player', assignees: [2], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
+  { id: 18, urgency: 'p4', type: 'feedback', ticket: '#DATA-18276', subject: 'New-player tutorial never covers wave management', topic: 'Retention & onboarding', squad: 'Data', repro: null, status: 'Queued', channel: 'support', clip: false, reporter: 'firstgame_fran', role: null, assignees: [2], date: 'Jul 30, 2026', dateSort: '2026-07-30' }
 ];
+
+
+// Authored triage detail. Only tickets Ghost AI has actually chewed on get an analysis
+// and a player log — the rest show an honest "not analysed yet" state rather than
+// inventing a root cause. Impersonation needs a recorded session, so it follows `clip`.
+const TICKET_DETAILS = {
+  '#BUG-1284719': {
+    kind: 'Behavior',
+    clipLength: '0:15',
+    summary: 'Player cast Yuumi\u2019s passive shield and was interrupted mid-cast. The shield applied on the client but never registered server-side, so the ally took full damage through a shield that was visibly on them.',
+    analysis: 'Based on the replay clip and player input history, this looks like a client/server state desync on cast interrupt \u2014 not a rendering issue.',
+    analysisDetail: [
+      'When the cast is interrupted, YuumiPassive::onCastComplete() applies the shield locally before AbilityState::syncToServer() has confirmed it, so an interrupt leaves the two states diverged.',
+      'Reproduce by attaching to an ally, starting the passive cast, then taking a knockup mid-cast.'
+    ],
+    source: 'src/Game/Champions/Yuumi/YuumiPassive.cpp:418\u2013461',
+    log: [
+      { t: '14:32:01', m: 'MOVE cmd=(7420, 6180)' },
+      { t: '14:32:02', m: 'ATTACH ally=Ashe' },
+      { t: '14:32:04', m: 'CAST spell=YuumiPassive' },
+      { t: '14:32:05', m: 'INTERRUPT source=Knockup' },
+      { t: '14:32:06', m: 'SYNC AbilityState \u2192 SKIPPED', level: 'warn' },
+      { t: '14:32:06', m: 'SHIELD applied client-side only', level: 'error' },
+      { t: '14:32:07', m: 'DAMAGE ally=Ashe absorbed=0' },
+      { t: '14:32:09', m: 'STATE desync=true shield_client=true shield_server=false', level: 'error' }
+    ]
+  },
+  '#BUG-1284561': {
+    kind: 'Champion combat',
+    clipLength: '0:28',
+    summary: 'Viego\u2019s possession passive resets Trinity Force spellblade instantly, so the on-hit proc fires twice in one trade instead of waiting for the cooldown.',
+    analysis: 'Possession copies the host\u2019s on-hit state but never stamps the spellblade cooldown onto Viego\u2019s own item timers, so Trinity Force thinks the proc is still available.',
+    analysisDetail: [
+      'ViegoPassive::onPossess() clones AttackSpeed and OnHit handlers from the host but skips ItemCooldownRegistry.',
+      '100% repro on any possessed champion holding Trinity Force \u2014 worth fixing with the other Champion-squad ability-state tickets.'
+    ],
+    source: 'src/Game/Champions/Viego/ViegoPassive.cpp:210\u2013268',
+    log: [
+      { t: '11:04:12', m: 'POSSESS target=Yasuo' },
+      { t: '11:04:13', m: 'ITEM TrinityForce spellblade=READY' },
+      { t: '11:04:14', m: 'AUTO \u2192 spellblade PROC' },
+      { t: '11:04:14', m: 'CD spellblade \u2192 0.00s (expected 1.50s)', level: 'error' },
+      { t: '11:04:15', m: 'AUTO \u2192 spellblade PROC (second hit)', level: 'warn' }
+    ]
+  },
+  '#BUG-1283904': {
+    kind: 'Client crash',
+    summary: 'Starting a Wild Rift cross-region match crashes the PC client during champ select. Repro is 78% and the ticket still has no owner.',
+    analysis: 'The cross-region handshake returns a shard token the desktop client does not know how to deserialize. The crash is in the matchmaking stub, not in gameplay.',
+    analysisDetail: [
+      'MatchmakingClient::onShardAssigned() assumes a PC shard id and asserts when it receives a Wild Rift region code.',
+      'No in-game clip \u2014 this arrived from Player Support. Impersonation starts a fresh session as this player.'
+    ],
+    source: 'src/Client/Matchmaking/ShardHandshake.cpp:96\u2013140'
+  },
+  '#BUG-1282198': {
+    kind: 'Hitbox',
+    clipLength: '0:22',
+    summary: 'Aurelion Sol\u2019s Q tornado visual is larger than the damage hitbox, so players walk through the edge and take no damage.',
+    analysis: 'The VFX scale was bumped in 26.03 without updating the collision capsule. QA already has a PBE build waiting.',
+    analysisDetail: [
+      'AurelionSolQ::getHitRadius() still returns the pre-26.03 value while the particle system uses the new scale.',
+      'Same ability-state family as Yuumi and Viego \u2014 Champions squad should take all three together.'
+    ],
+    source: 'src/Game/Champions/AurelionSol/AurelionSolQ.cpp:88\u2013112',
+    log: [
+      { t: '19:22:40', m: 'CAST spell=AurelionSolQ' },
+      { t: '19:22:41', m: 'VFX radius=325' },
+      { t: '19:22:41', m: 'HITBOX radius=280', level: 'warn' },
+      { t: '19:22:42', m: 'UNIT enemy in VFX, outside hitbox \u2192 no damage', level: 'error' }
+    ]
+  },
+  '#BUG-1268715': {
+    kind: 'Collision',
+    clipLength: '0:11',
+    summary: 'A ward placed on the Baron pit lip falls through the terrain and is lost. 100% repro on that ledge.',
+    analysis: 'The pit lip mesh was reauthored without updating the walkable nav overlay, so the ward spawn point is below the collision plane.',
+    analysisDetail: [
+      'Ward::place() raycasts against navmesh; the lip triangles are marked unwalkable so the fallback snaps into the pit volume.',
+      'Same collision family as other terrain tickets \u2014 Engine already owns it.'
+    ],
+    source: 'src/World/BaronPit/NavOverlay.cpp:44\u201371',
+    log: [
+      { t: '08:11:02', m: 'PLACE ward slot=yellow pos=(4120, 13680)' },
+      { t: '08:11:02', m: 'RAYCAST nav \u2192 MISS', level: 'warn' },
+      { t: '08:11:02', m: 'FALLBACK snap \u2192 pit volume', level: 'error' },
+      { t: '08:11:03', m: 'WARD destroyed reason=out_of_world', level: 'error' }
+    ]
+  },
+  '#DATA-18402': {
+    kind: 'Balance',
+    summary: 'Smolder win rate is 18% above its target band since patch 26.03. Live-ops telemetry, no player clip.',
+    analysis: 'The 26.03 Q execute threshold change overshot. Design is blocked on this number before they can tune the rest of the bot-lane band.',
+    analysisDetail: [
+      'Win rate climbed immediately after the execute buff and has not come down across three days of data.',
+      'No recorded session \u2014 this is a telemetry ticket, not a repro.'
+    ],
+    source: 'liveops/queries/smolder_wr_26_03.sql'
+  }
+};
 
 // Workflow order, so sorting by status walks the pipeline instead of the alphabet.
 const FB_STATUS_ORDER = ['Ready', 'In progress', 'Awaiting QA', 'Investigating', 'Queued', 'Waiting on data'];
@@ -3542,24 +4058,24 @@ function ghostAnswer(id) {
 
   if (id === 'urgent') {
     const list = blocking.map(r => `\u2022 ${r.ticket} \u2014 ${r.subject}`).join('\n');
-    return `${blocking.length} tickets are sitting at P0.\n\n${list}\n\nI\u2019d start with #BUG-88201: it is a P0 with 78% repro and still has no owner on day 8 of 14, so it is the one actually putting the sprint goal at risk.`;
+    return `${blocking.length} tickets are sitting at P0.\n\n${list}\n\nI\u2019d start with #BUG-1283904: it is a P0 with 78% repro and still has no owner on day 8 of 14, so it is the one actually putting the sprint goal at risk.`;
   }
   if (id === 'cluster') {
     const top = ghostTopicCounts(rows).slice(0, 3)
       .map(t => `\u2022 ${t.topic} \u2014 ${t.count} ticket${t.count === 1 ? '' : 's'}`).join('\n');
-    return `Grouped by what they touch, the queue clusters like this:\n\n${top}\n\nThe three Champion-squad tickets (#BUG-88213, #BUG-88208 and #BUG-88190) all resolve ability state a frame too early \u2014 same root shape, three surfaces. Worth routing them as one investigation.`;
+    return `Grouped by what they touch, the queue clusters like this:\n\n${top}\n\nThe three Champion-squad tickets (#BUG-1284719, #BUG-1284561 and #BUG-1282198) all resolve ability state a frame too early \u2014 same root shape, three surfaces. Worth routing them as one investigation.`;
   }
   if (id === 'players') {
     const themes = ghostTopicCounts(feedback)
       .map(t => `\u2022 ${t.topic} \u2014 ${t.count}`).join('\n');
-    return `${feedback.length} of the ${rows.length} tickets are feedback rather than defects:\n\n${themes}\n\nThe loudest single thread is the Smolder win-rate investigation (#DATA-4402) \u2014 it is 18% above its target band since 26.03 and is blocking the design work that depends on it.`;
+    return `${feedback.length} of the ${rows.length} tickets are feedback rather than defects:\n\n${themes}\n\nThe loudest single thread is the Smolder win-rate investigation (#DATA-18402) \u2014 it is 18% above its target band since 26.03 and is blocking the design work that depends on it.`;
   }
   return `Here\u2019s the shape of this week: ${rows.length} open tickets \u2014 ${bugs.length} bugs and ${feedback.length} pieces of feedback. ${blocking.length} are P0, and ${clips.length} arrived with a recorded clip you can replay.\n\nAsk me about a specific ticket, a channel, or a topic and I\u2019ll dig in.`;
 }
 
-// Turn #BUG- / #FBK- ids in Ghost replies into clickable ticket links.
+// Turn #BUG- / #DATA- / #DESIGN- ids in Ghost replies into clickable ticket links.
 function linkifyGhostText(text, onTicketClick) {
-  const re = /#(BUG|FBK)-\d+/g;
+  const re = /#(BUG|DATA|DESIGN|FBK)-\d+/g;
   const nodes = [];
   let last = 0;
   let match;
@@ -3687,6 +4203,7 @@ class Component extends DCLogic {
     toastMessage: '',
     toastUntil: 0,
     showBugReport: false,
+    detailTicket: null,
     analyzedExpanded: false,
     playerLogExpanded: false,
     messageThreads: MESSAGE_THREADS_SEED.map(t => ({ ...t, messages: t.messages.map(m => ({ ...m })) })),
@@ -4216,7 +4733,7 @@ class Component extends DCLogic {
     // 'player' lands on the Feedback Report list; a ticket row drills into the bug report.
     if (this._ghostCloseTimer) clearTimeout(this._ghostCloseTimer);
     this.setState(s => ({
-      nav: value, showBugReport: false, showNotif: false, showProjectMenu: false,
+      nav: value, showBugReport: false, detailTicket: null, showNotif: false, showProjectMenu: false,
       showSettingsMenu: false, showFbTagMenu: false, showFbAssigneeMenu: false,
       showGhostPanel: false,
       ghostPanelMounted: false,
@@ -4241,7 +4758,7 @@ class Component extends DCLogic {
 
   handlePopState = () => {
     const nav = isPlayerReportPath() ? 'player' : 'analytics';
-    if (nav !== this.state.nav) this.setState({ nav, showBugReport: false, showFbTagMenu: false, showFbAssigneeMenu: false });
+    if (nav !== this.state.nav) this.setState({ nav, showBugReport: false, detailTicket: null, showFbTagMenu: false, showFbAssigneeMenu: false });
   };
 
   // ---- Feedback Report interactions ----
@@ -4437,7 +4954,8 @@ class Component extends DCLogic {
     this.setState({
       showFbTagMenu: false,
       showFbAssigneeMenu: false,
-      showBugReport: true,
+      detailTicket: row.ticket,
+      showBugReport: false,
       nav: 'player',
       analyzedExpanded: false,
       playerLogExpanded: false,
@@ -4445,6 +4963,16 @@ class Component extends DCLogic {
       ghostPanelMounted: false,
       collapsed: this.state.railWasCollapsed
     });
+    const panel = document.querySelector('.dash-panel');
+    if (panel) panel.scrollTop = 0;
+  };
+
+  backToReport = () => {
+    this.setState({ detailTicket: null, showBugReport: false });
+  };
+
+  enterImpersonation = () => {
+    this.setState({ showBugReport: true, analyzedExpanded: false, playerLogExpanded: false });
   };
 
   // Tag / assignee filters + sort applied to the ticket list; shared by the table and "select all".
@@ -4661,10 +5189,16 @@ class Component extends DCLogic {
     const showAnalyticsBody = this.state.nav === 'analytics';
     const showMessagesBody = this.state.nav === 'messages';
     const showTasksBody = this.state.nav === 'tasks';
-    const showPlayerBody = this.state.nav === 'player';
+    // Player Report has three steps: table -> ticket detail -> impersonation.
+    const detailRow = this.state.detailTicket
+      ? FEEDBACK_ROWS.find(r => r.ticket === this.state.detailTicket) || null
+      : null;
+    const showTicketDetail = !!detailRow && !this.state.showBugReport && this.state.nav === 'player';
+    const showPlayerBody = this.state.nav === 'player' && !showTicketDetail;
+    const tdDetail = detailRow ? (TICKET_DETAILS[detailRow.ticket] || null) : null;
     const headerTitle = this.state.nav === 'tasks' ? 'My Tasks'
       : this.state.nav === 'messages' ? 'Messages'
-      : showPlayerBody ? 'Player Report'
+      : this.state.nav === 'player' ? 'Player Report'
       : 'Dashboard';
 
     // ---- Feedback Report rows: tag filter + sort, optionally grouped by topic ----
@@ -5095,7 +5629,7 @@ class Component extends DCLogic {
       markNotifRead: () => this.setState({ notifUnread: false, showNotif: false }),
       notifications: [
         { title: 'Net sentiment still negative', body: '−6 since May — the slide starts at the loot-orb change.' },
-        { title: 'Unassigned P0 in the sprint', body: '#BUG-88201 still has no owner on day 8 of 14.' }
+        { title: 'Unassigned P0 in the sprint', body: '#BUG-1283904 still has no owner on day 8 of 14.' }
       ],
       kpis: cfg.kpis.map(k => {
         const opensBugReport = k.label === 'Records';
@@ -5108,10 +5642,72 @@ class Component extends DCLogic {
           cardClass: selected ? 'dash-kpi dash-kpi-selected' : 'dash-kpi',
           cursor: 'pointer',
           onClick: opensBugReport
-            ? () => { this.setState({ showBugReport: true, nav: 'player', analyzedExpanded: false, playerLogExpanded: false }); this.syncUrl('player'); }
+            ? () => { this.openTicketById('#BUG-1284719'); this.syncUrl('player'); }
             : () => this.setState({ selectedKpi: k.label, summaryVariant: 0, showNotif: false })
         };
       }),
+      // ---- Ticket detail page ----
+      showTicketDetail,
+      showAppHeader: !showTicketDetail,
+      backToReport: this.backToReport,
+      enterImpersonation: this.enterImpersonation,
+      tdBackIcon: React.createElement('span', { style: { display: 'flex', transform: 'rotate(180deg)' } }, taskIcon('chevronRight', 14)),
+      tdImpIcon: navIcon('ghost', 16, false),
+      tdTicket: detailRow ? detailRow.ticket : '',
+      tdSubject: detailRow ? detailRow.subject : '',
+      tdPrioLabel: detailRow ? FEEDBACK_URGENCY_LABEL[detailRow.urgency] : '',
+      tdPrioColor: detailRow
+        ? (detailRow.urgency === 'p0' || detailRow.urgency === 'p1' ? 'var(--danger)' : detailRow.urgency === 'p2' ? 'var(--warning)' : 'var(--text-tertiary)')
+        : '',
+      tdPrioBg: detailRow
+        ? (detailRow.urgency === 'p0' || detailRow.urgency === 'p1' ? 'var(--danger-muted)' : detailRow.urgency === 'p2' ? 'var(--warning-muted)' : 'var(--bg-surface-2)')
+        : '',
+      tdPrioShort: detailRow ? String(detailRow.urgency).toUpperCase() : '',
+      tdTags: detailRow ? fbRowTags(detailRow).map(fbTagBadge) : [],
+      tdChannelLabel: detailRow && FEEDBACK_TAGS[detailRow.channel] ? FEEDBACK_TAGS[detailRow.channel].label : '',
+      tdReporterHandle: detailRow ? '@' + detailRow.reporter : '',
+      tdHasRole: !!(detailRow && detailRow.role),
+      tdRole: detailRow && detailRow.role ? detailRow.role : '',
+      tdTopic: detailRow ? detailRow.topic : '',
+      tdAssigneeEl: detailRow
+        ? React.createElement('span', { className: 'fb-avatar-stack' },
+            detailRow.assignees.slice().reverse().map((idx, k) => fbAvatar(idx, k)))
+        : null,
+      tdAssigneeNames: detailRow
+        ? detailRow.assignees.map(idx => (FB_ASSIGNEES[idx] || FB_ASSIGNEES[0]).name.split(' ')[0]).join(', ')
+        : '',
+      tdSourceIcon: navIcon('columns', 13, false),
+      tdPlayIcon: React.createElement('svg', {
+        width: 15, height: 15, viewBox: '0 0 24 24', fill: 'currentColor',
+        style: { display: 'block', marginLeft: '2px' },
+        dangerouslySetInnerHTML: { __html: '<path d="M8 5.14v13.72a1 1 0 0 0 1.54.84l10.28-6.86a1 1 0 0 0 0-1.68L9.54 4.3A1 1 0 0 0 8 5.14z"/>' }
+      }),
+      tdKind: tdDetail && tdDetail.kind ? tdDetail.kind : '',
+      tdHasKind: !!(tdDetail && tdDetail.kind),
+      tdSummary: tdDetail && tdDetail.summary
+        ? tdDetail.summary
+        : (detailRow && FEEDBACK_TAGS[detailRow.channel] ? `Reported from ${FEEDBACK_TAGS[detailRow.channel].label} by @${detailRow.reporter}. No expanded write-up was attached to this report.` : ''),
+      tdAnalysed: !!(tdDetail && tdDetail.analysis),
+      tdNotAnalysed: !(tdDetail && tdDetail.analysis),
+      tdAnalysis: tdDetail && tdDetail.analysis ? tdDetail.analysis : '',
+      tdAnalysisDetail: (tdDetail && tdDetail.analysisDetail ? tdDetail.analysisDetail : []).map(text => ({ text })),
+      tdHasSource: !!(tdDetail && tdDetail.source),
+      tdSource: tdDetail && tdDetail.source ? tdDetail.source : '',
+      tdHasClip: !!(detailRow && detailRow.clip),
+      tdNoClip: !!(detailRow && !detailRow.clip),
+      tdClipLength: tdDetail && tdDetail.clipLength ? tdDetail.clipLength : '',
+      tdHasLog: !!(tdDetail && tdDetail.log && tdDetail.log.length),
+      tdLog: (tdDetail && tdDetail.log ? tdDetail.log : []).map(l => ({
+        t: l.t,
+        m: l.m,
+        color: l.level === 'error' ? 'var(--danger)' : l.level === 'warn' ? 'var(--warning)' : 'var(--text-primary)'
+      })),
+      tdDate: detailRow ? detailRow.date : '',
+      tdReporter: detailRow ? detailRow.reporter : '',
+      tdReporterInitial: detailRow ? detailRow.reporter.charAt(0).toUpperCase() : '',
+      tdImpHint: detailRow && detailRow.clip
+        ? 'Replays the recorded session'
+        : 'Starts a fresh session as this player',
       showBugReport: this.state.showBugReport,
       showDashboard: !this.state.showBugReport,
       showAnalyticsBody,
