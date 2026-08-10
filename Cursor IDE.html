@@ -216,6 +216,10 @@
     line-height: 19px;
     position: relative;
   }
+  /* Rows are laid out against the widest line rather than the visible width, so
+     a highlighted row keeps its background all the way out when the code is
+     scrolled sideways instead of stopping at the old viewport edge. */
+  .code-lines { min-width: max-content; }
   .ln-row { display: flex; position: relative; min-height: 19px; }
   .ln-row .gutter {
     width: 62px; flex-shrink: 0;
@@ -1140,7 +1144,7 @@ document.getElementById('ide').innerHTML =
         '<span class="sep">›</span><span class="sym">' + T.symbol + '</span>' +
       '</div>' +
       '<div class="code-wrap">' +
-        '<div class="code-scroll" id="codeScroll">' + codeHtml() + '</div>' +
+        '<div class="code-scroll" id="codeScroll"><div class="code-lines">' + codeHtml() + '</div></div>' +
         '<div class="minimap">' + minimapHtml() + '</div>' +
       '</div>' +
       '<div class="panel">' +

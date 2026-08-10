@@ -2292,6 +2292,103 @@
       animation: cursorFade 200ms ease;
     }
     @keyframes cursorFade { from { opacity: 0; } }
+
+    /* ---- Leaving for Cursor -------------------------------------------------
+       Cursor is somebody else's application, so say so before the window opens
+       rather than having one appear unannounced. */
+    .cursor-confirm {
+      width: min(360px, calc(100vw - 48px));
+      border-radius: 16px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      box-shadow: 0 30px 90px #000000b3;
+      padding: 20px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      animation: confirmIn 240ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes confirmIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.98); }
+    }
+    .cc-hop {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 2px;
+    }
+    .cc-tile {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--bg-surface-2);
+      border: 1px solid var(--border-default);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .cc-tile img { width: 22px; height: 22px; object-fit: contain; }
+    /* The source art carries a lot of padding, so it is sized up to sit at the
+       same visual weight as the Cursor icon beside it. */
+    .cc-tile img.cc-ghost-mark { width: 36px; height: 36px; }
+    .cc-arrow { color: var(--text-tertiary); display: flex; overflow: hidden; }
+    /* The arrow travels toward Cursor and restarts rather than rocking back, so
+       the motion reads as a hand-off in one direction. */
+    .cc-arrow svg { animation: ccArrowTravel 1.6s ease-in-out infinite; }
+    @keyframes ccArrowTravel {
+      0%   { transform: translateX(-5px); opacity: 0; }
+      25%  { opacity: 1; }
+      60%  { opacity: 1; }
+      100% { transform: translateX(6px); opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cc-arrow svg { animation: none; }
+    }
+    .cc-title {
+      font: 600 16px/22px var(--font-body);
+      color: var(--text-primary);
+      text-align: center;
+    }
+    /* The file and line span carry the explanation, so no prose repeats them. */
+    .cc-target {
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: var(--bg-surface-2);
+      border: 1px solid var(--border-default);
+      font: 400 11px/16px var(--font-mono, ui-monospace, Menlo, monospace);
+      color: var(--accent);
+      text-align: center;
+      word-break: break-all;
+    }
+    .cc-note {
+      font: 400 11.5px/16px var(--font-body);
+      color: var(--text-tertiary);
+      text-align: center;
+    }
+    .cc-actions { display: flex; gap: 8px; margin-top: 4px; }
+    .cc-btn {
+      flex: 1;
+      height: 36px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-default);
+      background: transparent;
+      color: var(--text-primary);
+      font: 500 13px/18px var(--font-body);
+      cursor: pointer;
+      transition: background 140ms ease;
+    }
+    .cc-btn:hover { background: var(--bg-surface-2); }
+    .cc-btn.is-primary {
+      background: var(--primary-btn, #bef264);
+      border-color: transparent;
+      color: var(--text-always-dark, #0a0a0a);
+    }
+    .cc-btn.is-primary:hover { background: var(--accent-hover, #a3e635); }
+
     .cursor-window {
       position: absolute;
       inset: 22px;
@@ -2608,7 +2705,7 @@
                 <span style="font:var(--text-label);color:var(--text-primary)">Start a conversation</span>
                 <sc-for list="{{ composeContacts }}" as="c" hint-placeholder-count="4">
                   <div onClick="{{ c.onClick }}" style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;background:var(--bg-surface-2);cursor:pointer">
-                    <span style="width:28px;height:28px;border-radius:50%;background:{{ c.color }};color:#000;display:flex;align-items:center;justify-content:center;font:600 11px/1 var(--font-body);flex-shrink:0">{{ c.avatar }}</span>
+                    {{ c.avatarEl }}
                     <span style="font:var(--text-body-sm);color:var(--text-primary)">{{ c.name }}</span>
                   </div>
                 </sc-for>
@@ -3291,11 +3388,11 @@
       </sc-if>
 
       <sc-if value="{{ showMessagesBody }}" hint-placeholder-val="{{ false }}">
-        <div style="display:flex;gap:16px;height:600px;min-height:0">
+        <div style="display:flex;gap:16px;height:calc(100vh - 150px);min-height:520px;min-width:0;box-sizing:border-box">
           <div style="width:280px;flex-shrink:0;display:flex;flex-direction:column;gap:4px;border:1px solid var(--border-default);border-radius:var(--radius-2xl);background:var(--bg-surface);padding:10px;overflow:auto;box-sizing:border-box">
             <sc-for list="{{ messageThreadViews }}" as="th" hint-placeholder-count="4">
               <div onClick="{{ th.onClick }}" style="display:flex;align-items:flex-start;gap:10px;padding:10px;border-radius:12px;cursor:pointer;background:{{ th.rowBg }}">
-                <span style="width:32px;height:32px;border-radius:50%;background:{{ th.color }};color:#000;display:flex;align-items:center;justify-content:center;font:600 12px/1 var(--font-body);flex-shrink:0">{{ th.avatar }}</span>
+                {{ th.avatarEl }}
                 <div style="display:flex;flex-direction:column;gap:2px;min-width:0;flex:1">
                   <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
                     <span style="font:600 13px/18px var(--font-body);color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ th.name }}</span>
@@ -3311,7 +3408,7 @@
           </div>
           <div style="flex:1;min-width:0;display:flex;flex-direction:column;border:1px solid var(--border-default);border-radius:var(--radius-2xl);background:var(--bg-surface);padding:16px;box-sizing:border-box;gap:12px">
             <div style="display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--border-default)">
-              <span style="width:32px;height:32px;border-radius:50%;background:{{ activeThreadColor }};color:#000;display:flex;align-items:center;justify-content:center;font:600 12px/1 var(--font-body);flex-shrink:0">{{ activeThreadAvatar }}</span>
+              {{ activeThreadAvatarEl }}
               <span style="font:var(--text-h4)">{{ activeThreadName }}</span>
             </div>
             <div style="flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px">
@@ -3817,6 +3914,26 @@
 
   <sc-if value="{{ showToast }}" hint-placeholder-val="{{ false }}">
     <div class="dash-toast">{{ toastMessage }}</div>
+  </sc-if>
+
+  <!-- "Go to Code" leaves Ghost AI for Cursor, so it asks first. -->
+  <sc-if value="{{ showCursorConfirm }}" hint-placeholder-val="{{ false }}">
+    <div class="cursor-overlay">
+      <div class="cursor-confirm" role="dialog" aria-modal="true" aria-label="Open in Cursor">
+        <div class="cc-hop">
+          <span class="cc-tile" title="Ghost AI">{{ ccGhostIcon }}</span>
+          <span class="cc-arrow">{{ ccArrowIcon }}</span>
+          <span class="cc-tile" title="Cursor"><img src="assets/bug-report/cursor-agent.png" alt="Cursor"></span>
+        </div>
+        <span class="cc-title">Open in Cursor?</span>
+        <span class="cc-target">{{ ccTarget }}</span>
+        <span class="cc-note">Opens in a separate window, outside Ghost AI.</span>
+        <div class="cc-actions">
+          <button type="button" onClick="{{ cancelCursorLink }}" class="cc-btn">Cancel</button>
+          <button type="button" onClick="{{ confirmCursorLink }}" class="cc-btn is-primary">Open Cursor</button>
+        </div>
+      </div>
+    </div>
   </sc-if>
 
   <!-- Cursor, opened from "Go to Code". Closes on the window's red light,
@@ -4983,48 +5100,63 @@ const RAW_NOTE_FALLBACK = 'No additional editorial context captured for this met
 const CCU_METRIC_IDS = [1, 2, 3, 4, 5];
 const REGION_METRIC_IDS = [6, 7, 8, 9, 10];
 
-const MESSAGE_CONTACTS = [
-  { id: 'qa', name: 'QA Team', avatar: 'QA', color: '#a78bfa' },
-  { id: 'player-support', name: 'Player Support', avatar: 'PS', color: '#60a5fa' },
-  { id: 'marketing', name: 'Marketing', avatar: 'MK', color: '#f472b6' },
-  { id: 'balance', name: 'Balance Team', avatar: 'BT', color: '#a3e635' }
+// The people tickets get assigned to. `photo` wins; the monogram fallback below is
+// kept for any assignee added later without a headshot.
+const FB_ASSIGNEES = [
+  { id: 'june', name: 'June Cho', photo: 'assets/june-cho-avatar.jpg' },
+  { id: 'bernice', name: 'Bernice', photo: 'assets/Bernice.jpg' },
+  { id: 'charlotte', name: 'Charlotte', photo: 'assets/Charlotte.jpg' },
+  { id: 'angela', name: 'Angela', photo: 'assets/Angela.jpg' }
 ];
+
+// You message the same people who show up in the assignee column, so the two
+// screens are talking about one team. Derived from FB_ASSIGNEES rather than
+// re-listed, and June is dropped because she is the one holding the dashboard.
+const MESSAGE_ROLES = {
+  bernice: 'Champions squad',
+  charlotte: 'Engine squad',
+  angela: 'Player Support'
+};
+const MESSAGE_CONTACTS = FB_ASSIGNEES
+  .filter(a => a.id !== 'june')
+  .map(a => ({
+    id: a.id,
+    name: a.name,
+    photo: a.photo,
+    role: MESSAGE_ROLES[a.id] || '',
+    avatar: a.name.slice(0, 1).toUpperCase(),
+    color: 'var(--border-strong)'
+  }));
 
 const MESSAGE_THREADS_SEED = [
   {
-    id: 'qa',
-    contactId: 'qa',
+    id: 'bernice',
+    contactId: 'bernice',
     unread: 2,
     messages: [
-      { from: 'them', text: 'Repro rate on the Wild Rift cross-region crash is holding at 78%.', time: '9:12 AM' },
-      { from: 'me', text: 'Got it — flagging as P1 for the next patch.', time: '9:15 AM' },
-      { from: 'them', text: 'Sounds good. I’ll attach the latest crash logs to the bug report.', time: '9:20 AM' }
+      { from: 'them', text: 'Reproduced the Yuumi shield desync on my machine \u2014 it only misses when the interrupt lands on the same tick as the cast finishing.', time: '9:12 AM' },
+      { from: 'me', text: 'That matches what Cursor flagged. The local apply happens before syncToServer gets an ack.', time: '9:15 AM' },
+      { from: 'them', text: 'Then Viego and Aurelion Sol are probably the same bug wearing different hats. Want me to take all three as one fix?', time: '9:20 AM' }
     ]
   },
   {
-    id: 'player-support',
-    contactId: 'player-support',
+    id: 'charlotte',
+    contactId: 'charlotte',
     unread: 1,
     messages: [
-      { from: 'them', text: 'Getting a spike in tickets about ranked wins not awarding LP since 26.03.', time: 'Yesterday' },
-      { from: 'them', text: 'Can we get a pinned FAQ post out today?', time: 'Yesterday' }
+      { from: 'them', text: 'The Wild Rift cross-region crash is still unowned on day 8. It is a P0 at 78% repro.', time: 'Yesterday' },
+      { from: 'me', text: 'Taking it. The shard token comes back as v3 and the desktop client only registers up to v2.', time: 'Yesterday' },
+      { from: 'them', text: 'Ah \u2014 so it is a null schema deref, not a champ select bug at all. I will move it off the champ select board.', time: 'Yesterday' }
     ]
   },
   {
-    id: 'marketing',
-    contactId: 'marketing',
+    id: 'angela',
+    contactId: 'angela',
     unread: 0,
     messages: [
-      { from: 'them', text: 'Arena engagement is up 40% since the Season 3 rotation teaser went live.', time: 'Mon' },
-      { from: 'me', text: 'Nice! Let’s keep pushing that thread through the weekend.', time: 'Mon' }
-    ]
-  },
-  {
-    id: 'balance',
-    contactId: 'balance',
-    unread: 0,
-    messages: [
-      { from: 'them', text: 'Sentiment numbers for the loot-orb retro look great, thanks for pulling those together.', time: 'Last week' }
+      { from: 'them', text: 'Ticket volume about ranked wins not awarding LP is climbing again since 26.03.', time: 'Mon' },
+      { from: 'me', text: 'It is the shard failover path \u2014 the write lands after the session closes. Fix is queued for the patch.', time: 'Mon' },
+      { from: 'them', text: 'Good. I will put a pinned FAQ up so support stops getting the same ticket forty times a day.', time: 'Mon' }
     ]
   }
 ];
@@ -5180,15 +5312,6 @@ const FEEDBACK_URGENCY_LABEL = {
   p3: 'P3 — low, minor gameplay impact',
   p4: 'P4 — minor visual clipping'
 };
-
-// The people tickets get assigned to. `photo` wins; the monogram fallback below is
-// kept for any assignee added later without a headshot.
-const FB_ASSIGNEES = [
-  { id: 'june', name: 'June Cho', photo: 'assets/june-cho-avatar.jpg' },
-  { id: 'bernice', name: 'Bernice', photo: 'assets/Bernice.jpg' },
-  { id: 'charlotte', name: 'Charlotte', photo: 'assets/Charlotte.jpg' },
-  { id: 'angela', name: 'Angela', photo: 'assets/Angela.jpg' }
-];
 
 // Triage queue: bug reports and player feedback funnelled from the in-game reporter and
 // the community channels into one list. `topic` is what "Group by topic" clusters on;
@@ -5688,6 +5811,7 @@ class Component extends DCLogic {
     analyzedExpanded: false,
     playerLogExpanded: false,
     showCursorIde: false,
+    showCursorConfirm: false,
     showImpersonation: false,
     cursorTicket: '',
     messageThreads: MESSAGE_THREADS_SEED.map(t => ({ ...t, messages: t.messages.map(m => ({ ...m })) })),
@@ -7092,9 +7216,24 @@ class Component extends DCLogic {
   // tab or an inline panel — the dashboard stays put behind it. If the browser
   // refuses the window (popup blocker), we fall back to the in-page overlay so
   // the journey never dead-ends mid-demo.
+  // Ask before leaving. The window itself is opened from the confirm button so
+  // the call still sits inside a click — a browser blocks a popup that is not.
   openCursorIde = () => {
-    const ticket = this.state.detailTicket || '#BUG-1284719';
-    this.setState({ cursorTicket: ticket, tdPillMenu: null });
+    this.setState({
+      showCursorConfirm: true,
+      cursorTicket: this.state.detailTicket || '#BUG-1284719',
+      tdPillMenu: null,
+      ...FB_MENUS_CLOSED
+    });
+  };
+
+  cancelCursorLink = () => {
+    if (this.state.showCursorConfirm) this.setState({ showCursorConfirm: false });
+  };
+
+  confirmCursorLink = () => {
+    const ticket = this.state.cursorTicket || '#BUG-1284719';
+    this.setState({ showCursorConfirm: false });
 
     const url = 'Cursor%20IDE.html?ticket=' + encodeURIComponent(ticket);
     const win = this.openCursorWindow(url);
@@ -7158,7 +7297,8 @@ class Component extends DCLogic {
   // impersonation view, so it gets first refusal.
   handleCursorKeyDown = (e) => {
     if (e.key !== 'Escape') return;
-    if (this.state.showCursorIde) this.closeCursorIde();
+    if (this.state.showCursorConfirm) this.cancelCursorLink();
+    else if (this.state.showCursorIde) this.closeCursorIde();
     else if (this.state.showImpersonation) this.stopImpersonating();
   };
 
@@ -7977,14 +8117,30 @@ class Component extends DCLogic {
       };
     });
 
+    // Same headshot treatment as the assignee column, so a teammate looks like the
+    // same person on both screens. Monogram only if someone has no photo.
+    const contactAvatar = (c, size) => c && c.photo
+      ? React.createElement('img', {
+          src: c.photo, alt: c.name, title: c.name,
+          style: { width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, display: 'block' }
+        })
+      : React.createElement('span', {
+          style: {
+            width: size, height: size, borderRadius: '50%', flexShrink: 0,
+            background: (c && c.color) || 'var(--border-strong)', color: '#000',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            font: `600 ${Math.round(size * 0.38)}px/1 var(--font-body)`
+          }
+        }, (c && c.avatar) || '?');
+
     const messageThreadViews = this.state.messageThreads.map(t => {
       const contact = MESSAGE_CONTACTS.find(c => c.id === t.contactId) || { name: 'Unknown', avatar: '?', color: 'var(--border-strong)' };
       const last = t.messages[t.messages.length - 1];
       return {
         id: t.id,
         name: contact.name,
-        avatar: contact.avatar,
-        color: contact.color,
+        avatarEl: contactAvatar(contact, 32),
+        role: contact.role || '',
         hasUnread: t.unread > 0,
         preview: last ? last.text : 'No messages yet',
         time: last ? last.time : '',
@@ -8002,7 +8158,7 @@ class Component extends DCLogic {
       bubbleBg: m.from === 'me' ? 'var(--accent)' : 'var(--bg-surface-2)',
       bubbleColor: m.from === 'me' ? 'var(--text-on-accent)' : 'var(--text-primary)'
     })) : [];
-    const composeContacts = MESSAGE_CONTACTS.map(c => ({ ...c, onClick: () => this.startNewThread(c.id) }));
+    const composeContacts = MESSAGE_CONTACTS.map(c => ({ ...c, avatarEl: contactAvatar(c, 28), onClick: () => this.startNewThread(c.id) }));
 
     return {
       tab: this.state.tab,
@@ -8650,8 +8806,8 @@ class Component extends DCLogic {
       navPlaceholderBody: 'Task triage for League of Legends will live here. Switch back to Dashboard for analytics.',
       messageThreadViews,
       activeThreadName: activeContact.name || '',
-      activeThreadAvatar: activeContact.avatar || '',
-      activeThreadColor: activeContact.color || 'var(--border-strong)',
+      activeThreadAvatarEl: contactAvatar(activeContact, 32),
+      activeThreadRole: activeContact.role || '',
       activeMessages,
       hasActiveThread: !!activeThread,
       messageDraft: this.state.messageDraft,
@@ -8676,6 +8832,25 @@ class Component extends DCLogic {
       startImpersonating: this.startImpersonating,
       stopImpersonating: this.stopImpersonating,
       impHandle: '@' + (detailRow ? detailRow.reporter : 'Vandiril'),
+      showCursorConfirm: this.state.showCursorConfirm,
+      cancelCursorLink: this.cancelCursorLink,
+      confirmCursorLink: this.confirmCursorLink,
+      // The animated mark, not the flat glyph — it is the one place in the app
+      // where Ghost AI is introducing itself next to another product's icon.
+      ccGhostIcon: React.createElement('img', {
+        src: 'assets/ghost_code.gif',
+        alt: '',
+        className: 'cc-ghost-mark'
+      }),
+      ccArrowIcon: React.createElement('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none' },
+        React.createElement('path', { d: 'M5 12h14m0 0-5-5m5 5-5 5', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })
+      ),
+      // The exact file and line span the report blames, so the dialog names what
+      // it is about to open rather than just "an external app".
+      ccTarget: (() => {
+        const d = TICKET_DETAILS[this.state.cursorTicket || '#BUG-1284719'];
+        return d && d.source ? String(d.source) : 'src/Game/Champions/Yuumi/YuumiPassive.cpp:418\u2013461';
+      })(),
       showCursorIde: this.state.showCursorIde,
       openCursorIde: this.openCursorIde,
       closeCursorIde: this.closeCursorIde,
