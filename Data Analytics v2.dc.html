@@ -337,6 +337,59 @@
       background: #ffffff;
       border-color: #f4f4f5;
     }
+
+    /* ---- Pagination (Figma 76:8821) ----------------------------------------
+       36px tall throughout, 36x36 page squares, 4px between every item, and
+       12px of side padding on Previous / Next. */
+    .fb-pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 4px 0 8px;
+      flex-wrap: wrap;
+    }
+    .fb-page-btn,
+    .fb-page-num,
+    .fb-page-gap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 36px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-md, 8px);
+      background: transparent;
+      color: var(--text-secondary);
+      font: 500 14px/20px var(--font-body);
+      box-sizing: border-box;
+      cursor: pointer;
+      transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+    }
+    .fb-page-btn { gap: 4px; padding: 0 12px; }
+    .fb-page-num { width: 36px; padding: 0; }
+    .fb-page-gap { width: 36px; cursor: default; color: var(--text-tertiary); }
+    .fb-page-btn:hover:not(:disabled),
+    .fb-page-num:hover:not(.is-current) {
+      background: var(--bg-surface-2);
+      color: var(--text-primary);
+    }
+    /* The current page is the only outlined item, matching the reference. */
+    .fb-page-num.is-current {
+      background: var(--bg-surface);
+      border-color: var(--border-default);
+      color: var(--text-primary);
+      cursor: default;
+    }
+    .fb-page-btn:disabled {
+      color: var(--text-tertiary);
+      opacity: .45;
+      cursor: not-allowed;
+    }
+    .fb-page-btn svg { flex-shrink: 0; display: block; }
+    @media (max-width: 640px) {
+      .fb-page-btn .fb-page-label { display: none; }
+      .fb-page-btn { padding: 0 10px; }
+    }
     /* One column that is at least as wide as the widest row and otherwise fills the
        table. Both halves matter: max-content keeps the header, group bars and hover
        backgrounds painting past the viewport edge once the table scrolls sideways,
@@ -728,242 +781,224 @@
     :root[data-theme="light"] .dash-kpi.fb-kpi:hover {
       background: var(--muted, #fafafa);
     }
-    /* ===== Ticket detail page — sits between the report table and impersonation =====
-       Deliberately NOT a stack of equal cards: one hero, one reading column, one
-       evidence rail. Hierarchy comes from type scale and whitespace, not borders. */
+    /* ===== Ticket detail — Figma 281:22688 =====
+       Tokens from the file variable snapshot (dark). Font colors are exact hex. */
+    .td-crumb {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+    .td-crumb-link,
+    .td-crumb-current {
+      border: none;
+      background: transparent;
+      padding: 0;
+      font: 400 14px/20px var(--font-body);
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+    .td-crumb-link {
+      color: #a1a1aa;
+      cursor: pointer;
+    }
+    .td-crumb-link:hover { color: #ffffff; }
+    .td-crumb-current { color: #ffffff; }
+    .td-crumb-chevron {
+      display: flex;
+      width: 14px;
+      height: 14px;
+      color: #a1a1aa;
+      flex-shrink: 0;
+    }
+    :root[data-theme="light"] .td-crumb-link { color: #a1a1aa; }
+    :root[data-theme="light"] .td-crumb-link:hover { color: #030712; }
+    :root[data-theme="light"] .td-crumb-current { color: #030712; }
+
     .td-page {
       display: flex;
       flex-direction: column;
-      gap: 26px;
-      padding: 4px 6px 8px;
+      gap: 50px;
+      width: 100%;
       box-sizing: border-box;
+      --td-fg: #ffffff;
+      --td-muted: #a1a1aa;
+      --td-card: #101010;
+      --td-border: #27272a;
+      --td-danger: #ef4444;
+      --td-amber: #f59e0b;
+      --td-amber-bg: #451a03;
+      --td-primary: #a3e635;
+      --td-primary-accent: #84cc16;
+      --td-on-primary: #0a0a0a;
+      --td-log: #0a0a0a;
+      --td-chip: rgba(255, 255, 255, 0.1);
+      --td-secondary-btn: #262626;
+      --td-secondary-fg: #71717a;
     }
-    .td-back {
-      display: inline-flex;
+    :root[data-theme="light"] .td-page {
+      --td-fg: #030712;
+      --td-card: #ffffff;
+      --td-border: #e4e4e7;
+      --td-chip: #e5e7eb;
+      --td-secondary-btn: #f5f5f5;
+      --td-secondary-fg: #52525b;
+    }
+    .td-title-row {
+      display: flex;
       align-items: center;
-      gap: 4px;
-      align-self: flex-start;
-      padding: 0;
-      border: none;
-      background: transparent;
-      color: var(--text-tertiary);
-      font: 500 13px/18px var(--font-body);
-      cursor: pointer;
-      transition: color 120ms ease;
-    }
-    .td-back:hover { color: var(--text-primary); }
-
-    .td-hero {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 28px;
+      gap: 12px;
       flex-wrap: wrap;
-      row-gap: 16px;
-    }
-    .td-hero-main {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
       min-width: 0;
-      flex: 1;
-    }
-    .td-id-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .td-id {
-      font: var(--text-mono-sm);
-      color: var(--text-tertiary);
-      letter-spacing: 0.02em;
-    }
-    /* Priority reads as a signal, not another filled chip competing with the tags. */
-    .td-prio {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font: 500 12px/16px var(--font-body);
-      white-space: nowrap;
-    }
-    .td-prio-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .td-rule {
-      width: 1px;
-      height: 12px;
-      background: var(--border-strong);
-      flex-shrink: 0;
     }
     .td-subject {
-      font: 500 26px/34px var(--font-body);
-      letter-spacing: var(--tracking-tight);
-      color: var(--text-primary);
-      max-width: 54ch;
-    }
-    /* One inline byline instead of a five-cell boxed meta grid. */
-    .td-byline {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      font: 400 13px/20px var(--font-body);
-      color: var(--text-secondary);
-    }
-    .td-byline-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      min-width: 0;
-    }
-    .td-byline-sep {
-      color: var(--border-strong);
-      user-select: none;
-    }
-    .td-byline .fb-avatar,
-    .td-byline .fb-avatar-mono {
-      width: 20px;
-      height: 20px;
-      box-shadow: none;
-    }
-    .td-role {
-      font: 500 11px/16px var(--font-body);
-      color: var(--text-tertiary);
-      background: var(--secondary-btn);
-      padding: 1px 6px;
-      border-radius: var(--radius-full);
-    }
-    .td-imp-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      height: 40px;
-      padding: 0 18px;
-      border: none;
-      border-radius: var(--radius-lg, 10px);
-      background: var(--accent);
-      color: var(--text-on-accent);
-      font: 600 14px/20px var(--font-body);
-      cursor: pointer;
-      flex-shrink: 0;
+      font: 500 24px/32px var(--font-body);
+      letter-spacing: 0;
+      color: var(--td-fg);
       white-space: nowrap;
-      transition: filter 120ms ease;
     }
-    .td-imp-btn:hover { filter: brightness(1.06); }
+    .td-title-tags { display: flex; gap: 4px; align-items: flex-start; flex-shrink: 0; }
+    .td-page .fb-badge {
+      height: auto;
+      min-height: 24px;
+      padding: 2px 6px;
+      gap: 4px;
+      border-radius: 8px;
+      background: var(--td-card);
+      border: 1px solid var(--td-border);
+      color: var(--td-fg);
+      font: 500 14px/20px var(--font-body);
+    }
+    .td-page .fb-badge svg { width: 12px; height: 12px; }
 
-    .td-grid {
+    .td-layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-      gap: 40px;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+      column-gap: 100px;
+      row-gap: 40px;
       align-items: start;
+      width: 100%;
     }
-    @media (max-width: 1060px) {
-      .td-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+    @media (max-width: 1200px) {
+      .td-layout { grid-template-columns: minmax(0, 1fr); column-gap: 40px; }
+      .td-subject { white-space: normal; }
     }
-    .td-col {
-      display: flex;
-      flex-direction: column;
-      gap: 26px;
+    .td-main { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+    /* The summary card sets the row height on its own, which leaves the clip
+       too short to read. Floor the row so both sides get room. */
+    .td-top-row { display: flex; gap: 16px; align-items: stretch; min-width: 0; min-height: 220px; }
+    .td-top-row .td-card,
+    .td-top-row .td-clip {
+      flex: 1 1 0;
       min-width: 0;
+      width: auto;
     }
-    /* Sections are separated by air and a hairline, not by nested boxes. */
-    .td-section {
+    @media (max-width: 900px) {
+      .td-top-row { flex-direction: column; }
+      .td-top-row .td-card,
+      .td-top-row .td-clip { width: 100%; }
+      .td-top-row .td-clip { min-height: 220px; }
+    }
+
+    .td-card {
       display: flex;
       flex-direction: column;
       gap: 12px;
+      padding: 20px;
+      border-radius: 16px;
+      background: var(--td-card);
+      border: 1px solid var(--td-border);
+      box-sizing: border-box;
       min-width: 0;
+      flex: 1;
     }
-    .td-section + .td-section {
-      padding-top: 26px;
-      border-top: 1px solid var(--border-hairline);
-    }
-    .td-label-row {
+    .td-card.is-wide { gap: 20px; }
+    .td-card-head {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
+      gap: 8px;
+      width: 100%;
     }
-    .td-label {
-      font: 600 13px/18px var(--font-body);
-      color: var(--text-primary);
+    .td-card-head.is-split { justify-content: space-between; }
+    .td-h {
+      font: 600 16px/20.8px var(--font-body);
+      color: var(--td-fg);
+      white-space: nowrap;
     }
-    /* The report is the player's own words — set it as a quote. */
-    .td-quote {
-      border-left: 2px solid var(--accent-border);
-      padding-left: 16px;
-      font: 400 15px/25px var(--font-body);
-      color: var(--text-primary);
+    .td-kind {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: var(--td-amber-bg);
+      color: var(--td-amber);
+      font: 500 12px/16px var(--font-body);
+      letter-spacing: 0;
+      white-space: nowrap;
     }
-    .td-lead {
-      font: 400 15px/25px var(--font-body);
-      color: var(--text-primary);
-    }
-    .td-body {
-      font: 400 14px/23px var(--font-body);
-      color: var(--text-secondary);
+    .td-summary {
+      font: 400 14px/20px var(--font-body);
+      letter-spacing: 0;
+      color: var(--td-fg);
     }
     .td-agent {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 3px 8px 3px 6px;
-      border-radius: var(--radius-full);
-      background: var(--bg-surface-2);
-      font: 500 11px/16px var(--font-body);
-      color: var(--text-secondary);
-      flex-shrink: 0;
+      justify-content: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: var(--td-chip);
+      color: var(--td-fg);
+      font: 500 12px/16px var(--font-body);
+      letter-spacing: 0;
+      white-space: nowrap;
     }
-    .td-source {
-      align-self: flex-start;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      max-width: 100%;
-      padding: 7px 11px;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border-default);
-      background: var(--bg-canvas);
-      font: var(--text-mono-sm);
-      color: var(--accent);
-      word-break: break-all;
-    }
-    .td-source-icon { color: var(--text-tertiary); display: flex; flex-shrink: 0; }
-    .td-empty {
-      display: block;
-      padding: 16px;
-      border-radius: var(--radius-md);
-      border: 1px dashed var(--border-strong);
+    .td-agent img { width: 14px; height: 14px; object-fit: cover; flex-shrink: 0; }
+    .td-goto {
+      border: none;
       background: transparent;
-      font: 400 13px/20px var(--font-body);
-      color: var(--text-tertiary);
+      padding: 0;
+      font: 500 14px/20px var(--font-body);
+      letter-spacing: 0;
+      color: var(--td-primary);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    :root[data-theme="light"] .td-goto { color: #65a30d; }
+    .td-analysis {
+      font: 400 14px/20px var(--font-body);
+      letter-spacing: 0;
+      color: var(--td-fg);
+      white-space: pre-wrap;
+    }
+    .td-code { color: var(--td-primary-accent); }
+    .td-empty {
+      font: 400 14px/20px var(--font-body);
+      color: var(--td-muted);
     }
 
-    /* Evidence rail: the clip is the hero object, so it gets no card chrome. */
     .td-clip {
       position: relative;
-      width: 100%;
-      aspect-ratio: 16 / 10;
-      border-radius: var(--radius-xl, 12px);
+      border-radius: 10px;
       overflow: hidden;
-      background: #171717;
-      border: 1px solid var(--border-default);
+      background: #000;
+      border: none;
       cursor: pointer;
       padding: 0;
       display: block;
+      align-self: stretch;
+      min-height: 0;
     }
     .td-clip video {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
-      transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .td-clip:hover video { transform: scale(1.03); }
     .td-clip-scrim {
       position: absolute;
       inset: 0;
@@ -977,68 +1012,156 @@
       transform: translate(-50%, -50%);
       width: 46px;
       height: 46px;
-      border-radius: 50%;
+      border-radius: 23px;
       background: rgba(9, 9, 11, 0.55);
-      backdrop-filter: blur(6px);
+      backdrop-filter: blur(3px);
       box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
       display: flex;
       align-items: center;
       justify-content: center;
       color: #fff;
       pointer-events: none;
-      transition: background-color 160ms ease;
     }
-    .td-clip:hover .td-clip-play { background: rgba(9, 9, 11, 0.75); }
+    .td-clip-play img, .td-clip-play svg { width: 15px; height: 15px; display: block; }
     .td-clip-foot {
       position: absolute;
-      left: 12px;
-      right: 12px;
-      bottom: 11px;
+      left: 13px;
+      right: 13px;
+      bottom: 12.5px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      font: 500 12px/16px var(--font-body);
-      color: rgba(255, 255, 255, 0.92);
       pointer-events: none;
     }
+    .td-clip-user {
+      font: 500 12px/16px var(--font-body);
+      color: #ffffff;
+    }
     .td-clip-time {
-      font: var(--text-mono-sm);
+      font: 400 12px/16.8px var(--font-mono);
+      color: #ffffff;
       padding: 2px 6px;
       border-radius: 4px;
-      background: rgba(9, 9, 11, 0.6);
+      background: #52525b;
     }
-    .td-caption {
-      font: 400 13px/20px var(--font-body);
-      color: var(--text-tertiary);
+    .td-clip-empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+      cursor: default;
     }
-    /* Log sits in an inset well so it reads as raw data, not prose. */
+
+    .td-log-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 20px;
+      border-radius: 16px;
+      background: var(--td-log);
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .td-log-title {
+      font: 600 16px/20.8px var(--font-body);
+      color: #ffffff;
+    }
     .td-log {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5.8px;
       padding: 14px;
-      border-radius: var(--radius-md);
-      background: var(--bg-canvas);
-      border: 1px solid var(--border-hairline);
-      font: var(--text-mono-sm);
+      border-radius: 6px;
       min-width: 0;
+      font: 400 12px/16.8px var(--font-mono);
     }
-    .td-log-row {
+    .td-log-row { display: flex; gap: 12px; align-items: baseline; min-width: 0; white-space: nowrap; }
+    .td-log-t { color: #a1a1aa; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+    .td-log-m { min-width: 0; color: #ffffff; overflow-wrap: anywhere; white-space: normal; }
+
+    .td-rail { display: flex; flex-direction: column; gap: 50px; min-width: 0; }
+    .td-pills { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+    .td-pill-wrap { position: relative; display: inline-flex; }
+    .td-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 9999px;
+      background: #171717;
+      font: 500 14px/20px var(--font-body);
+      letter-spacing: 0;
+      color: var(--td-fg);
+      white-space: nowrap;
+    }
+    :root[data-theme="light"] .td-pill { background: #fafafa; }
+    .td-pill.is-edit {
+      cursor: pointer;
+      transition: background-color 120ms ease;
+    }
+    .td-pill.is-edit:hover,
+    .td-pill.is-edit.is-open { background: color-mix(in srgb, #fff 10%, #171717); }
+    :root[data-theme="light"] .td-pill.is-edit:hover,
+    :root[data-theme="light"] .td-pill.is-edit.is-open { background: color-mix(in srgb, #000 10%, #fafafa); }
+    .td-pill-menu { left: 0; right: auto; width: 280px; }
+    .td-pill-icon { display: flex; width: 20px; height: 20px; align-items: center; justify-content: center; flex-shrink: 0; color: inherit; }
+    .td-pill.is-danger { color: #ef4444; }
+    .td-urgency { display: flex; gap: 2px; width: 17px; height: 16px; }
+    .td-urgency span { flex: 1; border-radius: 2px; background: #ef4444; }
+
+    .td-rail-action {
       display: flex;
+      flex-direction: column;
       gap: 12px;
-      align-items: baseline;
-      min-width: 0;
+      padding: 0 12px;
+      align-items: flex-start;
     }
-    .td-log-t {
-      color: var(--text-tertiary);
-      flex-shrink: 0;
-      font-variant-numeric: tabular-nums;
+    .td-reporter-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
-    .td-log-m {
-      min-width: 0;
-      overflow-wrap: anywhere;
+    .td-reporter {
+      font: 500 16px/24px var(--font-body);
+      letter-spacing: 0;
+      color: var(--td-fg);
     }
+    .td-role-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      border-radius: 8px;
+      background: var(--td-secondary-btn);
+      color: var(--td-secondary-fg);
+      font: 500 14px/20px var(--font-body);
+      letter-spacing: 0;
+    }
+    .td-imp-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      height: 40px;
+      padding: 0 18px;
+      border: none;
+      border-radius: 8px;
+      background: var(--td-primary);
+      color: var(--td-on-primary);
+      font: 600 14px/20px var(--font-body);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .td-imp-btn:hover { filter: brightness(1.06); }
+    .td-imp-hint {
+      margin: 0;
+      font: 500 14px/20px var(--font-body);
+      letter-spacing: 0;
+      color: #a1a1aa;
+      max-width: 280px;
+    }
+
     /* ===== Ask Ghost AI side panel — Figma node 237:24158 (374px, sidebar collapses) ===== */
     .ghost-panel-slot {
       width: 0;
@@ -1670,6 +1793,66 @@
       padding: 0 10px;
       font: 500 13px/18px var(--font-body);
     }
+
+    /* ---- "Go to Code" hand-off ----------------------------------------
+       Cursor is a separate app, so it opens as a window over the dashboard
+       rather than as another panel inside it. The IDE itself lives in
+       Cursor IDE.html; this is only the launch chrome around it. */
+    .cursor-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 400;
+      background: #000000b8;
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: cursorFade 200ms ease;
+    }
+    @keyframes cursorFade { from { opacity: 0; } }
+    .cursor-window {
+      position: absolute;
+      inset: 22px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #181818;
+      box-shadow: 0 40px 120px #000000cc, 0 0 0 1px #ffffff14;
+      transform-origin: 50% 62%;
+      animation: cursorOpen 420ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes cursorOpen {
+      from { opacity: 0; transform: scale(0.94) translateY(18px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .cursor-window iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+    .cursor-exit {
+      position: absolute;
+      left: 50%;
+      bottom: 34px;
+      transform: translateX(-50%);
+      z-index: 401;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 34px;
+      padding: 0 14px;
+      border: 1px solid #ffffff24;
+      border-radius: 999px;
+      background: #101010e6;
+      color: #e4e4e7;
+      font: 500 12px/16px var(--font-body);
+      cursor: pointer;
+      opacity: 0;
+      animation: cursorExitIn 300ms ease 1.5s forwards;
+    }
+    @keyframes cursorExitIn { to { opacity: 1; } }
+    .cursor-exit:hover { background: #1d1d1de6; border-color: #ffffff3d; }
   </style>
 </helmet>
 <div class="dash-shell {{ ghostShellClass }}" style="display:flex;height:100vh;height:100dvh;width:100%" data-screen-label="Data analytics">
@@ -1677,11 +1860,11 @@
     <div style="display:flex;height:100%;width:100%;min-height:0">
       <div style="flex:1;min-width:0;padding:24px;box-sizing:border-box;display:flex">
         <div style="flex:1;min-width:0;border-radius:18px;overflow:hidden;background:#171717;position:relative">
-          <video src="assets/Bug.mp4" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;display:block"></video>
+          <video class="rec-video" src="assets/League.mp4" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;display:block"></video>
         </div>
       </div>
       <div style="width:340px;flex-shrink:0;align-self:stretch;display:flex;flex-direction:column;min-height:0;box-sizing:border-box;background:#000;position:relative">
-        <button type="button" onClick="{{ closeBugReport }}" title="End impersonation" aria-label="End impersonation" class="imp-close" style="position:absolute;top:28px;right:18px;z-index:3;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:none;border-radius:var(--radius-md);color:var(--text-secondary);cursor:pointer;padding:0">{{ bugCloseIcon }}</button>
+        <button type="button" onClick="{{ closeBugReport }}" title="Close recording" aria-label="Close recording" class="imp-close" style="position:absolute;top:28px;right:18px;z-index:3;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:none;border-radius:var(--radius-md);color:var(--text-secondary);cursor:pointer;padding:0">{{ bugCloseIcon }}</button>
         <div style="flex:1;min-height:0;overflow:auto;padding:32px 20px 16px;display:flex;flex-direction:column;gap:8px;box-sizing:border-box">
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px">
             <span style="color:var(--accent);display:flex;flex-shrink:0">{{ ghostIcon }}</span>
@@ -1722,9 +1905,9 @@
               <div style="display:flex;flex-direction:column;gap:10px;font:400 14px/20px var(--font-body);color:#fff">
                 <span>When the cast is interrupted, <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">YuumiPassive::onCastComplete()</span> applies the shield locally before <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">AbilityState::syncToServer()</span> has confirmed it, so an interrupt leaves the two states diverged.</span>
                 <span>Likely source: <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">src/Game/Champions/Yuumi/YuumiPassive.cpp</span> around lines 418–461, called from <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">ChampionController.cpp</span>.</span>
-                <span style="color:var(--text-secondary)">Impersonate BerniceSun02 and reproduce with a cast interrupt to confirm.</span>
+                <span style="color:var(--text-secondary)">Watch Vandiril’s recording through the cast interrupt to confirm.</span>
               </div>
-              <span style="font:400 14px/20px var(--font-body);color:var(--text-secondary);text-decoration:underline;cursor:pointer">Go to Code</span>
+              <span onClick="{{ openCursorIde }}" style="font:400 14px/20px var(--font-body);color:var(--text-secondary);text-decoration:underline;cursor:pointer">Go to Code</span>
             </sc-if>
             <span onClick="{{ toggleAnalyzed }}" style="font:400 14px/20px var(--font-body);color:var(--text-secondary);text-decoration:underline;cursor:pointer">{{ analyzedToggleLabel }}</span>
           </div>
@@ -1753,7 +1936,7 @@
           </div>
           <div style="display:flex;flex-direction:column;min-width:0">
             <span style="font:600 14px/20px var(--font-body);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">User id: {{ tdReporter }}</span>
-            <span style="font:500 13px/18px var(--font-body);color:var(--text-secondary)">Currently impersonating…</span>
+            <span style="font:500 13px/18px var(--font-body);color:var(--text-secondary)">Viewing recording…</span>
           </div>
         </div>
       </div>
@@ -1819,14 +2002,18 @@
 
   <div class="dash-main" style="flex:1;min-width:0;display:flex;padding:24px 24px 24px 8px;box-sizing:border-box">
     <div class="dash-panel" style="flex:1;min-width:0;border-radius:18px;overflow:auto">
-      <div class="dash-panel-body" style="width:100%;padding:16px 14px 40px;display:flex;flex-direction:column;gap:16px;box-sizing:border-box">
+      <div class="dash-panel-body" style="width:100%;padding:16px 14px 40px 24px;display:flex;flex-direction:column;gap:16px;box-sizing:border-box">
 
       <div class="dash-header-row" style="display:flex;align-items:center;justify-content:space-between;gap:16px">
         <sc-if value="{{ showAppHeader }}" hint-placeholder-val="{{ true }}">
           <span style="font:var(--text-h1);letter-spacing:var(--tracking-tight)">{{ headerTitle }}</span>
         </sc-if>
         <sc-if value="{{ showTicketDetail }}" hint-placeholder-val="{{ false }}">
-          <button type="button" onClick="{{ backToReport }}" class="td-back">{{ tdBackIcon }}{{ headerTitle }}</button>
+          <div class="td-crumb">
+            <button type="button" onClick="{{ backToReport }}" class="td-crumb-link">Player Report</button>
+            <span class="td-crumb-chevron">{{ tdCrumbIcon }}</span>
+            <span class="td-crumb-current">{{ tdTicket }}</span>
+          </div>
         </sc-if>
         <div class="dash-header-actions" style="display:flex;align-items:center;gap:10px">
           <button type="button" onClick="{{ toggleTheme }}" aria-label="Toggle light mode" aria-pressed="{{ isLight }}" style="width:44px;height:24px;border-radius:var(--radius-full);border:none;box-shadow:inset 0 0 0 1px var(--border-strong);padding:2px;display:flex;align-items:center;position:relative;background:var(--bg-surface-2);cursor:pointer;flex-shrink:0;box-sizing:border-box">
@@ -1852,7 +2039,9 @@
               </div>
             </sc-if>
           </div>
-          <button type="button" onClick="{{ exportDashboard }}" style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface-2);color:var(--text-primary);font:var(--text-label);cursor:pointer">{{ downloadIcon }}Export</button>
+          </sc-if>
+          <sc-if value="{{ showExportBtn }}" hint-placeholder-val="{{ true }}">
+          <button type="button" onClick="{{ exportDashboard }}" style="display:inline-flex;align-items:center;gap:4px;height:36px;padding:0 14px;border-radius:var(--radius-lg,10px);border:1px solid var(--border-default);background:var(--bg-surface-2);color:var(--foreground,#ffffff);font:500 14px/20px var(--font-body);cursor:pointer">{{ downloadIcon }}Export</button>
           </sc-if>
           <sc-if value="{{ showMessagesBody }}" hint-placeholder-val="{{ false }}">
           <div style="position:relative">
@@ -1897,99 +2086,75 @@
               </div>
             </sc-if>
           </div>
-          <sc-if value="{{ showPlayerBody }}" hint-placeholder-val="{{ false }}">
+          <sc-if value="{{ showAskGhost }}" hint-placeholder-val="{{ false }}">
             <button type="button" onClick="{{ askGhostAi }}" class="{{ askGhostBtnClass }}">{{ ghostSmIcon }}<span>Ask Ghost AI</span></button>
           </sc-if>
         </div>
       </div>
 
-      <!-- ===== Ticket detail — the step between the report table and impersonation ===== -->
+      <!-- ===== Ticket detail — Figma 281:22688 ===== -->
       <sc-if value="{{ showTicketDetail }}" hint-placeholder-val="{{ false }}">
       <div class="td-page">
-        <div class="td-hero">
-          <div class="td-hero-main">
-            <div class="td-id-row">
-              <span class="td-id">{{ tdTicket }}</span>
-              <span class="td-prio" style="color:{{ tdPrioColor }}"><span class="td-prio-dot" style="background:{{ tdPrioColor }}"></span>{{ tdPrioLabel }}</span>
-              <span class="td-rule"></span>
-              <sc-for list="{{ tdTags }}" as="t" hint-placeholder-count="2">
-                <span class="{{ t.cls }}">{{ t.iconEl }}{{ t.label }}</span>
-              </sc-for>
-            </div>
-            <span class="td-subject">{{ tdSubject }}</span>
-            <div class="td-byline">
-              <span class="td-byline-item">{{ tdReporterHandle }}</span>
-              <sc-if value="{{ tdHasRole }}" hint-placeholder-val="{{ true }}">
-                <span class="td-role">{{ tdRole }}</span>
-              </sc-if>
-              <span class="td-byline-sep">·</span>
-              <span class="td-byline-item">{{ tdDate }}</span>
-              <span class="td-byline-sep">·</span>
-              <span class="td-byline-item">{{ tdTopic }}</span>
-              <span class="td-byline-sep">·</span>
-              <span class="td-byline-item">{{ tdAssigneeEl }}{{ tdAssigneeNames }}</span>
-            </div>
+        <div class="td-title-row">
+          <span class="td-subject">{{ tdSubject }}</span>
+          <div class="td-title-tags">
+            <sc-for list="{{ tdTags }}" as="t" hint-placeholder-count="2">
+              <span class="fb-badge">{{ t.iconEl }}{{ t.label }}</span>
+            </sc-for>
           </div>
-          <button type="button" onClick="{{ enterImpersonation }}" class="td-imp-btn">{{ tdImpIcon }}Impersonation mode</button>
         </div>
 
-        <div class="td-grid">
-          <div class="td-col">
-            <div class="td-section">
-              <div class="td-label-row">
-                <span class="td-label">What the player reported</span>
-                <sc-if value="{{ tdHasKind }}" hint-placeholder-val="{{ true }}">
-                  <span class="td-role">{{ tdKind }}</span>
-                </sc-if>
+        <div class="td-layout">
+          <div class="td-main">
+            <div class="td-top-row">
+              <div class="td-card">
+                <div class="td-card-head">
+                  <span class="td-h">User Report Summary</span>
+                  <sc-if value="{{ tdHasKind }}" hint-placeholder-val="{{ true }}">
+                    <span class="td-kind">{{ tdKind }}</span>
+                  </sc-if>
+                </div>
+                <span class="td-summary">{{ tdSummary }}</span>
               </div>
-              <span class="td-quote">{{ tdSummary }}</span>
+              <sc-if value="{{ tdHasClip }}" hint-placeholder-val="{{ true }}">
+                <button type="button" onClick="{{ openRecording }}" class="td-clip" aria-label="Replay the recorded session">
+                  <video src="assets/10second.mp4" autoplay muted loop playsinline></video>
+                  <span class="td-clip-scrim"></span>
+                  <span class="td-clip-play">{{ tdPlayIcon }}</span>
+                  <span class="td-clip-foot">
+                    <span class="td-clip-user">{{ tdReporterHandle }}</span>
+                    <span class="td-clip-time">{{ tdClipLength }}</span>
+                  </span>
+                </button>
+              </sc-if>
+              <sc-if value="{{ tdNoClip }}" hint-placeholder-val="{{ false }}">
+                <div class="td-clip td-clip-empty"><span class="td-empty">No in-game recording from {{ tdChannelLabel }}.</span></div>
+              </sc-if>
             </div>
 
-            <div class="td-section">
-              <div class="td-label-row">
-                <span class="td-label">Ghost AI analysis</span>
-                <sc-if value="{{ tdAnalysed }}" hint-placeholder-val="{{ true }}">
-                  <span class="td-agent"><img src="assets/bug-report/cursor-agent.png" alt="" style="width:13px;height:13px;object-fit:cover;flex-shrink:0">Cursor Agent</span>
+            <div class="td-card is-wide">
+              <div class="td-card-head is-split">
+                <div class="td-card-head" style="width:auto">
+                  <span class="td-h">Analyzed Problem</span>
+                  <sc-if value="{{ tdAnalysed }}" hint-placeholder-val="{{ true }}">
+                    <span class="td-agent"><img src="assets/bug-report/cursor-agent.png" alt="">Cursor Agent</span>
+                  </sc-if>
+                </div>
+                <sc-if value="{{ tdHasSource }}" hint-placeholder-val="{{ true }}">
+                  <button type="button" onClick="{{ openCursorIde }}" class="td-goto">Go to Code</button>
                 </sc-if>
               </div>
               <sc-if value="{{ tdAnalysed }}" hint-placeholder-val="{{ true }}">
-                <span class="td-lead">{{ tdAnalysis }}</span>
-                <sc-for list="{{ tdAnalysisDetail }}" as="p" hint-placeholder-count="2">
-                  <span class="td-body">{{ p.text }}</span>
-                </sc-for>
-                <sc-if value="{{ tdHasSource }}" hint-placeholder-val="{{ true }}">
-                  <span class="td-source"><span class="td-source-icon">{{ tdSourceIcon }}</span>{{ tdSource }}</span>
-                </sc-if>
+                <span class="td-analysis">{{ tdAnalysisEl }}</span>
               </sc-if>
               <sc-if value="{{ tdNotAnalysed }}" hint-placeholder-val="{{ false }}">
                 <span class="td-empty">Not analysed yet — this report is queued behind the P0 tickets.</span>
               </sc-if>
             </div>
-          </div>
-
-          <div class="td-col">
-            <sc-if value="{{ tdHasClip }}" hint-placeholder-val="{{ true }}">
-              <div class="td-section">
-                <span class="td-label">Recorded session</span>
-                <button type="button" onClick="{{ enterImpersonation }}" class="td-clip" aria-label="Replay the recorded session">
-                  <video src="assets/Bug.mp4" autoplay muted loop playsinline></video>
-                  <span class="td-clip-scrim"></span>
-                  <span class="td-clip-play">{{ tdPlayIcon }}</span>
-                  <span class="td-clip-foot"><span>{{ tdReporterHandle }}</span><span class="td-clip-time">{{ tdClipLength }}</span></span>
-                </button>
-                <span class="td-caption">Step into this session to reproduce it yourself.</span>
-              </div>
-            </sc-if>
-            <sc-if value="{{ tdNoClip }}" hint-placeholder-val="{{ false }}">
-              <div class="td-section">
-                <span class="td-label">Recorded session</span>
-                <span class="td-empty">Came in from {{ tdChannelLabel }}, so there is no in-game recording. Impersonation starts a fresh session as this player.</span>
-              </div>
-            </sc-if>
 
             <sc-if value="{{ tdHasLog }}" hint-placeholder-val="{{ true }}">
-              <div class="td-section">
-                <span class="td-label">Player log</span>
+              <div class="td-log-card">
+                <span class="td-log-title">Player Log</span>
                 <div class="td-log">
                   <sc-for list="{{ tdLog }}" as="l" hint-placeholder-count="6">
                     <div class="td-log-row"><span class="td-log-t">{{ l.t }}</span><span class="td-log-m" style="color:{{ l.color }}">{{ l.m }}</span></div>
@@ -1997,6 +2162,84 @@
                 </div>
               </div>
             </sc-if>
+          </div>
+
+          <div class="td-rail">
+            <div class="td-rail-action">
+              <div class="td-reporter-row">
+                <span class="td-reporter">ID: {{ tdReporter }}</span>
+                <sc-if value="{{ tdHasRole }}" hint-placeholder-val="{{ true }}">
+                  <span class="td-role-badge">{{ tdRole }}</span>
+                </sc-if>
+              </div>
+              <button type="button" onClick="{{ openRecording }}" class="td-imp-btn">{{ tdImpIcon }}Video recording</button>
+              <p class="td-imp-hint">Watch the session this player recorded.</p>
+            </div>
+            <div class="td-pills">
+              <div class="td-pill-wrap">
+                <div onClick="{{ toggleTdUrgencyMenu }}" class="td-pill is-edit {{ tdPrioPillClass }}">
+                  <span class="td-pill-icon"><span class="td-urgency"><span style="background:{{ tdU1 }}"></span><span style="background:{{ tdU2 }}"></span><span style="background:{{ tdU3 }}"></span></span></span>
+                  <span>{{ tdPrioLabel }}</span>
+                </div>
+                <sc-if value="{{ showTdUrgencyMenu }}" hint-placeholder-val="{{ false }}">
+                  <div class="dc-menu td-pill-menu">
+                    <div class="dc-menu-label">Priority</div>
+                    <div class="dc-menu-divider"></div>
+                    <sc-for list="{{ tdUrgencyItems }}" as="o" hint-placeholder-count="5">
+                      <div onClick="{{ o.onClick }}" class="dc-menu-item"><span class="dc-menu-check">{{ o.checkIcon }}</span><span class="fb-menu-icon">{{ o.iconEl }}</span>{{ o.label }}</div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+              <div class="td-pill-wrap">
+                <div onClick="{{ toggleTdSquadMenu }}" class="td-pill is-edit {{ tdSquadPillClass }}">
+                  <span class="td-pill-icon">{{ tdSquadIcon }}</span>
+                  <span>{{ tdSquad }}</span>
+                </div>
+                <sc-if value="{{ showTdSquadMenu }}" hint-placeholder-val="{{ false }}">
+                  <div class="dc-menu td-pill-menu">
+                    <div class="dc-menu-label">Squad</div>
+                    <div class="dc-menu-divider"></div>
+                    <sc-for list="{{ tdSquadItems }}" as="o" hint-placeholder-count="5">
+                      <div onClick="{{ o.onClick }}" class="dc-menu-item"><span class="dc-menu-check">{{ o.checkIcon }}</span>{{ o.label }}</div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+              <div class="td-pill-wrap">
+                <div onClick="{{ toggleTdStatusMenu }}" class="td-pill is-edit {{ tdStatusPillClass }}" style="color:{{ tdStatusColor }}">
+                  <span class="td-pill-icon">{{ tdStatusIcon }}</span>
+                  <span>{{ tdStatusLabel }}</span>
+                </div>
+                <sc-if value="{{ showTdStatusMenu }}" hint-placeholder-val="{{ false }}">
+                  <div class="dc-menu td-pill-menu">
+                    <div class="dc-menu-label">Status</div>
+                    <div class="dc-menu-divider"></div>
+                    <sc-for list="{{ tdStatusItems }}" as="o" hint-placeholder-count="4">
+                      <div onClick="{{ o.onClick }}" class="dc-menu-item" style="color:{{ o.color }}"><span class="dc-menu-check">{{ o.checkIcon }}</span>{{ o.label }}</div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+              <div class="td-pill-wrap">
+                <div onClick="{{ toggleTdAssigneeMenu }}" class="td-pill is-edit {{ tdAssigneePillClass }}">
+                  <span class="td-pill-icon">{{ tdAssigneeAvatar }}</span>
+                  <span>{{ tdAssigneeFullName }}</span>
+                </div>
+                <sc-if value="{{ showTdAssigneeMenu }}" hint-placeholder-val="{{ false }}">
+                  <div class="dc-menu td-pill-menu">
+                    <div class="dc-menu-label">Assignee</div>
+                    <div class="dc-menu-divider"></div>
+                    <sc-for list="{{ tdAssigneeItems }}" as="o" hint-placeholder-count="4">
+                      <div onClick="{{ o.onClick }}" class="dc-menu-item"><span class="dc-menu-check">{{ o.checkIcon }}</span><span class="fb-menu-icon">{{ o.iconEl }}</span>{{ o.label }}</div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+              <div class="td-pill">
+                <span>{{ tdDate }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -2056,8 +2299,32 @@
                 </div>
               </sc-if>
             </div>
-            <div class="fb-cell fb-c-squad"><span class="fb-head-label">Squad</span><span onClick="{{ sortFbSquad }}" class="fb-head-sort">{{ fbSquadSortIcon }}</span></div>
-            <div class="fb-cell fb-c-status"><span class="fb-head-label">Status</span><span onClick="{{ sortFbStatus }}" class="fb-head-sort">{{ fbStatusSortIcon }}</span></div>
+            <div class="fb-cell fb-c-squad" style="position:relative">
+              <span class="fb-head-label">Squad</span>
+              <span onClick="{{ toggleFbSquadMenu }}" class="fb-head-sort">{{ fbSquadFilterIcon }}</span>
+              <sc-if value="{{ showFbSquadMenu }}" hint-placeholder-val="{{ false }}">
+                <div class="dc-menu">
+                  <div class="dc-menu-label">Filter by squad</div>
+                  <div class="dc-menu-divider"></div>
+                  <sc-for list="{{ fbSquadFilterItems }}" as="q" hint-placeholder-count="5">
+                    <div onClick="{{ q.onClick }}" class="dc-menu-item"><span class="dc-menu-check">{{ q.checkIcon }}</span>{{ q.label }}</div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+            <div class="fb-cell fb-c-status" style="position:relative">
+              <span class="fb-head-label">Status</span>
+              <span onClick="{{ toggleFbStatusMenu }}" class="fb-head-sort">{{ fbStatusFilterIcon }}</span>
+              <sc-if value="{{ showFbStatusMenu }}" hint-placeholder-val="{{ false }}">
+                <div class="dc-menu">
+                  <div class="dc-menu-label">Filter by status</div>
+                  <div class="dc-menu-divider"></div>
+                  <sc-for list="{{ fbStatusFilterItems }}" as="st" hint-placeholder-count="4">
+                    <div onClick="{{ st.onClick }}" class="dc-menu-item"><span class="dc-menu-check">{{ st.checkIcon }}</span><span class="fb-menu-icon {{ st.dotClass }}">●</span>{{ st.label }}</div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
             <div class="fb-cell fb-c-assignee" style="position:relative">
               <span class="fb-head-label">Assignee</span>
               <span onClick="{{ toggleFbAssigneeMenu }}" class="fb-head-sort">{{ fbAssigneeFilterIcon }}</span>
@@ -2120,6 +2387,21 @@
           </sc-if>
         </div>
       </div>
+
+      <sc-if value="{{ showFbPagination }}" hint-placeholder-val="{{ true }}">
+        <div class="fb-pagination">
+          <button type="button" onClick="{{ fbPrevPage }}" disabled="{{ fbPrevDisabled }}" class="fb-page-btn" aria-label="Previous page">{{ fbPrevIcon }}<span class="fb-page-label">Previous</span></button>
+          <sc-for list="{{ fbPageItems }}" as="p" hint-placeholder-count="3">
+            <sc-if value="{{ p.isGap }}" hint-placeholder-val="{{ false }}">
+              <span class="fb-page-gap">{{ p.gapIcon }}</span>
+            </sc-if>
+            <sc-if value="{{ p.isPage }}" hint-placeholder-val="{{ true }}">
+              <button type="button" onClick="{{ p.onClick }}" class="{{ p.cls }}" aria-label="{{ p.aria }}">{{ p.label }}</button>
+            </sc-if>
+          </sc-for>
+          <button type="button" onClick="{{ fbNextPage }}" disabled="{{ fbNextDisabled }}" class="fb-page-btn" aria-label="Next page"><span class="fb-page-label">Next</span>{{ fbNextIcon }}</button>
+        </div>
+      </sc-if>
       </sc-if>
 
       <sc-if value="{{ showNavPlaceholder }}" hint-placeholder-val="{{ false }}">
@@ -2739,6 +3021,17 @@
   <sc-if value="{{ showToast }}" hint-placeholder-val="{{ false }}">
     <div class="dash-toast">{{ toastMessage }}</div>
   </sc-if>
+
+  <!-- Cursor, opened from "Go to Code". Closes on the window's red light,
+       on Esc, or on the chip below. -->
+  <sc-if value="{{ showCursorIde }}" hint-placeholder-val="{{ false }}">
+    <div class="cursor-overlay">
+      <div class="cursor-window">
+        <iframe src="{{ cursorIdeSrc }}" title="Cursor — {{ cursorIdeFile }}"></iframe>
+      </div>
+      <button type="button" onClick="{{ closeCursorIde }}" class="cursor-exit">{{ cursorBackIcon }}Back to Ghost AI</button>
+    </div>
+  </sc-if>
 </div>
 
 </x-dc>
@@ -2762,6 +3055,8 @@ const TASK_ICON_PATHS = {
   maximize: '<path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
   check: '<polyline points="20 6 9 17 4 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>',
   chevronRight: '<polyline points="9 18 15 12 9 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  chevronLeft: '<polyline points="15 18 9 12 15 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  ellipsis: '<circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/>',
   chevronDown: '<polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
   grip: '<circle cx="9" cy="6" r="1.3" fill="currentColor"/><circle cx="15" cy="6" r="1.3" fill="currentColor"/><circle cx="9" cy="12" r="1.3" fill="currentColor"/><circle cx="15" cy="12" r="1.3" fill="currentColor"/><circle cx="9" cy="18" r="1.3" fill="currentColor"/><circle cx="15" cy="18" r="1.3" fill="currentColor"/>',
   close: '<line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
@@ -3827,36 +4122,98 @@ const FB_ASSIGNEES = [
 // Triage queue: bug reports and player feedback funnelled from the in-game reporter and
 // the community channels into one list. `topic` is what "Group by topic" clusters on;
 // `squad` is the routing target and `repro` the reproduction rate established at triage.
-// Row 1 is the ticket the impersonation view drills into — keep them in sync.
+// Row 1 is the ticket the recording view drills into — keep them in sync.
+// A backlog you page through rather than a wall you scroll. Page count follows
+// from the queue length, so adding tickets is what moves it.
+const FB_PAGE_SIZE = 20;
 const FEEDBACK_ROWS = [
-  { id: 1, urgency: 'p0', type: 'bug', ticket: '#BUG-1284719', subject: 'Yuumi passive desync on cast interrupt', topic: 'Champion behaviour', squad: 'Champions', repro: '100%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'BerniceSun02', role: 'player', assignees: [1], date: 'Aug 7, 2026', dateSort: '2026-08-07' },
+  { id: 1, urgency: 'p0', type: 'bug', ticket: '#BUG-1284719', subject: 'Yuumi passive desync on cast interrupt', topic: 'Champion behaviour', squad: 'Champions', repro: '100%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'Vandiril', role: 'player', assignees: [1], date: 'Aug 7, 2026', dateSort: '2026-08-07' },
   { id: 2, urgency: 'p0', type: 'bug', ticket: '#BUG-1283904', subject: 'Client crash on Wild Rift cross-region matchmaking', topic: 'Client & crashes', squad: 'Engine', repro: '78%', status: 'Ready', channel: 'support', clip: false, reporter: 'mossy_midlaner', role: null, assignees: [3, 1], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
-  { id: 3, urgency: 'p1', type: 'bug', ticket: '#BUG-1284561', subject: 'Viego passive breaks Trinity Force spellblade cooldown', topic: 'Champion behaviour', squad: 'Champions', repro: '100%', status: 'In progress', channel: 'ingame', clip: true, reporter: 'euw_tessa', role: 'player', assignees: [1], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
+  { id: 3, urgency: 'p1', type: 'bug', ticket: '#BUG-1284561', subject: 'Viego passive breaks Trinity Force spellblade cooldown', topic: 'Champion behaviour', squad: 'Champions', repro: '100%', status: 'In Progress', channel: 'ingame', clip: true, reporter: 'euw_tessa', role: 'player', assignees: [1], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
   { id: 4, urgency: 'p2', type: 'bug', ticket: '#BUG-1279842', subject: 'Champion select lock-in fails when a duo partner dodges', topic: 'Client & crashes', squad: 'Engine', repro: '62%', status: 'Ready', channel: 'discord', clip: false, reporter: 'duoq_calla', role: 'creator', assignees: [1, 0], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
-  { id: 5, urgency: 'p2', type: 'bug', ticket: '#BUG-1278610', subject: 'Ranked win does not award LP during a shard failover', topic: 'Ranked & progression', squad: 'Engine', repro: '34%', status: 'In progress', channel: 'support', clip: false, reporter: 'topgap_kt', role: null, assignees: [0], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
-  { id: 6, urgency: 'p2', type: 'bug', ticket: '#BUG-1276403', subject: 'Anti-cheat blocks a signed GPU driver on Windows 11 24H2', topic: 'Client & crashes', squad: 'Engine', repro: '12%', status: 'Investigating', channel: 'support', clip: false, reporter: 'pentakilpete', role: null, assignees: [2], date: 'Aug 4, 2026', dateSort: '2026-08-04' },
+  { id: 5, urgency: 'p2', type: 'bug', ticket: '#BUG-1278610', subject: 'Ranked win does not award LP during a shard failover', topic: 'Ranked & progression', squad: 'Engine', repro: '34%', status: 'In Progress', channel: 'support', clip: false, reporter: 'topgap_kt', role: null, assignees: [0], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
+  { id: 6, urgency: 'p2', type: 'bug', ticket: '#BUG-1276403', subject: 'Anti-cheat blocks a signed GPU driver on Windows 11 24H2', topic: 'Client & crashes', squad: 'Engine', repro: '12%', status: 'In Progress', channel: 'support', clip: false, reporter: 'pentakilpete', role: null, assignees: [2], date: 'Aug 4, 2026', dateSort: '2026-08-04' },
   { id: 7, urgency: 'p2', type: 'bug', ticket: '#BUG-1282198', subject: 'Aurelion Sol tornado hitbox mismatch', topic: 'Champion behaviour', squad: 'Champions', repro: '100%', status: 'Awaiting QA', channel: 'ingame', clip: true, reporter: 'jungle_jules', role: null, assignees: [1], date: 'Aug 4, 2026', dateSort: '2026-08-04' },
   { id: 8, urgency: 'p3', type: 'bug', ticket: '#BUG-1275104', subject: 'Recall animation stutters on low-end hardware', topic: 'Performance & hardware', squad: 'Engine', repro: '45%', status: 'Ready', channel: 'discord', clip: false, reporter: 'lowspec_lars', role: 'player', assignees: [2], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
   { id: 9, urgency: 'p3', type: 'bug', ticket: '#BUG-1273981', subject: 'Baron steal announcer line plays twice on the same objective', topic: 'Audio & VFX', squad: 'Engine', repro: '88%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'lulu_starfruit', role: null, assignees: [1], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
   { id: 10, urgency: 'p4', type: 'bug', ticket: '#BUG-1269840', subject: 'Item shop search misses partial champion names', topic: 'UI & accessibility', squad: 'UI/UX', repro: '100%', status: 'Ready', channel: 'reddit', clip: false, reporter: 'saltwater_sam', role: null, assignees: [0], date: 'Aug 2, 2026', dateSort: '2026-08-02' },
   { id: 11, urgency: 'p4', type: 'bug', ticket: '#BUG-1268715', subject: 'Ward placed on the Baron pit lip falls through terrain', topic: 'Terrain & collision', squad: 'Engine', repro: '100%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'support_rui', role: null, assignees: [1], date: 'Aug 2, 2026', dateSort: '2026-08-02' },
-  { id: 12, urgency: 'p2', type: 'feedback', ticket: '#DATA-18402', subject: 'Smolder win rate 18% above target band since 26.03', topic: 'Balance & meta', squad: 'Data', repro: null, status: 'Investigating', channel: 'ingame', clip: false, reporter: 'liveops_telemetry', role: null, assignees: [3], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
-  { id: 13, urgency: 'p2', type: 'feedback', ticket: '#DATA-18391', subject: 'Diamond+ D7 retention dropped 22% to 16%', topic: 'Retention & onboarding', squad: 'Data', repro: null, status: 'Queued', channel: 'ingame', clip: false, reporter: 'liveops_telemetry', role: null, assignees: [3, 0], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
-  { id: 14, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-92104', subject: '6 junglers below 2% pick rate for 3 patches', topic: 'Balance & meta', squad: 'Design', repro: null, status: 'Waiting on data', channel: 'reddit', clip: false, reporter: 'tracker_wren', role: 'creator', assignees: [0], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
-  { id: 15, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-91847', subject: 'Turret range indicator is unreadable for red-green colourblind players', topic: 'UI & accessibility', squad: 'Design', repro: null, status: 'Waiting on data', channel: 'discord', clip: false, reporter: 'vision_score_diff', role: 'creator', assignees: [0, 2], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
-  { id: 16, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-91082', subject: 'Objective bounties make late-game comebacks feel unearned', topic: 'Balance & meta', squad: 'Design', repro: null, status: 'Queued', channel: 'support', clip: false, reporter: 'winterstar_gwen', role: null, assignees: [3], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
+  { id: 12, urgency: 'p2', type: 'feedback', ticket: '#DATA-18402', subject: 'Smolder win rate 18% above target band since 26.03', topic: 'Balance & meta', squad: 'Data', repro: null, status: 'In Progress', channel: 'ingame', clip: false, reporter: 'liveops_telemetry', role: null, assignees: [3], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
+  { id: 13, urgency: 'p2', type: 'feedback', ticket: '#DATA-18391', subject: 'Diamond+ D7 retention dropped 22% to 16%', topic: 'Retention & onboarding', squad: 'Data', repro: null, status: 'Ready', channel: 'ingame', clip: false, reporter: 'liveops_telemetry', role: null, assignees: [3, 0], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
+  { id: 14, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-92104', subject: '6 junglers below 2% pick rate for 3 patches', topic: 'Balance & meta', squad: 'Design', repro: null, status: 'Fixed', channel: 'reddit', clip: false, reporter: 'tracker_wren', role: 'creator', assignees: [0], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
+  { id: 15, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-91847', subject: 'Turret range indicator is unreadable for red-green colourblind players', topic: 'UI & accessibility', squad: 'Design', repro: null, status: 'Fixed', channel: 'discord', clip: false, reporter: 'vision_score_diff', role: 'creator', assignees: [0, 2], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
+  { id: 16, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-91082', subject: 'Objective bounties make late-game comebacks feel unearned', topic: 'Balance & meta', squad: 'Design', repro: null, status: 'Ready', channel: 'support', clip: false, reporter: 'winterstar_gwen', role: null, assignees: [3], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
   { id: 17, urgency: 'p4', type: 'feedback', ticket: '#DESIGN-90715', subject: 'Rune page picker needs a search field — 60+ pages is unscannable', topic: 'UI & accessibility', squad: 'UI/UX', repro: null, status: 'Ready', channel: 'reddit', clip: false, reporter: 'arena_bee', role: 'player', assignees: [2], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
-  { id: 18, urgency: 'p4', type: 'feedback', ticket: '#DATA-18276', subject: 'New-player tutorial never covers wave management', topic: 'Retention & onboarding', squad: 'Data', repro: null, status: 'Queued', channel: 'support', clip: false, reporter: 'firstgame_fran', role: null, assignees: [2], date: 'Jul 30, 2026', dateSort: '2026-07-30' }
+  { id: 18, urgency: 'p4', type: 'feedback', ticket: '#DATA-18276', subject: 'New-player tutorial never covers wave management', topic: 'Retention & onboarding', squad: 'Data', repro: null, status: 'Ready', channel: 'support', clip: false, reporter: 'firstgame_fran', role: null, assignees: [2], date: 'Jul 30, 2026', dateSort: '2026-07-30' },
+  { id: 19, urgency: 'p1', type: 'bug', ticket: '#BUG-1284402', subject: 'Kayn form selection resets when the game reconnects', topic: 'Champion behaviour', squad: 'Champions', repro: '92%', status: 'In Progress', channel: 'ingame', clip: true, reporter: 'shadow_kaz', role: 'player', assignees: [1], date: 'Aug 7, 2026', dateSort: '2026-08-07' },
+  { id: 20, urgency: 'p1', type: 'bug', ticket: '#BUG-1284188', subject: 'Zilean ultimate revives the wrong ally when two die on the same tick', topic: 'Champion behaviour', squad: 'Champions', repro: '54%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'chronokeeper_bo', role: null, assignees: [1, 3], date: 'Aug 7, 2026', dateSort: '2026-08-07' },
+  { id: 21, urgency: 'p1', type: 'bug', ticket: '#BUG-1283755', subject: 'Client hangs on the loading screen after a patch rollback', topic: 'Client & crashes', squad: 'Engine', repro: '41%', status: 'In Progress', channel: 'support', clip: false, reporter: 'patchday_pim', role: null, assignees: [2], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
+  { id: 22, urgency: 'p2', type: 'bug', ticket: '#BUG-1283610', subject: 'Rengar leap cancels when the target flashes mid-air', topic: 'Champion behaviour', squad: 'Champions', repro: '73%', status: 'Awaiting QA', channel: 'ingame', clip: true, reporter: 'bushcamp_bri', role: 'creator', assignees: [1], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
+  { id: 23, urgency: 'p2', type: 'bug', ticket: '#BUG-1283244', subject: 'Honor progress does not persist after a surrendered game', topic: 'Ranked & progression', squad: 'Engine', repro: '66%', status: 'Ready', channel: 'support', clip: false, reporter: 'honor5_hana', role: null, assignees: [0], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
+  { id: 24, urgency: 'p2', type: 'bug', ticket: '#BUG-1282977', subject: 'Practice tool resets cooldowns when the target dummy respawns', topic: 'Client & crashes', squad: 'Engine', repro: '100%', status: 'Ready', channel: 'discord', clip: false, reporter: 'labrat_leo', role: 'creator', assignees: [2], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
+  { id: 25, urgency: 'p2', type: 'bug', ticket: '#BUG-1282540', subject: 'Frame time spikes to 60ms when six ultimates overlap at Baron', topic: 'Performance & hardware', squad: 'Engine', repro: '58%', status: 'In Progress', channel: 'ingame', clip: true, reporter: 'fps_falcon', role: 'player', assignees: [2, 1], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
+  { id: 26, urgency: 'p2', type: 'bug', ticket: '#BUG-1282301', subject: 'Ranked queue estimate stalls at 99% in OCE off-peak hours', topic: 'Ranked & progression', squad: 'Engine', repro: '37%', status: 'Awaiting QA', channel: 'reddit', clip: false, reporter: 'oce_orla', role: null, assignees: [0], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
+  { id: 27, urgency: 'p3', type: 'bug', ticket: '#BUG-1281903', subject: 'Pantheon spear VFX persists after the cast is cancelled', topic: 'Audio & VFX', squad: 'Champions', repro: '85%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'aegis_amir', role: null, assignees: [1], date: 'Aug 4, 2026', dateSort: '2026-08-04' },
+  { id: 28, urgency: 'p3', type: 'bug', ticket: '#BUG-1281655', subject: 'Chat scroll jumps to the bottom on every incoming message', topic: 'UI & accessibility', squad: 'UI/UX', repro: '100%', status: 'Ready', channel: 'discord', clip: false, reporter: 'allchat_ada', role: null, assignees: [0], date: 'Aug 4, 2026', dateSort: '2026-08-04' },
+  { id: 29, urgency: 'p3', type: 'bug', ticket: '#BUG-1281340', subject: 'Dragon soul buff icon missing from the scoreboard after a rebuy', topic: 'UI & accessibility', squad: 'UI/UX', repro: '48%', status: 'In Progress', channel: 'ingame', clip: true, reporter: 'soulcount_sy', role: null, assignees: [0, 2], date: 'Aug 4, 2026', dateSort: '2026-08-04' },
+  { id: 30, urgency: 'p3', type: 'bug', ticket: '#BUG-1280912', subject: 'Minion pathing snags on the new mid-lane bush geometry', topic: 'Terrain & collision', squad: 'Engine', repro: '71%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'wave_walter', role: 'creator', assignees: [1], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
+  { id: 31, urgency: 'p3', type: 'bug', ticket: '#BUG-1280488', subject: 'Ping wheel opens under the shop overlay in champion select', topic: 'UI & accessibility', squad: 'UI/UX', repro: '100%', status: 'Awaiting QA', channel: 'support', clip: false, reporter: 'draftpick_dee', role: null, assignees: [0], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
+  { id: 32, urgency: 'p3', type: 'bug', ticket: '#BUG-1280115', subject: 'Voice chat drops when a party member alt-tabs on macOS', topic: 'Audio & VFX', squad: 'Engine', repro: '63%', status: 'In Progress', channel: 'support', clip: false, reporter: 'mac_mira', role: null, assignees: [2], date: 'Aug 2, 2026', dateSort: '2026-08-02' },
+  { id: 33, urgency: 'p4', type: 'bug', ticket: '#BUG-1279603', subject: 'Skin shard reroll animation plays twice in the loot vault', topic: 'UI & accessibility', squad: 'UI/UX', repro: '90%', status: 'Ready', channel: 'reddit', clip: false, reporter: 'lootgoblin_li', role: 'player', assignees: [0], date: 'Aug 2, 2026', dateSort: '2026-08-02' },
+  { id: 34, urgency: 'p4', type: 'bug', ticket: '#BUG-1279120', subject: 'Teleport channel bar is hidden behind the minimap on 21:9 displays', topic: 'UI & accessibility', squad: 'UI/UX', repro: '100%', status: 'Ready', channel: 'discord', clip: false, reporter: 'ultrawide_uri', role: 'player', assignees: [0], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
+  { id: 35, urgency: 'p4', type: 'bug', ticket: '#BUG-1278844', subject: 'Jungle camp respawn timer text overlaps at 90% HUD scale', topic: 'UI & accessibility', squad: 'UI/UX', repro: '100%', status: 'Fixed', channel: 'ingame', clip: false, reporter: 'timer_tomo', role: null, assignees: [0], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
+  { id: 36, urgency: 'p4', type: 'bug', ticket: '#BUG-1278219', subject: 'Nexus explosion audio clips on 5.1 surround setups', topic: 'Audio & VFX', squad: 'Engine', repro: '55%', status: 'Fixed', channel: 'reddit', clip: false, reporter: 'surround_sven', role: null, assignees: [2], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
+  { id: 37, urgency: 'p4', type: 'bug', ticket: '#BUG-1277650', subject: 'Zoe bubble hitbox clips the wall on the red-side tri-brush', topic: 'Terrain & collision', squad: 'Champions', repro: '80%', status: 'Awaiting QA', channel: 'ingame', clip: true, reporter: 'bubble_bex', role: null, assignees: [1], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
+  { id: 38, urgency: 'p4', type: 'bug', ticket: '#BUG-1277042', subject: 'Replay scrubber skips the last 30 seconds of a remade game', topic: 'Client & crashes', squad: 'Engine', repro: '100%', status: 'Ready', channel: 'discord', clip: false, reporter: 'vod_vera', role: 'creator', assignees: [2], date: 'Jul 30, 2026', dateSort: '2026-07-30' },
+  { id: 39, urgency: 'p4', type: 'bug', ticket: '#BUG-1276588', subject: 'Mastery banner shows the previous season emblem after a rank decay', topic: 'Ranked & progression', squad: 'Engine', repro: '44%', status: 'Fixed', channel: 'support', clip: false, reporter: 'decay_dan', role: null, assignees: [0], date: 'Jul 29, 2026', dateSort: '2026-07-29' },
+  { id: 40, urgency: 'p2', type: 'feedback', ticket: '#DATA-18355', subject: 'Support players queue 31% longer than any other role in Emerald', topic: 'Retention & onboarding', squad: 'Data', repro: null, status: 'In Progress', channel: 'ingame', clip: false, reporter: 'liveops_telemetry', role: null, assignees: [3], date: 'Aug 4, 2026', dateSort: '2026-08-04' },
+  { id: 41, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-91620', subject: 'Grubs spawn timing makes the first jungle clear feel scripted', topic: 'Balance & meta', squad: 'Design', repro: null, status: 'Ready', channel: 'reddit', clip: false, reporter: 'earlygame_ede', role: 'creator', assignees: [0], date: 'Aug 2, 2026', dateSort: '2026-08-02' },
+  { id: 42, urgency: 'p3', type: 'feedback', ticket: '#DATA-18318', subject: 'ARAM rerolls are spent within the first 20 seconds by 74% of players', topic: 'Balance & meta', squad: 'Data', repro: null, status: 'Ready', channel: 'ingame', clip: false, reporter: 'liveops_telemetry', role: null, assignees: [3, 2], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
+  { id: 43, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-91344', subject: 'Champion mastery screen buries the stats players actually compare', topic: 'UI & accessibility', squad: 'UI/UX', repro: null, status: 'In Progress', channel: 'discord', clip: false, reporter: 'statcheck_sol', role: 'player', assignees: [0], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
+  { id: 44, urgency: 'p4', type: 'feedback', ticket: '#DATA-18244', subject: 'Returning players after 6 months churn twice as fast as new accounts', topic: 'Retention & onboarding', squad: 'Data', repro: null, status: 'Awaiting QA', channel: 'support', clip: false, reporter: 'liveops_telemetry', role: null, assignees: [3], date: 'Jul 30, 2026', dateSort: '2026-07-30' },
+  { id: 45, urgency: 'p4', type: 'feedback', ticket: '#DESIGN-90982', subject: 'Emote wheel needs a mute-per-player option, not just all-chat off', topic: 'UI & accessibility', squad: 'Design', repro: null, status: 'Fixed', channel: 'reddit', clip: false, reporter: 'quiet_quinn', role: 'player', assignees: [0], date: 'Jul 29, 2026', dateSort: '2026-07-29' }
 ];
 
 
+function highlightTicketCode(text) {
+  const parts = [];
+  const re = /([A-Za-z_][\w:]*::[\w:]+(?:\(\))?|(?:src\/)?[\w./]*\.cpp)/g;
+  let last = 0, i = 0, m;
+  while ((m = re.exec(text))) {
+    if (m.index > last) parts.push(React.createElement('span', { key: 't' + i }, text.slice(last, m.index)));
+    parts.push(React.createElement('span', { key: 'c' + i, className: 'td-code' }, m[0]));
+    last = m.index + m[0].length;
+    i++;
+  }
+  if (last < text.length) parts.push(React.createElement('span', { key: 'e' }, text.slice(last)));
+  return parts;
+}
+
+function tablerIcon(paths, size) {
+  return React.createElement('svg', {
+    width: size, height: size, viewBox: '0 0 24 24', fill: 'none',
+    xmlns: 'http://www.w3.org/2000/svg',
+    style: { display: 'block', flexShrink: 0 },
+    dangerouslySetInnerHTML: { __html: paths }
+  });
+}
+
+function urgencyMeterEl(u) {
+  const bars = FEEDBACK_URGENCY[u] || FEEDBACK_URGENCY.p4;
+  return React.createElement(
+    'span',
+    { className: 'td-urgency', style: { width: 17, height: 16 } },
+    bars.map((c, i) => React.createElement('span', { key: i, style: { background: c } }))
+  );
+}
+
 // Authored triage detail. Only tickets Ghost AI has actually chewed on get an analysis
 // and a player log — the rest show an honest "not analysed yet" state rather than
-// inventing a root cause. Impersonation needs a recorded session, so it follows `clip`.
+// inventing a root cause. The recording view needs a recorded session, so it follows `clip`.
 const TICKET_DETAILS = {
   '#BUG-1284719': {
     kind: 'Behavior',
-    clipLength: '0:15',
+    clipLength: '0:10',
     summary: 'Player cast Yuumi\u2019s passive shield and was interrupted mid-cast. The shield applied on the client but never registered server-side, so the ally took full damage through a shield that was visibly on them.',
     analysis: 'Based on the replay clip and player input history, this looks like a client/server state desync on cast interrupt \u2014 not a rendering issue.',
     analysisDetail: [
@@ -3884,7 +4241,7 @@ const TICKET_DETAILS = {
       'ViegoPassive::onPossess() clones AttackSpeed and OnHit handlers from the host but skips ItemCooldownRegistry.',
       '100% repro on any possessed champion holding Trinity Force \u2014 worth fixing with the other Champion-squad ability-state tickets.'
     ],
-    source: 'src/Game/Champions/Viego/ViegoPassive.cpp:210\u2013268',
+    source: 'src/Game/Champions/Viego/ViegoPassive.cpp:210\u2013250',
     log: [
       { t: '11:04:12', m: 'POSSESS target=Yasuo' },
       { t: '11:04:13', m: 'ITEM TrinityForce spellblade=READY' },
@@ -3899,9 +4256,9 @@ const TICKET_DETAILS = {
     analysis: 'The cross-region handshake returns a shard token the desktop client does not know how to deserialize. The crash is in the matchmaking stub, not in gameplay.',
     analysisDetail: [
       'MatchmakingClient::onShardAssigned() assumes a PC shard id and asserts when it receives a Wild Rift region code.',
-      'No in-game clip \u2014 this arrived from Player Support. Impersonation starts a fresh session as this player.'
+      'No in-game clip \u2014 this arrived from Player Support, so there is no recording to watch.'
     ],
-    source: 'src/Client/Matchmaking/ShardHandshake.cpp:96\u2013140'
+    source: 'src/Client/Matchmaking/ShardHandshake.cpp:96\u2013117'
   },
   '#BUG-1282198': {
     kind: 'Hitbox',
@@ -3912,7 +4269,7 @@ const TICKET_DETAILS = {
       'AurelionSolQ::getHitRadius() still returns the pre-26.03 value while the particle system uses the new scale.',
       'Same ability-state family as Yuumi and Viego \u2014 Champions squad should take all three together.'
     ],
-    source: 'src/Game/Champions/AurelionSol/AurelionSolQ.cpp:88\u2013112',
+    source: 'src/Game/Champions/AurelionSol/AurelionSolQ.cpp:88\u201399',
     log: [
       { t: '19:22:40', m: 'CAST spell=AurelionSolQ' },
       { t: '19:22:41', m: 'VFX radius=325' },
@@ -3929,7 +4286,7 @@ const TICKET_DETAILS = {
       'Ward::place() raycasts against navmesh; the lip triangles are marked unwalkable so the fallback snaps into the pit volume.',
       'Same collision family as other terrain tickets \u2014 Engine already owns it.'
     ],
-    source: 'src/World/BaronPit/NavOverlay.cpp:44\u201371',
+    source: 'src/World/BaronPit/NavOverlay.cpp:44\u201358',
     log: [
       { t: '08:11:02', m: 'PLACE ward slot=yellow pos=(4120, 13680)' },
       { t: '08:11:02', m: 'RAYCAST nav \u2192 MISS', level: 'warn' },
@@ -3949,21 +4306,26 @@ const TICKET_DETAILS = {
   }
 };
 
-// Workflow order, so sorting by status walks the pipeline instead of the alphabet.
-const FB_STATUS_ORDER = ['Ready', 'In progress', 'Awaiting QA', 'Investigating', 'Queued', 'Waiting on data'];
+// Workflow order, so the status filter lists the pipeline instead of the alphabet.
+const FB_STATUS_ORDER = ['Ready', 'In Progress', 'Awaiting QA', 'Fixed'];
+const FB_SQUADS = ['Champions', 'Engine', 'UI/UX', 'Data', 'Design'];
+// Every column menu is exclusive, and navigating away closes all of them. Keeping
+// the set in one place means adding a column filter cannot leave one stuck open.
+const FB_MENUS_CLOSED = {
+  showFbTagMenu: false,
+  showFbAssigneeMenu: false,
+  showFbSquadMenu: false,
+  showFbStatusMenu: false
+};
 const FB_STATUS_CLASS = {
   'Ready': 'is-ready',
-  'In progress': 'is-active',
+  'In Progress': 'is-active',
   'Awaiting QA': 'is-active',
-  'Investigating': 'is-active',
-  'Queued': 'is-waiting',
-  'Waiting on data': 'is-waiting'
+  'Fixed': 'is-waiting'
 };
-const fbStatusRank = status => {
-  const i = FB_STATUS_ORDER.indexOf(status);
-  return String(i < 0 ? FB_STATUS_ORDER.length : i);
-};
-
+const fbStatusColor = status => /progress/i.test(status) ? '#f59e0b'
+  : /ready/i.test(status) ? '#a3e635'
+  : '#a1a1aa';
 const FB_TAG_ORDER = ['bug', 'feedback', 'ingame', 'discord', 'support', 'reddit'];
 
 // Narrative summaries shown in "Group by topic" headers (Figma 212:23149).
@@ -4160,6 +4522,7 @@ class Component extends DCLogic {
     tab: 'overview', nav: isPlayerReportPath() ? 'player' : 'analytics', game: 'league', range: 'all', segment: 'all', collapsed: false, theme: 'dark',
     // --- Feedback Report (Player Report) view state ---
     fbGroupByTopic: false,
+    fbPage: 1,
     fbSelectedIds: {},
     fbSortKey: null,
     fbSortDir: null,
@@ -4167,6 +4530,10 @@ class Component extends DCLogic {
     showFbTagMenu: false,
     fbAssigneeFilter: [],
     showFbAssigneeMenu: false,
+    fbSquadFilter: [],
+    showFbSquadMenu: false,
+    fbStatusFilter: [],
+    showFbStatusMenu: false,
     // --- Ask Ghost AI panel ---
     showGhostPanel: false,
     ghostPanelMounted: false,
@@ -4204,8 +4571,11 @@ class Component extends DCLogic {
     toastUntil: 0,
     showBugReport: false,
     detailTicket: null,
+    tdPillMenu: null,
     analyzedExpanded: false,
     playerLogExpanded: false,
+    showCursorIde: false,
+    cursorTicket: '',
     messageThreads: MESSAGE_THREADS_SEED.map(t => ({ ...t, messages: t.messages.map(m => ({ ...m })) })),
     selectedThreadId: MESSAGE_THREADS_SEED[0].id,
     showComposeMenu: false,
@@ -4259,14 +4629,39 @@ class Component extends DCLogic {
     window.addEventListener('popstate', this.handlePopState);
     document.addEventListener('mousemove', this.handleTaskMouseMove);
     document.addEventListener('mouseup', this.handleTaskMouseUp);
+    document.addEventListener('mousedown', this.handleDocMouseDown);
     document.addEventListener('keydown', this.handleTaskKeyDown);
     document.addEventListener('keydown', this.handleProfileKeyDown);
     document.addEventListener('keyup', this.handleTaskKeyUp);
+    window.addEventListener('message', this.handleCursorMessage);
+    document.addEventListener('keydown', this.handleCursorKeyDown);
     this.attachTaskObservers();
+    this.syncClipVideos();
   }
   componentDidUpdate() {
     this.attachTaskObservers();
+    this.syncClipVideos();
   }
+
+  // The template's bare `muted`/`loop` attributes reach React as empty strings,
+  // which read as false — and an unmuted clip gets its autoplay blocked. Set the
+  // properties directly so the replay always loops silently.
+  // Matched by position rather than by filename: every video in the shell is a
+  // replay, and keying on the src meant swapping a clip silently un-muted it.
+  syncClipVideos = () => {
+    document.querySelectorAll('.dash-shell video').forEach(v => {
+      v.muted = true;
+      v.loop = true;
+      v.defaultMuted = true;
+      // Only the full recording view is scrubbable. The ticket-detail thumbnail is
+      // a button that opens it, so controls there would swallow the click.
+      v.controls = v.classList.contains('rec-video');
+      const start = () => { const p = v.play(); if (p && p.catch) p.catch(() => {}); };
+      // A clip that just mounted has no data yet, so play() would reject.
+      if (v.readyState >= 2) start();
+      else if (!v._clipBound) { v._clipBound = true; v.addEventListener('canplay', start); }
+    });
+  };
   componentWillUnmount() {
     if (this._ghostTimer) clearTimeout(this._ghostTimer);
     if (this._ghostReasonTimer) clearInterval(this._ghostReasonTimer);
@@ -4274,9 +4669,12 @@ class Component extends DCLogic {
     window.removeEventListener('popstate', this.handlePopState);
     document.removeEventListener('mousemove', this.handleTaskMouseMove);
     document.removeEventListener('mouseup', this.handleTaskMouseUp);
+    document.removeEventListener('mousedown', this.handleDocMouseDown);
     document.removeEventListener('keydown', this.handleTaskKeyDown);
     document.removeEventListener('keydown', this.handleProfileKeyDown);
     document.removeEventListener('keyup', this.handleTaskKeyUp);
+    window.removeEventListener('message', this.handleCursorMessage);
+    document.removeEventListener('keydown', this.handleCursorKeyDown);
     if (this._headerRO) this._headerRO.disconnect();
     if (this._blurEl) this._blurEl.removeEventListener('blur', this.commitConfidenceText);
   }
@@ -4734,7 +5132,7 @@ class Component extends DCLogic {
     if (this._ghostCloseTimer) clearTimeout(this._ghostCloseTimer);
     this.setState(s => ({
       nav: value, showBugReport: false, detailTicket: null, showNotif: false, showProjectMenu: false,
-      showSettingsMenu: false, showFbTagMenu: false, showFbAssigneeMenu: false,
+      showSettingsMenu: false, ...FB_MENUS_CLOSED,
       showGhostPanel: false,
       ghostPanelMounted: false,
       collapsed: s.showGhostPanel || s.ghostPanelMounted ? s.railWasCollapsed : s.collapsed
@@ -4758,7 +5156,7 @@ class Component extends DCLogic {
 
   handlePopState = () => {
     const nav = isPlayerReportPath() ? 'player' : 'analytics';
-    if (nav !== this.state.nav) this.setState({ nav, showBugReport: false, detailTicket: null, showFbTagMenu: false, showFbAssigneeMenu: false });
+    if (nav !== this.state.nav) this.setState({ nav, showBugReport: false, detailTicket: null, ...FB_MENUS_CLOSED });
   };
 
   // ---- Feedback Report interactions ----
@@ -4771,9 +5169,19 @@ class Component extends DCLogic {
     });
   };
 
+  // Select-all covers the page on screen, not the whole filtered queue — the
+  // header checkbox sits in that page's header, so that is what it can speak for.
+  fbPageRows = (state) => {
+    const s = state || this.state;
+    const all = this.visibleFeedbackRows(s);
+    const pages = Math.max(1, Math.ceil(all.length / FB_PAGE_SIZE));
+    const page = Math.min(Math.max(1, s.fbPage), pages);
+    return all.slice((page - 1) * FB_PAGE_SIZE, page * FB_PAGE_SIZE);
+  };
+
   toggleFbAll = () => {
     this.setState(s => {
-      const visible = this.visibleFeedbackRows(s);
+      const visible = this.fbPageRows(s);
       const allOn = visible.length > 0 && visible.every(r => s.fbSelectedIds[r.id]);
       if (allOn) return { fbSelectedIds: {} };
       const next = {};
@@ -4782,15 +5190,18 @@ class Component extends DCLogic {
     });
   };
 
+  // Re-sorting or re-filtering rebuilds the queue, so page 3 of the old result
+  // set means nothing against the new one — every one of these goes back to 1.
   toggleFbSort = key => () => {
-    this.setState(s => s.fbSortKey === key
+    this.setState(s => Object.assign({ fbPage: 1 }, s.fbSortKey === key
       ? (s.fbSortDir === 'asc' ? { fbSortDir: 'desc' } : { fbSortKey: null, fbSortDir: null })
-      : { fbSortKey: key, fbSortDir: 'asc' });
+      : { fbSortKey: key, fbSortDir: 'asc' }));
   };
 
   toggleFbTag = tag => (e) => {
     if (e && e.stopPropagation) e.stopPropagation();
     this.setState(s => ({
+      fbPage: 1,
       fbTagFilter: s.fbTagFilter.includes(tag)
         ? s.fbTagFilter.filter(t => t !== tag)
         : [...s.fbTagFilter, tag]
@@ -4800,10 +5211,38 @@ class Component extends DCLogic {
   toggleFbAssignee = idx => (e) => {
     if (e && e.stopPropagation) e.stopPropagation();
     this.setState(s => ({
+      fbPage: 1,
       fbAssigneeFilter: s.fbAssigneeFilter.includes(idx)
         ? s.fbAssigneeFilter.filter(i => i !== idx)
         : [...s.fbAssigneeFilter, idx]
     }));
+  };
+
+  toggleFbSquad = squad => (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    this.setState(s => ({
+      fbPage: 1,
+      fbSquadFilter: s.fbSquadFilter.includes(squad)
+        ? s.fbSquadFilter.filter(v => v !== squad)
+        : [...s.fbSquadFilter, squad]
+    }));
+  };
+
+  toggleFbStatus = status => (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    this.setState(s => ({
+      fbPage: 1,
+      fbStatusFilter: s.fbStatusFilter.includes(status)
+        ? s.fbStatusFilter.filter(v => v !== status)
+        : [...s.fbStatusFilter, status]
+    }));
+  };
+
+  goToFbPage = (page) => () => {
+    if (page === this.state.fbPage) return;
+    this.setState({ fbPage: page, tdPillMenu: null, ...FB_MENUS_CLOSED });
+    const panel = document.querySelector('.dash-panel');
+    if (panel) panel.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Opening the panel collapses the nav rail (Figma 237:23494 shows the 92px rail).
@@ -4826,8 +5265,7 @@ class Component extends DCLogic {
       railWasCollapsed: s.collapsed,
       collapsed: true,
       showNotif: false,
-      showFbTagMenu: false,
-      showFbAssigneeMenu: false,
+      ...FB_MENUS_CLOSED,
       showDateMenu: false
     }), () => {
       requestAnimationFrame(() => {
@@ -4943,7 +5381,7 @@ class Component extends DCLogic {
   };
 
   openTicket = () => {
-    this.setState({ showBugReport: true, nav: 'player', analyzedExpanded: false, playerLogExpanded: false, showFbTagMenu: false, showFbAssigneeMenu: false });
+    this.setState({ showBugReport: true, nav: 'player', analyzedExpanded: false, playerLogExpanded: false, ...FB_MENUS_CLOSED });
   };
 
   // Row / Ghost ticket click opens the detail page. Never toggles checkbox selection —
@@ -4952,8 +5390,8 @@ class Component extends DCLogic {
     const row = FEEDBACK_ROWS.find(r => r.ticket === ticket);
     if (!row) return;
     this.setState({
-      showFbTagMenu: false,
-      showFbAssigneeMenu: false,
+      ...FB_MENUS_CLOSED,
+      tdPillMenu: null,
       detailTicket: row.ticket,
       showBugReport: false,
       nav: 'player',
@@ -4968,12 +5406,117 @@ class Component extends DCLogic {
   };
 
   backToReport = () => {
-    this.setState({ detailTicket: null, showBugReport: false });
+    this.setState({ detailTicket: null, showBugReport: false, tdPillMenu: null });
   };
 
-  enterImpersonation = () => {
-    this.setState({ showBugReport: true, analyzedExpanded: false, playerLogExpanded: false });
+  // Opens the recorded session for this ticket. Named for the recording, not for
+  // impersonation — that is a separate view still to be designed.
+  openRecording = () => {
+    this.setState({ showBugReport: true, analyzedExpanded: false, playerLogExpanded: false, tdPillMenu: null });
   };
+
+  // "Go to Code" hands the ticket to Cursor. The recording panel is written
+  // against the Yuumi report, so that is the fallback when no row is selected.
+  //
+  // Cursor is a separate application, so it gets its own window rather than a
+  // tab or an inline panel — the dashboard stays put behind it. If the browser
+  // refuses the window (popup blocker), we fall back to the in-page overlay so
+  // the journey never dead-ends mid-demo.
+  openCursorIde = () => {
+    const ticket = this.state.detailTicket || '#BUG-1284719';
+    this.setState({ cursorTicket: ticket, tdPillMenu: null });
+
+    const url = 'Cursor%20IDE.html?ticket=' + encodeURIComponent(ticket);
+    const win = this.openCursorWindow(url);
+    if (win) {
+      this._cursorWin = win;
+      try { win.focus(); } catch (_) {}
+      this.showToast('Opening ' + this.cursorFileFor(ticket) + ' in Cursor…');
+      return;
+    }
+    this.setState({ showCursorIde: true });
+  };
+
+  cursorFileFor = (ticket) => {
+    const d = TICKET_DETAILS[ticket];
+    return d && d.source ? String(d.source).replace(/:\d+.*$/, '').split('/').pop() : 'YuumiPassive.cpp';
+  };
+
+  openCursorWindow = (url) => {
+    // Already open from an earlier click — raise it instead of stacking windows.
+    if (this._cursorWin && !this._cursorWin.closed) {
+      try {
+        this._cursorWin.location.replace(url);
+        this._cursorWin.focus();
+        return this._cursorWin;
+      } catch (_) { /* fall through and open a fresh one */ }
+    }
+    const scr = window.screen || {};
+    const availW = scr.availWidth || window.innerWidth;
+    const availH = scr.availHeight || window.innerHeight;
+    const w = Math.max(1024, Math.min(1440, Math.round(availW * 0.86)));
+    const h = Math.max(700, Math.min(900, Math.round(availH * 0.86)));
+    const left = Math.round((availW - w) / 2) + (scr.availLeft || 0);
+    const top = Math.round((availH - h) / 2) + (scr.availTop || 0);
+    // `popup` plus an explicit size is what makes a browser open a real window
+    // instead of a tab. The target stays `_blank`: a *named* target that already
+    // resolves to a tab makes the browser reuse that tab and drop these features
+    // entirely, so we track the window ourselves above instead of naming it.
+    const features = 'popup=1,width=' + w + ',height=' + h + ',left=' + left + ',top=' + top;
+    let win = null;
+    try {
+      win = window.open(url, '_blank', features);
+    } catch (_) {
+      return null;
+    }
+    if (!win) return null;
+    // Some browsers open at their own default size; nudge it back into shape.
+    try { win.resizeTo(w, h); win.moveTo(left, top); } catch (_) {}
+    return win;
+  };
+
+  closeCursorIde = () => {
+    if (this.state.showCursorIde) this.setState({ showCursorIde: false });
+  };
+
+  // The IDE window's red light posts back rather than reaching into the shell.
+  handleCursorMessage = (e) => {
+    if (e && e.data && e.data.type === 'cursor-close') this.closeCursorIde();
+  };
+
+  handleCursorKeyDown = (e) => {
+    if (e.key === 'Escape' && this.state.showCursorIde) this.closeCursorIde();
+  };
+
+  toggleTdPillMenu = (key) => () => {
+    this.setState(s => ({
+      tdPillMenu: s.tdPillMenu === key ? null : key,
+      ...FB_MENUS_CLOSED,
+      showNotif: false,
+      showDateMenu: false
+    }));
+  };
+
+  handleDocMouseDown = (e) => {
+    const s = this.state;
+    const anyMenu = s.tdPillMenu || s.showFbTagMenu || s.showFbAssigneeMenu || s.showFbSquadMenu || s.showFbStatusMenu;
+    if (!anyMenu) return;
+    const t = e.target;
+    if (t && t.closest && t.closest('.td-pill-wrap, .fb-c-tags, .fb-c-assignee, .fb-c-squad, .fb-c-status, .dc-menu')) return;
+    this.setState({ tdPillMenu: null, ...FB_MENUS_CLOSED });
+  };
+
+  patchDetailRow = (patch) => {
+    const row = FEEDBACK_ROWS.find(r => r.ticket === this.state.detailTicket);
+    if (!row) return;
+    Object.assign(row, patch);
+    this.setState({ tdPillMenu: null });
+  };
+
+  setTdUrgency = (u) => () => this.patchDetailRow({ urgency: u });
+  setTdSquad = (squad) => () => this.patchDetailRow({ squad });
+  setTdStatus = (status) => () => this.patchDetailRow({ status });
+  setTdAssignee = (idx) => () => this.patchDetailRow({ assignees: [idx] });
 
   // Tag / assignee filters + sort applied to the ticket list; shared by the table and "select all".
   visibleFeedbackRows = (state) => {
@@ -4982,9 +5525,15 @@ class Component extends DCLogic {
     if (s.fbAssigneeFilter.length) {
       rows = rows.filter(r => r.assignees.some(a => s.fbAssigneeFilter.includes(a)));
     }
+    if (s.fbSquadFilter.length) {
+      rows = rows.filter(r => s.fbSquadFilter.includes(r.squad));
+    }
+    if (s.fbStatusFilter.length) {
+      rows = rows.filter(r => s.fbStatusFilter.includes(r.status));
+    }
     if (s.fbSortKey && s.fbSortDir) {
       const key = s.fbSortKey === 'date' ? 'dateSort' : s.fbSortKey;
-      const val = r => key === 'status' ? fbStatusRank(r.status) : String(r[key]);
+      const val = r => String(r[key]);
       rows = rows.slice().sort((a, b) => {
         const cmp = val(a).localeCompare(val(b), undefined, { numeric: true });
         return s.fbSortDir === 'asc' ? cmp : -cmp;
@@ -5189,7 +5738,7 @@ class Component extends DCLogic {
     const showAnalyticsBody = this.state.nav === 'analytics';
     const showMessagesBody = this.state.nav === 'messages';
     const showTasksBody = this.state.nav === 'tasks';
-    // Player Report has three steps: table -> ticket detail -> impersonation.
+    // Player Report has three steps: table -> ticket detail -> video recording.
     const detailRow = this.state.detailTicket
       ? FEEDBACK_ROWS.find(r => r.ticket === this.state.detailTicket) || null
       : null;
@@ -5202,7 +5751,14 @@ class Component extends DCLogic {
       : 'Dashboard';
 
     // ---- Feedback Report rows: tag filter + sort, optionally grouped by topic ----
-    const fbRows = this.visibleFeedbackRows();
+    const fbAllRows = this.visibleFeedbackRows();
+    // Clamp rather than reset: a filter that shrinks the queue below the current
+    // page would otherwise strand the table on an empty page.
+    const fbTotalPages = Math.max(1, Math.ceil(fbAllRows.length / FB_PAGE_SIZE));
+    const fbPage = Math.min(Math.max(1, this.state.fbPage), fbTotalPages);
+    const fbPageStart = (fbPage - 1) * FB_PAGE_SIZE;
+    // Slice before grouping so a group header only ever counts rows on this page.
+    const fbRows = fbAllRows.slice(fbPageStart, fbPageStart + FB_PAGE_SIZE);
     const fbTagBadge = tag => {
       const t = FEEDBACK_TAGS[tag];
       return {
@@ -5622,7 +6178,7 @@ class Component extends DCLogic {
       segmentOptions: SEGMENT_OPTIONS,
       segment: this.state.segment,
       setSegment: v => this.setState({ segment: v }),
-      exportDashboard: showPlayerBody ? this.exportFeedbackCsv : this.exportCsv,
+      exportDashboard: (showPlayerBody || showTicketDetail) ? this.exportFeedbackCsv : this.exportCsv,
       showNotif: this.state.showNotif,
       hasUnreadNotif: this.state.notifUnread,
       toggleNotif: () => this.setState(s => ({ showNotif: !s.showNotif, showProjectMenu: false, showSettingsMenu: false, showDateMenu: false })),
@@ -5646,29 +6202,84 @@ class Component extends DCLogic {
             : () => this.setState({ selectedKpi: k.label, summaryVariant: 0, showNotif: false })
         };
       }),
-      // ---- Ticket detail page ----
+      // ---- Ticket detail page (Figma 281:22688) ----
       showTicketDetail,
       showAppHeader: !showTicketDetail,
       backToReport: this.backToReport,
-      enterImpersonation: this.enterImpersonation,
-      tdBackIcon: React.createElement('span', { style: { display: 'flex', transform: 'rotate(180deg)' } }, taskIcon('chevronRight', 14)),
+      openRecording: this.openRecording,
+      toggleTdUrgencyMenu: this.toggleTdPillMenu('urgency'),
+      toggleTdSquadMenu: this.toggleTdPillMenu('squad'),
+      toggleTdStatusMenu: this.toggleTdPillMenu('status'),
+      toggleTdAssigneeMenu: this.toggleTdPillMenu('assignee'),
+      showTdUrgencyMenu: this.state.tdPillMenu === 'urgency',
+      showTdSquadMenu: this.state.tdPillMenu === 'squad',
+      showTdStatusMenu: this.state.tdPillMenu === 'status',
+      showTdAssigneeMenu: this.state.tdPillMenu === 'assignee',
+      tdUrgencyItems: ['p0', 'p1', 'p2', 'p3', 'p4'].map(u => ({
+        label: FEEDBACK_URGENCY_LABEL[u],
+        iconEl: urgencyMeterEl(u),
+        checkIcon: detailRow && detailRow.urgency === u ? taskIcon('check', 16) : null,
+        onClick: this.setTdUrgency(u)
+      })),
+      tdSquadItems: FB_SQUADS.map(squad => ({
+        label: squad,
+        checkIcon: detailRow && detailRow.squad === squad ? taskIcon('check', 16) : null,
+        onClick: this.setTdSquad(squad)
+      })),
+      tdStatusItems: FB_STATUS_ORDER.map(status => ({
+        label: status,
+        color: fbStatusColor(status),
+        checkIcon: detailRow && detailRow.status === status ? taskIcon('check', 16) : null,
+        onClick: this.setTdStatus(status)
+      })),
+      tdAssigneeItems: FB_ASSIGNEES.map((a, idx) => ({
+        label: a.name,
+        iconEl: a.photo
+          ? React.createElement('img', { src: a.photo, alt: '', className: 'fb-avatar', style: { width: 16, height: 16, boxShadow: 'none' } })
+          : React.createElement('span', {
+              className: 'fb-avatar-mono',
+              style: { width: 16, height: 16, fontSize: 8, boxShadow: 'none', background: a.color || 'var(--zinc-600)' }
+            }, a.initials || a.name.slice(0, 1)),
+        checkIcon: detailRow && detailRow.assignees[0] === idx ? taskIcon('check', 16) : null,
+        onClick: this.setTdAssignee(idx)
+      })),
+      tdCrumbIcon: React.createElement('svg', {
+        width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none',
+        style: { display: 'block' },
+        dangerouslySetInnerHTML: { __html: '<path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' }
+      }),
       tdImpIcon: navIcon('ghost', 16, false),
       tdTicket: detailRow ? detailRow.ticket : '',
       tdSubject: detailRow ? detailRow.subject : '',
       tdPrioLabel: detailRow ? FEEDBACK_URGENCY_LABEL[detailRow.urgency] : '',
       tdPrioColor: detailRow
-        ? (detailRow.urgency === 'p0' || detailRow.urgency === 'p1' ? 'var(--danger)' : detailRow.urgency === 'p2' ? 'var(--warning)' : 'var(--text-tertiary)')
+        ? (detailRow.urgency === 'p0' || detailRow.urgency === 'p1' ? '#ef4444' : detailRow.urgency === 'p2' ? '#f59e0b' : '#a1a1aa')
         : '',
       tdPrioBg: detailRow
         ? (detailRow.urgency === 'p0' || detailRow.urgency === 'p1' ? 'var(--danger-muted)' : detailRow.urgency === 'p2' ? 'var(--warning-muted)' : 'var(--bg-surface-2)')
         : '',
       tdPrioShort: detailRow ? String(detailRow.urgency).toUpperCase() : '',
+      tdPrioPillClass: [
+        detailRow && (detailRow.urgency === 'p0' || detailRow.urgency === 'p1') ? 'is-danger' : '',
+        this.state.tdPillMenu === 'urgency' ? 'is-open' : ''
+      ].filter(Boolean).join(' '),
+      tdSquadPillClass: this.state.tdPillMenu === 'squad' ? 'is-open' : '',
+      tdStatusPillClass: this.state.tdPillMenu === 'status' ? 'is-open' : '',
+      tdAssigneePillClass: this.state.tdPillMenu === 'assignee' ? 'is-open' : '',
+      tdU1: detailRow ? FEEDBACK_URGENCY[detailRow.urgency][0] : '#ef4444',
+      tdU2: detailRow ? FEEDBACK_URGENCY[detailRow.urgency][1] : '#ef4444',
+      tdU3: detailRow ? FEEDBACK_URGENCY[detailRow.urgency][2] : '#ef4444',
       tdTags: detailRow ? fbRowTags(detailRow).map(fbTagBadge) : [],
       tdChannelLabel: detailRow && FEEDBACK_TAGS[detailRow.channel] ? FEEDBACK_TAGS[detailRow.channel].label : '',
       tdReporterHandle: detailRow ? '@' + detailRow.reporter : '',
       tdHasRole: !!(detailRow && detailRow.role),
       tdRole: detailRow && detailRow.role ? detailRow.role : '',
       tdTopic: detailRow ? detailRow.topic : '',
+      tdSquad: detailRow ? detailRow.squad : '',
+      tdStatusLabel: detailRow ? detailRow.status : '',
+      tdStatusColor: detailRow ? fbStatusColor(detailRow.status) : '#a1a1aa',
+      tdSquadIcon: tablerIcon('<path d="M13.163 2.168l8.021 5.828c.694.504.984 1.397.719 2.212l-3.064 9.43a1.978 1.978 0 0 1-1.881 1.367H7.042a1.978 1.978 0 0 1-1.881-1.367l-3.064-9.43a1.978 1.978 0 0 1 .719-2.212l8.021-5.828a1.978 1.978 0 0 1 2.326 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 9a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" stroke="currentColor" stroke-width="2"/><path d="M9.5 17c.596-1.2 1.704-2 2.5-2s1.904.8 2.5 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>', 20),
+      tdStatusIcon: tablerIcon('<path d="M10 20.777a8.97 8.97 0 0 1-2.48-.913" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M14 3.223a9.003 9.003 0 0 1 0 17.554" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M4.579 17.093a8.975 8.975 0 0 1-1.227-2.592" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3.124 10.5c.16-.95.468-1.85.9-2.675l.169-.305" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M6.907 4.579A8.954 8.954 0 0 1 10 3.223" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>', 16),
       tdAssigneeEl: detailRow
         ? React.createElement('span', { className: 'fb-avatar-stack' },
             detailRow.assignees.slice().reverse().map((idx, k) => fbAvatar(idx, k)))
@@ -5676,6 +6287,18 @@ class Component extends DCLogic {
       tdAssigneeNames: detailRow
         ? detailRow.assignees.map(idx => (FB_ASSIGNEES[idx] || FB_ASSIGNEES[0]).name.split(' ')[0]).join(', ')
         : '',
+      tdAssigneeFullName: detailRow
+        ? (FB_ASSIGNEES[detailRow.assignees[0]] || FB_ASSIGNEES[0]).name
+        : '',
+      tdAssigneeAvatar: detailRow
+        ? (window.GhostAIDesignSystem_84ae0c && window.GhostAIDesignSystem_84ae0c.Avatar
+            ? React.createElement(window.GhostAIDesignSystem_84ae0c.Avatar, {
+                src: (FB_ASSIGNEES[detailRow.assignees[0]] || FB_ASSIGNEES[0]).photo,
+                name: (FB_ASSIGNEES[detailRow.assignees[0]] || FB_ASSIGNEES[0]).name,
+                size: 20
+              })
+            : fbAvatar(detailRow.assignees[0], 'td-a'))
+        : null,
       tdSourceIcon: navIcon('columns', 13, false),
       tdPlayIcon: React.createElement('svg', {
         width: 15, height: 15, viewBox: '0 0 24 24', fill: 'currentColor',
@@ -5691,6 +6314,18 @@ class Component extends DCLogic {
       tdNotAnalysed: !(tdDetail && tdDetail.analysis),
       tdAnalysis: tdDetail && tdDetail.analysis ? tdDetail.analysis : '',
       tdAnalysisDetail: (tdDetail && tdDetail.analysisDetail ? tdDetail.analysisDetail : []).map(text => ({ text })),
+      tdAnalysisEl: (() => {
+        if (!tdDetail || !tdDetail.analysis) return null;
+        const extra = (tdDetail.analysisDetail || []).join('\n');
+        let sourceLine = '';
+        if (tdDetail.source) {
+          const src = String(tdDetail.source);
+          const file = src.replace(/:\d+.*$/, '');
+          const lines = src.match(/\d+[–\-]\d+/);
+          sourceLine = '\nLikely source: ' + file + (lines ? '\naround lines ' + lines[0] + ', called from ChampionController.cpp.' : '.');
+        }
+        return highlightTicketCode([tdDetail.analysis, extra].filter(Boolean).join('\n') + sourceLine);
+      })(),
       tdHasSource: !!(tdDetail && tdDetail.source),
       tdSource: tdDetail && tdDetail.source ? tdDetail.source : '',
       tdHasClip: !!(detailRow && detailRow.clip),
@@ -5700,14 +6335,14 @@ class Component extends DCLogic {
       tdLog: (tdDetail && tdDetail.log ? tdDetail.log : []).map(l => ({
         t: l.t,
         m: l.m,
-        color: l.level === 'error' ? 'var(--danger)' : l.level === 'warn' ? 'var(--warning)' : 'var(--text-primary)'
+        color: l.level === 'error' ? '#ef4444' : l.level === 'warn' ? '#f59e0b' : '#ffffff'
       })),
       tdDate: detailRow ? detailRow.date : '',
       tdReporter: detailRow ? detailRow.reporter : '',
       tdReporterInitial: detailRow ? detailRow.reporter.charAt(0).toUpperCase() : '',
       tdImpHint: detailRow && detailRow.clip
-        ? 'Replays the recorded session'
-        : 'Starts a fresh session as this player',
+        ? 'Replays the session this player recorded'
+        : 'No recording — this report arrived without one',
       showBugReport: this.state.showBugReport,
       showDashboard: !this.state.showBugReport,
       showAnalyticsBody,
@@ -5715,15 +6350,17 @@ class Component extends DCLogic {
       showTasksBody,
       showPlayerBody,
       showReportControls: showAnalyticsBody || showPlayerBody,
+      showExportBtn: showAnalyticsBody || showPlayerBody || showTicketDetail,
+      showAskGhost: showPlayerBody || showTicketDetail,
       // ---- Feedback Report ----
       ghostSmIcon: navIcon('ghost', 16, false),
       askGhostAi: this.toggleGhostPanel,
       askGhostBtnClass: this.state.showGhostPanel ? 'fb-ask-btn ask-ghost-btn fb-ask-btn-active' : 'fb-ask-btn ask-ghost-btn',
       // ---- Ask Ghost AI panel ----
-      showGhostPanelSlot: (this.state.ghostPanelMounted || this.state.showGhostPanel) && showPlayerBody,
+      showGhostPanelSlot: (this.state.ghostPanelMounted || this.state.showGhostPanel) && (showPlayerBody || showTicketDetail),
       ghostPanelSlotClass: this.state.showGhostPanel ? 'ghost-panel-slot is-open' : 'ghost-panel-slot',
-      showGhostPanel: this.state.showGhostPanel && showPlayerBody,
-      ghostShellClass: (this.state.showGhostPanel || this.state.ghostPanelMounted) && showPlayerBody ? 'has-ghost' : '',
+      showGhostPanel: this.state.showGhostPanel && (showPlayerBody || showTicketDetail),
+      ghostShellClass: (this.state.showGhostPanel || this.state.ghostPanelMounted) && (showPlayerBody || showTicketDetail) ? 'has-ghost' : '',
       ghostLgIcon: navIcon('ghost', 32, false),
       ghostSmallIcon: navIcon('ghost', 18, false),
       ghostThumbUpIcon: assetIcon('thumb-up', 16),
@@ -5785,20 +6422,47 @@ class Component extends DCLogic {
       fbSparkleIcon: React.createElement('span', { className: 'fb-pill-sparkle' }, sparkle(16)),
       fbTotalPillClass: this.state.fbGroupByTopic ? 'fb-pill' : 'fb-pill fb-pill-active',
       fbGroupPillClass: this.state.fbGroupByTopic ? 'fb-pill fb-pill-active' : 'fb-pill',
-      setFbTotal: () => this.setState({ fbGroupByTopic: false }),
-      setFbGrouped: () => this.setState({ fbGroupByTopic: true }),
+      setFbTotal: () => this.setState({ fbGroupByTopic: false, fbPage: 1 }),
+      setFbGrouped: () => this.setState({ fbGroupByTopic: true, fbPage: 1 }),
+      // ---- Pagination (Figma 76:8821) ----
+      showFbPagination: fbTotalPages > 1,
+      fbPrevIcon: taskIcon('chevronLeft', 16),
+      fbNextIcon: taskIcon('chevronRight', 16),
+      fbPrevDisabled: fbPage <= 1,
+      fbNextDisabled: fbPage >= fbTotalPages,
+      fbPrevPage: this.goToFbPage(Math.max(1, fbPage - 1)),
+      fbNextPage: this.goToFbPage(Math.min(fbTotalPages, fbPage + 1)),
+      // First and last page always show; the rest is a window around the current
+      // one, with an ellipsis standing in for whatever the window skipped.
+      fbPageItems: (() => {
+        const shown = new Set([1, fbTotalPages, fbPage, fbPage - 1, fbPage + 1]);
+        const pages = [];
+        for (let n = 1; n <= fbTotalPages; n++) if (shown.has(n)) pages.push(n);
+        const items = [];
+        pages.forEach((n, i) => {
+          if (i > 0 && n - pages[i - 1] > 1) {
+            items.push({ isGap: true, isPage: false, gapIcon: taskIcon('ellipsis', 16) });
+          }
+          const current = n === fbPage;
+          items.push({
+            isGap: false,
+            isPage: true,
+            label: String(n),
+            cls: current ? 'fb-page-num is-current' : 'fb-page-num',
+            aria: current ? 'Page ' + n + ', current page' : 'Go to page ' + n,
+            onClick: this.goToFbPage(n)
+          });
+        });
+        return items;
+      })(),
       feedbackRows,
       fbEmpty: fbRows.length === 0,
       fbAllCheckClass: fbAllOn ? 'fb-check fb-check-on' : 'fb-check',
       fbAllCheckIcon: fbAllOn ? taskIcon('check', 12) : null,
       toggleFbAll: this.toggleFbAll,
       fbTicketSortIcon: fbSortIcon('ticket'),
-      fbSquadSortIcon: fbSortIcon('squad'),
-      fbStatusSortIcon: fbSortIcon('status'),
       fbDateSortIcon: fbSortIcon('date'),
       sortFbTicket: this.toggleFbSort('ticket'),
-      sortFbSquad: this.toggleFbSort('squad'),
-      sortFbStatus: this.toggleFbSort('status'),
       sortFbDate: this.toggleFbSort('date'),
       fbFilterIcon: React.createElement(
         'span',
@@ -5807,8 +6471,8 @@ class Component extends DCLogic {
       ),
       showFbTagMenu: this.state.showFbTagMenu,
       toggleFbTagMenu: () => this.setState(s => ({
+        ...FB_MENUS_CLOSED,
         showFbTagMenu: !s.showFbTagMenu,
-        showFbAssigneeMenu: false,
         showNotif: false,
         showDateMenu: false
       })),
@@ -5825,8 +6489,8 @@ class Component extends DCLogic {
       ),
       showFbAssigneeMenu: this.state.showFbAssigneeMenu,
       toggleFbAssigneeMenu: () => this.setState(s => ({
+        ...FB_MENUS_CLOSED,
         showFbAssigneeMenu: !s.showFbAssigneeMenu,
-        showFbTagMenu: false,
         showNotif: false,
         showDateMenu: false
       })),
@@ -5840,6 +6504,42 @@ class Component extends DCLogic {
             }, a.initials || a.name.slice(0, 1)),
         checkIcon: this.state.fbAssigneeFilter.includes(idx) ? taskIcon('check', 16) : null,
         onClick: this.toggleFbAssignee(idx)
+      })),
+      fbSquadFilterIcon: React.createElement(
+        'span',
+        { style: { display: 'flex', color: this.state.fbSquadFilter.length ? 'var(--accent)' : 'var(--text-tertiary)' } },
+        assetIcon('filter-2', 16)
+      ),
+      showFbSquadMenu: this.state.showFbSquadMenu,
+      toggleFbSquadMenu: () => this.setState(s => ({
+        ...FB_MENUS_CLOSED,
+        showFbSquadMenu: !s.showFbSquadMenu,
+        showNotif: false,
+        showDateMenu: false
+      })),
+      fbSquadFilterItems: FB_SQUADS.map(squad => ({
+        label: squad,
+        checkIcon: this.state.fbSquadFilter.includes(squad) ? taskIcon('check', 16) : null,
+        onClick: this.toggleFbSquad(squad)
+      })),
+      fbStatusFilterIcon: React.createElement(
+        'span',
+        { style: { display: 'flex', color: this.state.fbStatusFilter.length ? 'var(--accent)' : 'var(--text-tertiary)' } },
+        assetIcon('filter-2', 16)
+      ),
+      showFbStatusMenu: this.state.showFbStatusMenu,
+      toggleFbStatusMenu: () => this.setState(s => ({
+        ...FB_MENUS_CLOSED,
+        showFbStatusMenu: !s.showFbStatusMenu,
+        showNotif: false,
+        showDateMenu: false
+      })),
+      // Listed in pipeline order, each carrying the same colour the row uses.
+      fbStatusFilterItems: FB_STATUS_ORDER.map(status => ({
+        label: status,
+        dotClass: 'fb-status ' + (FB_STATUS_CLASS[status] || 'is-waiting'),
+        checkIcon: this.state.fbStatusFilter.includes(status) ? taskIcon('check', 16) : null,
+        onClick: this.toggleFbStatus(status)
       })),
       // view mode + header toggles
       isCanvasView: this.state.taskViewMode === 'canvas',
@@ -5969,6 +6669,18 @@ class Component extends DCLogic {
       analyzedToggleLabel: this.state.analyzedExpanded ? 'Show less' : 'See more',
       playerLogToggleLabel: this.state.playerLogExpanded ? 'Show less' : 'See all',
       toggleAnalyzed: () => this.setState(s => ({ analyzedExpanded: !s.analyzedExpanded })),
+      // ---- Cursor hand-off ----
+      showCursorIde: this.state.showCursorIde,
+      openCursorIde: this.openCursorIde,
+      closeCursorIde: this.closeCursorIde,
+      cursorIdeSrc: 'Cursor%20IDE.html?ticket=' + encodeURIComponent(this.state.cursorTicket || '#BUG-1284719'),
+      cursorIdeFile: (() => {
+        const d = TICKET_DETAILS[this.state.cursorTicket || '#BUG-1284719'];
+        return d && d.source ? String(d.source).replace(/:\d+.*$/, '').split('/').pop() : 'YuumiPassive.cpp';
+      })(),
+      cursorBackIcon: React.createElement('svg', { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', style: { flexShrink: 0, display: 'block' } },
+        React.createElement('path', { d: 'M19 12H5m0 0 6-6m-6 6 6 6', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })
+      ),
       togglePlayerLog: () => this.setState(s => ({ playerLogExpanded: !s.playerLogExpanded })),
       trendData,
       trendFirstLabel: trendData[0] ? trendData[0].label : '',

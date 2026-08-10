@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="240" height="240">
+
+<defs>
+<linearGradient id="gg" x1="10" y1="2.5" x2="10" y2="17.5" gradientUnits="userSpaceOnUse"><stop stop-color="#84CC16"></stop><stop offset="1" stop-color="#35E3E6"></stop></linearGradient>
+</defs>
+<g transform="translate(10,10) scale(5)">
+<g class="jelly">
+<path class="body" d="M9.99984 2.49986C11.5469 2.49986 13.0307 3.11444 14.1246 4.2084C15.2186 5.30236 15.8332 6.78609 15.8332 8.33319V14.9999L17.4998 17.4999H9.1665C7.87228 17.5008 6.62812 16.9998 5.69564 16.1023C4.76317 15.2048 4.21504 13.9807 4.1665 12.6874V8.33236C4.1665 6.78526 4.78109 5.30153 5.87505 4.20757C6.96901 3.1136 8.45274 2.49986 9.99984 2.49986Z" fill="none" stroke="url(#gg)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" pathLength="100"></path>
+<g class="eyes">
+<path d="M11.6753 7C12.0893 7.00025 12.4253 7.33594 12.4253 7.75C12.4253 8.16406 12.0893 8.49975 11.6753 8.5H11.6665C11.2523 8.5 10.9165 8.16421 10.9165 7.75C10.9165 7.33579 11.2523 7 11.6665 7H11.6753Z" fill="#6DD354"></path>
+<rect x="7" y="7" width="1.5" height="1.5" fill="#6DD354"></rect>
+</g>
+</g>
+</g>
+</svg>

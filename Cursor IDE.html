@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YuumiPassive.cpp — Cursor</title>
+<style>
+  /* ------------------------------------------------------------------
+     Cursor IDE — visual stand-in for the "Go to Code" hand-off.
+     Nothing here talks to a real editor: it is a static reconstruction
+     of what the developer sees the moment Ghost AI opens the offending
+     file, so the journey can be demoed end to end.
+     Colours follow the VS Code "Dark+" palette Cursor ships with.
+     ------------------------------------------------------------------ */
+  :root {
+    --ide-chrome: #181818;
+    --ide-editor: #1f1f1f;
+    --ide-panel: #181818;
+    --ide-border: #2b2b2b;
+    --ide-border-soft: #232323;
+    --ide-fg: #cccccc;
+    --ide-fg-dim: #9d9d9d;
+    --ide-fg-faint: #6e6e6e;
+    --ide-blue: #0078d4;
+    --ide-blue-soft: #2f7fd1;
+    --ide-hover: #ffffff0d;
+    --ide-active: #ffffff14;
+    --ide-red: #f14c4c;
+    --ide-amber: #cca700;
+    --ide-green: #89d185;
+    /* Ghost AI primary (lime-400) — marks the region the report pointed at, so
+       the band reads as "this came from Ghost AI" rather than as a lint warning. */
+    --band: #a3e635;
+
+    --tok-comment: #6a9955;
+    --tok-keyword: #569cd6;
+    --tok-control: #c586c0;
+    --tok-type: #4ec9b0;
+    --tok-fn: #dcdcaa;
+    --tok-str: #ce9178;
+    --tok-num: #b5cea8;
+    --tok-var: #9cdcfe;
+    --tok-punct: #cccccc;
+    --tok-macro: #c586c0;
+
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%;
+    background: var(--ide-chrome);
+    color: var(--ide-fg);
+    font-family: var(--ui);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; color: inherit; background: none; border: none; padding: 0; cursor: pointer; }
+
+  /* editor-style scrollbars — the OS default reads far too bright in here */
+  ::-webkit-scrollbar { width: 14px; height: 14px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: #ffffff20;
+    border: 4px solid transparent;
+    background-clip: padding-box;
+    border-radius: 8px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: #ffffff36; background-clip: padding-box; }
+  ::-webkit-scrollbar-corner { background: transparent; }
+
+  .ide {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--ide-chrome);
+  }
+
+  /* ---------- title bar ---------- */
+  .titlebar {
+    height: 36px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 12px;
+    background: var(--ide-chrome);
+    border-bottom: 1px solid var(--ide-border);
+    position: relative;
+    user-select: none;
+  }
+  .lights { display: flex; gap: 8px; flex-shrink: 0; }
+  .light { width: 12px; height: 12px; border-radius: 50%; display: block; }
+  .light.r { background: #ff5f57; }
+  .light.y { background: #febc2e; }
+  .light.g { background: #28c840; }
+  .light.r:hover { background: #ff7b74; }
+  .tb-nav { display: flex; gap: 2px; margin-left: 8px; color: var(--ide-fg-faint); }
+  .tb-nav span { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 5px; }
+  .tb-search {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: min(420px, 40vw); height: 24px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    background: #1f1f1f; border: 1px solid #2f2f2f; border-radius: 6px;
+    font-size: 12px; color: var(--ide-fg-faint);
+  }
+  .tb-right { margin-left: auto; display: flex; align-items: center; gap: 10px; color: var(--ide-fg-faint); }
+
+  /* ---------- main row ---------- */
+  .body { flex: 1; min-height: 0; display: flex; }
+
+  .activity {
+    width: 48px; flex-shrink: 0;
+    background: var(--ide-chrome);
+    border-right: 1px solid var(--ide-border);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 6px 0;
+    gap: 2px;
+  }
+  .act {
+    width: 40px; height: 40px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ide-fg-faint); position: relative;
+  }
+  .act.is-on { color: #e6e6e6; }
+  .act.is-on::before {
+    content: ""; position: absolute; left: -8px; top: 8px; bottom: 8px;
+    width: 2px; background: #e6e6e6; border-radius: 2px;
+  }
+  .act:hover { color: #e6e6e6; }
+  .act-spacer { flex: 1; }
+
+  /* ---------- explorer ---------- */
+  .sidebar {
+    width: 236px; flex-shrink: 0;
+    background: var(--ide-panel);
+    border-right: 1px solid var(--ide-border);
+    display: flex; flex-direction: column;
+    min-height: 0;
+  }
+  .side-head {
+    height: 35px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 10px 0 20px;
+    font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--ide-fg-dim);
+  }
+  .side-scroll { flex: 1; min-height: 0; overflow: auto; padding-bottom: 12px; }
+  .tree-root {
+    display: flex; align-items: center; gap: 4px;
+    height: 22px; padding: 0 8px;
+    font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--ide-fg);
+  }
+  .row {
+    height: 22px; display: flex; align-items: center; gap: 4px;
+    padding-right: 8px;
+    font-size: 13px; color: var(--ide-fg-dim);
+    white-space: nowrap; cursor: pointer;
+  }
+  .row:hover { background: var(--ide-hover); }
+  .row.is-open { color: var(--ide-fg); }
+  .row.is-sel { background: #04395e; color: #fff; }
+  .row.is-dirty { color: var(--ide-amber); }
+  .row .chev { width: 14px; flex-shrink: 0; display: flex; justify-content: center; color: var(--ide-fg-faint); }
+  .row .fico { width: 16px; flex-shrink: 0; display: flex; justify-content: center; }
+  .row .badge { margin-left: auto; font-size: 11px; color: var(--ide-amber); }
+
+  /* ---------- editor column ---------- */
+  .editor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--ide-editor); }
+
+  .tabs {
+    height: 35px; flex-shrink: 0;
+    display: flex; align-items: stretch;
+    background: var(--ide-chrome);
+    border-bottom: 1px solid var(--ide-border);
+    overflow: hidden;
+  }
+  .tab {
+    display: flex; align-items: center; gap: 7px;
+    padding: 0 12px;
+    font-size: 13px; color: var(--ide-fg-faint);
+    border-right: 1px solid var(--ide-border);
+    max-width: 220px; white-space: nowrap; cursor: pointer;
+  }
+  .tab.is-on {
+    background: var(--ide-editor);
+    color: #fff;
+    border-top: 1px solid var(--ide-blue);
+    padding-top: 0;
+    margin-top: -1px;
+  }
+  .tab .x { margin-left: 4px; color: var(--ide-fg-faint); opacity: 0; }
+  .tab.is-on .x, .tab:hover .x { opacity: 1; }
+  .tabs-fill { flex: 1; border-bottom: 1px solid transparent; }
+
+  .breadcrumb {
+    height: 24px; flex-shrink: 0;
+    display: flex; align-items: center; gap: 4px;
+    padding: 0 16px;
+    font-size: 12px; color: var(--ide-fg-faint);
+    background: var(--ide-editor);
+    white-space: nowrap; overflow: hidden;
+  }
+  .breadcrumb .sep { opacity: .6; }
+  .breadcrumb .sym { color: var(--tok-fn); }
+
+  /* ---------- code ---------- */
+  .code-wrap { flex: 1; min-height: 0; display: flex; position: relative; }
+  .code-scroll {
+    flex: 1; min-width: 0; overflow: auto;
+    padding: 4px 0 40vh;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 19px;
+    position: relative;
+  }
+  .ln-row { display: flex; position: relative; min-height: 19px; }
+  .ln-row .gutter {
+    width: 62px; flex-shrink: 0;
+    padding-right: 16px;
+    text-align: right;
+    color: #6e7681;
+    user-select: none;
+    position: relative;
+  }
+  .ln-row.is-cursor .gutter { color: #cccccc; }
+  .ln-row .src { white-space: pre; padding-right: 40px; flex: 1; min-width: 0; }
+
+  /* the band Ghost AI pointed at */
+  .ln-row.in-band { background: #ffffff08; }
+  .ln-row.in-band::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+    background: color-mix(in srgb, var(--band) 62%, transparent);
+  }
+  .ln-row.band-top { box-shadow: inset 0 1px 0 color-mix(in srgb, var(--band) 34%, transparent); }
+  .ln-row.band-bot { box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--band) 34%, transparent); }
+  .ln-row.is-err { background: #f14c4c14; }
+  .ln-row.is-err .gutter::after {
+    content: ""; position: absolute; right: 4px; top: 6px;
+    width: 7px; height: 7px; border-radius: 50%; background: var(--ide-red);
+  }
+  .ln-row.is-warn .gutter::after {
+    content: ""; position: absolute; right: 4px; top: 6px;
+    width: 7px; height: 7px; border-radius: 50%; background: var(--ide-amber);
+  }
+  .ln-row.is-cursor { background: #ffffff0a; outline: 1px solid #ffffff12; outline-offset: -1px; }
+
+  .squiggle {
+    text-decoration: underline wavy var(--ide-red);
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+  .sel { background: #264f78; }
+
+  /* the code stream-in */
+  .ln-row { opacity: 0; animation: lnIn .01s linear forwards; }
+  @keyframes lnIn { to { opacity: 1; } }
+
+  /* inline lens above the flagged function, like Cursor's inline chat affordance */
+  .lens {
+    display: flex; align-items: center; gap: 8px;
+    margin: 6px 0 2px 62px;
+    font-family: var(--ui); font-size: 11.5px;
+    color: var(--ide-fg-faint);
+    white-space: nowrap; overflow: hidden;
+    opacity: 0; animation: lensIn .35s ease .95s forwards;
+  }
+  @keyframes lensIn { to { opacity: 1; } }
+  .lens .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 2px 8px; border-radius: 999px;
+    background: #ffffff0d; border: 1px solid #ffffff14;
+    color: #d4d4d4;
+  }
+  .lens .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--band); }
+  /* Swapped in for the dot once the Ghost mark loads (see GHOST_MARK below).
+     Slightly negative margins keep the pill the same height as the plain dot. */
+  /* The source art carries a lot of padding, so the mark is sized well past the
+     text height and pulled back in with negative margins — the pill keeps its
+     height while the ghost itself reads at roughly the size of the old dot. */
+  .ghost-mark {
+    width: 22px; height: 22px;
+    object-fit: contain;
+    display: block; flex-shrink: 0;
+    margin: -5px -3px -5px -4px;
+  }
+  .handoff .ghost-mark { width: 26px; height: 26px; margin: -6px -3px -6px -5px; }
+  .lens .pill, .lens .link { white-space: nowrap; }
+  .lens .link { color: var(--ide-blue-soft); }
+
+  /* minimap */
+  .minimap {
+    width: 74px; flex-shrink: 0;
+    background: var(--ide-editor);
+    border-left: 1px solid var(--ide-border-soft);
+    padding: 6px 8px;
+    overflow: hidden;
+    position: relative;
+  }
+  .mm-line { height: 2px; margin-bottom: 1px; border-radius: 1px; background: #ffffff1f; }
+  .mm-line.c { background: #6a995540; }
+  .mm-line.k { background: #569cd650; }
+  .mm-band {
+    position: absolute; left: 0; right: 0;
+    background: color-mix(in srgb, var(--band) 14%, transparent);
+    border-top: 1px solid color-mix(in srgb, var(--band) 34%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--band) 34%, transparent);
+  }
+  .mm-view { position: absolute; left: 0; right: 0; background: #ffffff0d; }
+
+  /* ---------- problems panel ---------- */
+  .panel {
+    height: 148px; flex-shrink: 0;
+    border-top: 1px solid var(--ide-border);
+    background: var(--ide-editor);
+    display: flex; flex-direction: column;
+  }
+  .panel-tabs {
+    height: 32px; flex-shrink: 0; display: flex; align-items: center; gap: 16px;
+    padding: 0 16px;
+    font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ide-fg-faint);
+  }
+  .panel-tabs .pt { position: relative; padding: 8px 0; }
+  .panel-tabs .pt.is-on { color: var(--ide-fg); box-shadow: inset 0 -1px 0 #e6e6e6; }
+  .panel-tabs .count {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 16px; height: 16px; padding: 0 5px; margin-left: 6px;
+    border-radius: 999px; background: #ffffff1a; color: var(--ide-fg);
+    font-size: 10px; letter-spacing: 0;
+  }
+  .panel-body { flex: 1; min-height: 0; overflow: auto; padding: 2px 0 8px; font-size: 12.5px; }
+  .prob { display: flex; align-items: baseline; gap: 8px; padding: 3px 16px 3px 32px; color: var(--ide-fg-dim); }
+  .prob:hover { background: var(--ide-hover); }
+  .prob .ico { flex-shrink: 0; align-self: center; }
+  .prob .msg { color: var(--ide-fg); }
+  .prob .where { color: var(--ide-fg-faint); font-family: var(--mono); font-size: 11.5px; }
+
+  /* ---------- chat panel ---------- */
+  .chat {
+    width: 348px; flex-shrink: 0;
+    background: var(--ide-panel);
+    border-left: 1px solid var(--ide-border);
+    display: flex; flex-direction: column;
+    min-height: 0;
+  }
+  .chat-head {
+    height: 35px; flex-shrink: 0; display: flex; align-items: center; gap: 8px;
+    padding: 0 12px; border-bottom: 1px solid var(--ide-border);
+    font-size: 12px; color: var(--ide-fg-dim);
+  }
+  .chat-head .tag { color: var(--ide-fg); font-weight: 600; }
+  .chat-head .right { margin-left: auto; display: flex; gap: 10px; color: var(--ide-fg-faint); }
+  .chat-scroll { flex: 1; min-height: 0; overflow: auto; padding: 14px 12px 8px; display: flex; flex-direction: column; gap: 14px; }
+
+  .msg-user {
+    border: 1px solid var(--ide-border); border-radius: 8px;
+    background: #1f1f1f; padding: 10px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .msg-from { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--ide-fg-faint); }
+  .msg-from .ghost { color: #a3e635; display: flex; }
+  .msg-user .txt { font-size: 12.5px; line-height: 18px; color: var(--ide-fg); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 2px 7px; border-radius: 5px;
+    background: #ffffff0d; border: 1px solid #ffffff12;
+    font-family: var(--mono); font-size: 11px; color: var(--ide-fg-dim);
+  }
+
+  .msg-ai { display: flex; flex-direction: column; gap: 9px; padding: 0 2px; }
+  .msg-ai .txt { font-size: 12.5px; line-height: 19px; color: var(--ide-fg); }
+  .msg-ai .txt code, .inline-code {
+    font-family: var(--mono); font-size: 11.5px;
+    background: #ffffff0f; border-radius: 4px; padding: 1px 4px;
+    color: var(--tok-var);
+  }
+  .steps { display: flex; flex-direction: column; gap: 7px; margin: 0; padding-left: 18px; }
+  .steps li { font-size: 12.5px; line-height: 18px; color: var(--ide-fg-dim); }
+  .steps li b { color: var(--ide-fg); font-weight: 500; }
+
+  .diff {
+    border: 1px solid var(--ide-border); border-radius: 8px; overflow: hidden;
+    font-family: var(--mono); font-size: 11.5px; line-height: 17px;
+  }
+  .diff-head {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 9px; background: #1f1f1f; border-bottom: 1px solid var(--ide-border);
+    color: var(--ide-fg-dim); font-size: 11px;
+  }
+  .diff-body { background: #1a1a1a; padding: 6px 0; }
+  .diff-line { padding: 0 9px; white-space: pre; color: var(--ide-fg-dim); }
+  .diff-line.add { background: #1e3a1e80; color: #b5e8b5; }
+  .diff-line.del { background: #4b1a1a66; color: #f0b0b0; }
+  .diff-foot { display: flex; gap: 8px; padding: 8px 9px; background: #1f1f1f; border-top: 1px solid var(--ide-border); }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 24px; padding: 0 10px; border-radius: 5px;
+    font-family: var(--ui); font-size: 11.5px; color: var(--ide-fg);
+    background: #ffffff12; border: 1px solid #ffffff14;
+  }
+  .btn:hover { background: #ffffff1c; }
+  .btn.is-primary { background: var(--ide-blue); border-color: var(--ide-blue); color: #fff; }
+  .btn.is-primary:hover { background: #1a86e0; }
+
+  .chat-input {
+    flex-shrink: 0; margin: 8px 12px 12px;
+    border: 1px solid #2f2f2f; border-radius: 8px; background: #1f1f1f;
+    padding: 8px 9px; display: flex; flex-direction: column; gap: 9px;
+  }
+  .chat-input .ph { font-size: 12.5px; color: var(--ide-fg-faint); }
+  .chat-input .foot { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--ide-fg-faint); }
+  .chat-input .model { display: inline-flex; align-items: center; gap: 5px; padding: 2px 7px; border-radius: 5px; background: #ffffff0d; }
+  .chat-input .send { margin-left: auto; width: 22px; height: 22px; border-radius: 5px; background: #ffffff14; display: flex; align-items: center; justify-content: center; }
+
+  .caret { display: inline-block; width: 6px; height: 13px; translate: 0 2px; background: #cccccc; animation: blink 1.05s steps(2, start) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ---------- status bar ---------- */
+  .status {
+    height: 22px; flex-shrink: 0;
+    display: flex; align-items: center; gap: 14px;
+    padding: 0 10px;
+    background: var(--ide-chrome);
+    border-top: 1px solid var(--ide-border);
+    font-size: 11.5px; color: var(--ide-fg-dim);
+  }
+  .status .grp { display: flex; align-items: center; gap: 5px; }
+  .status .right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+
+  /* ---------- boot ---------- */
+  .boot {
+    position: fixed; inset: 0; z-index: 20;
+    background: #131313;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+    animation: bootOut .45s ease .62s forwards;
+  }
+  @keyframes bootOut { to { opacity: 0; visibility: hidden; } }
+  .boot .mark { opacity: .9; animation: markIn .5s cubic-bezier(.22,1,.36,1); }
+  @keyframes markIn { from { opacity: 0; transform: scale(.9); } }
+  .boot .cap { font-size: 12px; color: #6e6e6e; font-family: var(--mono); }
+
+  /* toast that confirms where we came from */
+  .handoff {
+    position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%);
+    z-index: 15;
+    display: flex; align-items: center; gap: 9px;
+    padding: 8px 14px; border-radius: 999px;
+    background: #202020ee; border: 1px solid #ffffff1a;
+    box-shadow: 0 8px 30px #00000080;
+    font-size: 12px; color: var(--ide-fg);
+    opacity: 0;
+    animation: hoIn .4s ease 1.15s forwards, hoOut .4s ease 5.4s forwards;
+  }
+  @keyframes hoIn { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  @keyframes hoOut { to { opacity: 0; transform: translate(-50%, 8px); visibility: hidden; } }
+  .handoff .dot { width: 6px; height: 6px; border-radius: 50%; background: #a3e635; }
+  .handoff b { font-weight: 600; }
+
+  @media (max-width: 1180px) { .chat { width: 300px; } }
+  @media (max-width: 1000px) { .sidebar { display: none; } }
+</style>
+</head>
+<body>
+<div class="ide" id="ide"></div>
+
+<div class="boot" id="boot">
+  <div class="mark">
+    <svg width="46" height="46" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 2.2 21 7.4v9.2L12 21.8 3 16.6V7.4z" fill="#2a2a2a" stroke="#4a4a4a" stroke-width="1"/>
+      <path d="M12 2.2 21 7.4 12 12.6 3 7.4z" fill="#3d3d3d"/>
+      <path d="M12 12.6 21 7.4v9.2L12 21.8z" fill="#585858"/>
+    </svg>
+  </div>
+  <span class="cap" id="bootCap">Opening YuumiPassive.cpp…</span>
+</div>
+
+<div class="handoff" id="handoff">
+  <span class="dot"></span>
+  <span>Opened from Ghost AI — <b id="hoTicket">#BUG-1284719</b> · jumped to <b id="hoLines">lines 418–461</b></span>
+</div>
+
+<script>
+/* ==========================================================================
+   Source material. Each ticket maps to the file Ghost AI blamed, the exact
+   band it pointed at, and the Cursor Agent thread that comes with it.
+   `start` is the first line number rendered — the band numbers below are
+   absolute, so they line up with the numbers shown in the ticket.
+   ========================================================================== */
+
+const TICKETS = {
+  '#BUG-1284719': {
+    repo: 'league-game-client',
+    branch: 'release/26.04',
+    path: ['src', 'Game', 'Champions', 'Yuumi', 'YuumiPassive.cpp'],
+    symbol: 'YuumiPassive::onCastComplete(CastContext&)',
+    tabs: ['YuumiPassive.cpp', 'AbilityState.h', 'ChampionController.cpp'],
+    start: 396,
+    band: [418, 461],
+    error: 425,
+    warn: 444,
+    cursorLine: 425,
+    errCol: 5,
+    problems: [
+      { level: 'error', msg: 'Shield committed to the client simulation before the server ack is resolved.', where: 'YuumiPassive.cpp [425, 5]' },
+      { level: 'warn', msg: 'onCastInterrupted() never rolls back a locally applied ShieldInstance.', where: 'YuumiPassive.cpp [444, 5]' }
+    ],
+    summary: 'Yuumi passive desync on cast interrupt',
+    ask: 'Player report + replay attached. Shield shows on the client but the ally takes full damage — find where the two states diverge.',
+    chips: ['@YuumiPassive.cpp', '@AbilityState.h', 'replay 0:10', '#BUG-1284719'],
+    lead: 'Confirmed — this is a client/server state desync, not a rendering bug.',
+    steps: [
+      '<b>onCastComplete()</b> calls <code>ApplyShieldLocal()</code> at line 425 and flips <code>m_shieldAppliedClient</code> before anything has been sent.',
+      '<code>AbilityState::syncToServer()</code> on line 430 is fire-and-forget — it queues for the next tick and returns, so the local shield is already committed.',
+      'A knockup resolves <b>onCastInterrupted()</b> one tick later. It cancels the pending ability but never removes the ShieldInstance the client attached.',
+      'The rejected ack at line 459 only clears the flag, so the ally keeps a visible shield the server does not know about.'
+    ],
+    tail: 'Fix is to hold the shield in the pending state until the ack lands, and to roll back on interrupt.',
+    diffFile: 'YuumiPassive.cpp',
+    diff: [
+      { t: 'ctx', s: ' void YuumiPassive::onCastComplete(CastContext& ctx)' },
+      { t: 'ctx', s: ' {' },
+      { t: 'del', s: '-    ApplyShieldLocal(m_attachTarget, m_pendingShield);' },
+      { t: 'del', s: '-    m_shieldAppliedClient = true;' },
+      { t: 'add', s: '+    m_pendingShield.handle = ReserveShield(m_attachTarget,' },
+      { t: 'add', s: '+                                            m_pendingShield);' },
+      { t: 'ctx', s: '     AbilityState::syncToServer(ctx.owner, …);' },
+      { t: 'ctx', s: ' }' }
+    ],
+    code: [
+      '// ---------------------------------------------------------------------------',
+      '// Passive: Bop \'n\' Block — Yuumi shields her attached ally after a short cast.',
+      '// Owner: Champions squad · docs/abilities/yuumi.md',
+      '// ---------------------------------------------------------------------------',
+      '',
+      'void YuumiPassive::onCastStart(CastContext& ctx)',
+      '{',
+      '    m_castStartedAt = ctx.serverTime;',
+      '    m_pendingShield = ShieldSpec{',
+      '        .amount   = shieldAmount(ctx.level, ctx.owner->ap()),',
+      '        .duration = kShieldDuration,',
+      '        .source   = ShieldSource::YuumiPassive',
+      '    };',
+      '',
+      '    AbilityState::markPending(ctx.owner, AbilityId::YuumiPassive);',
+      '    ctx.owner->playAnimation("Spell1_Cast");',
+      '}',
+      '',
+      'bool YuumiPassive::isAttachedToAlly() const',
+      '{',
+      '    return m_attachTarget != nullptr && m_attachTarget->isAlive();',
+      '}',
+      '',
+      'void YuumiPassive::onCastComplete(CastContext& ctx)',
+      '{',
+      '    if (!isAttachedToAlly())',
+      '        return;',
+      '',
+      '    // The client owns the visual, so the shield pops the same frame the cast ends.',
+      '    ApplyShieldLocal(m_attachTarget, m_pendingShield);',
+      '    m_shieldAppliedClient = true;',
+      '',
+      '    // syncToServer() is fire-and-forget: it queues the ability for the next',
+      '    // server tick and returns immediately, so nothing above waits for an ack.',
+      '    AbilityState::syncToServer(ctx.owner, AbilityId::YuumiPassive);',
+      '',
+      '    m_pendingShield = {};',
+      '}',
+      '',
+      'void YuumiPassive::onCastInterrupted(CastContext& ctx, InterruptReason reason)',
+      '{',
+      '    // Knockups and displacements land here one tick after onCastComplete().',
+      '    AbilityState::cancelPending(ctx.owner, AbilityId::YuumiPassive);',
+      '',
+      '    if (reason == InterruptReason::Displacement)',
+      '        ctx.owner->playAnimation("Spell1_Cancel");',
+      '',
+      '    // The locally applied shield is never rolled back here, so the client keeps',
+      '    // rendering a shield the server has already discarded.',
+      '    m_pendingShield = {};',
+      '}',
+      '',
+      'void YuumiPassive::onServerAck(const AbilityAck& ack)',
+      '{',
+      '    if (ack.accepted)',
+      '    {',
+      '        m_shieldAppliedServer = true;',
+      '        return;',
+      '    }',
+      '',
+      '    // A rejected ack only clears the flag — the ShieldInstance that',
+      '    // ApplyShieldLocal() attached to the ally is left on the target, which is',
+      '    // what players report as "damage went straight through my shield".',
+      '    m_shieldAppliedClient = false;',
+      '    m_pendingShield = {};',
+      '}',
+      '',
+      'float YuumiPassive::shieldAmount(int level, float ap) const',
+      '{',
+      '    return kShieldBase[level] + kShieldApRatio * ap;',
+      '}'
+    ]
+  },
+
+  '#BUG-1284561': {
+    repo: 'league-game-client',
+    branch: 'release/26.04',
+    path: ['src', 'Game', 'Champions', 'Viego', 'ViegoPassive.cpp'],
+    symbol: 'ViegoPassive::onPossess(Champion&)',
+    tabs: ['ViegoPassive.cpp', 'ItemCooldownRegistry.h', 'OnHitHandler.cpp'],
+    start: 196,
+    band: [210, 250],
+    error: 218,
+    warn: 246,
+    cursorLine: 218,
+    errCol: 5,
+    problems: [
+      { level: 'error', msg: 'Possession clones on-hit handlers without carrying over item cooldown stamps.', where: 'ViegoPassive.cpp [218, 5]' },
+      { level: 'warn', msg: 'Spellblade cooldown is read from the host, then discarded on release.', where: 'ViegoPassive.cpp [246, 9]' }
+    ],
+    summary: 'Viego spellblade cooldown resets on possession',
+    ask: 'Trinity Force procs twice in one trade after a possession. 100% repro on any host holding Trinity Force.',
+    chips: ['@ViegoPassive.cpp', '@ItemCooldownRegistry.h', '#BUG-1284561'],
+    lead: 'The clone step copies combat state but skips the item cooldown registry entirely.',
+    steps: [
+      '<b>onPossess()</b> copies <code>AttackSpeed</code> and the on-hit handler list from the host at line 218.',
+      '<code>ItemCooldownRegistry</code> is never part of that copy, so Viego starts with an empty cooldown table.',
+      'Trinity Force reads <code>spellbladeReadyAt</code> from that empty table and treats the proc as available.',
+      'On release the host\'s stamps are written back, which is why the double proc only ever shows on Viego.'
+    ],
+    tail: 'Same root shape as the Yuumi ticket — ability state resolved a tick too early.',
+    diffFile: 'ViegoPassive.cpp',
+    diff: [
+      { t: 'ctx', s: ' void ViegoPassive::onPossess(Champion& host)' },
+      { t: 'ctx', s: ' {' },
+      { t: 'ctx', s: '     cloneCombatState(host);' },
+      { t: 'add', s: '+    ItemCooldownRegistry::copyStamps(host, *m_owner);' },
+      { t: 'ctx', s: ' }' }
+    ],
+    code: [
+      '// ---------------------------------------------------------------------------',
+      '// Passive: Sovereign\'s Domination — Viego takes over the champion he executes.',
+      '// ---------------------------------------------------------------------------',
+      '',
+      'namespace {',
+      '    constexpr float kPossessionDuration = 10.0f;',
+      '}',
+      '',
+      'void ViegoPassive::cloneCombatState(Champion& host)',
+      '{',
+      '    m_owner->stats().attackSpeed = host.stats().attackSpeed;',
+      '    m_owner->stats().attackDamage = host.stats().attackDamage;',
+      '    m_owner->onHitHandlers() = host.onHitHandlers();',
+      '}',
+      '',
+      'void ViegoPassive::onPossess(Champion& host)',
+      '{',
+      '    m_possessedAt = Game::now();',
+      '    m_host = &host;',
+      '',
+      '    // Copies stats + on-hit handlers. Item timers are owned elsewhere and',
+      '    // are deliberately not part of this clone.',
+      '    cloneCombatState(host);',
+      '',
+      '    m_owner->inventory().mirror(host.inventory());',
+      '    m_owner->playAnimation("Possess_Enter");',
+      '}',
+      '',
+      'bool ViegoPassive::spellbladeReady() const',
+      '{',
+      '    // Reads Viego\'s own registry, which is empty for the whole possession.',
+      '    return ItemCooldownRegistry::readyAt(*m_owner, ItemId::TrinityForce)',
+      '           <= Game::now();',
+      '}',
+      '',
+      'void ViegoPassive::onAutoAttack(HitContext& hit)',
+      '{',
+      '    if (!spellbladeReady())',
+      '        return;',
+      '',
+      '    hit.addBonusDamage(spellbladeDamage(*m_owner));',
+      '    ItemCooldownRegistry::stamp(*m_owner, ItemId::TrinityForce,',
+      '                                kSpellbladeCooldown);',
+      '}',
+      '',
+      'void ViegoPassive::onRelease()',
+      '{',
+      '    // Host timers are restored wholesale, so the cooldown Viego burned',
+      '    // during possession is thrown away instead of carried back.',
+      '    if (m_host)',
+      '        ItemCooldownRegistry::restore(*m_host);',
+      '',
+      '    m_host = nullptr;',
+      '    m_owner->playAnimation("Possess_Exit");',
+      '}',
+      '',
+      'float ViegoPassive::spellbladeDamage(const Champion& c) const',
+      '{',
+      '    return kSpellbladeBase + kSpellbladeAdRatio * c.stats().attackDamage;',
+      '}'
+    ]
+  },
+
+  '#BUG-1283904': {
+    repo: 'league-client-desktop',
+    branch: 'release/26.04',
+    path: ['src', 'Client', 'Matchmaking', 'ShardHandshake.cpp'],
+    symbol: 'ShardHandshake::onTokenReceived(const Payload&)',
+    tabs: ['ShardHandshake.cpp', 'ShardToken.h', 'ChampSelectSession.cpp'],
+    start: 82,
+    band: [96, 117],
+    error: 105,
+    warn: 115,
+    cursorLine: 105,
+    errCol: 31,
+    problems: [
+      { level: 'error', msg: 'Cross-region token version is unhandled — deserialize() dereferences a null schema.', where: 'ShardHandshake.cpp [105, 31]' },
+      { level: 'warn', msg: 'No fallback path when the shard schema lookup misses.', where: 'ShardHandshake.cpp [115, 5]' }
+    ],
+    summary: 'Wild Rift cross-region match crashes champ select',
+    ask: 'PC client crashes entering a cross-region Wild Rift match. Repro 78%, no owner yet.',
+    chips: ['@ShardHandshake.cpp', 'crash dump', '#BUG-1283904'],
+    lead: 'The crash is in the matchmaking stub, not in gameplay.',
+    steps: [
+      'The cross-region handshake returns a <b>v3</b> shard token; the desktop client only registers schemas up to v2.',
+      '<code>schemaFor()</code> returns <code>nullptr</code> at line 103 and it is dereferenced two lines later without a check.',
+      'There is no fallback branch, so an unknown version is fatal rather than a rejected match.'
+    ],
+    tail: 'Guarding the lookup turns the crash into a clean "region unavailable" state.',
+    diffFile: 'ShardHandshake.cpp',
+    diff: [
+      { t: 'del', s: '-    const Schema* s = schemaFor(tok.version);' },
+      { t: 'add', s: '+    const Schema* s = schemaFor(tok.version);' },
+      { t: 'add', s: '+    if (!s) return reject(RejectReason::UnsupportedShard);' }
+    ],
+    code: [
+      '// ---------------------------------------------------------------------------',
+      '// Cross-region handshake for Wild Rift <-> PC queues.',
+      '// ---------------------------------------------------------------------------',
+      '',
+      'namespace {',
+      '    const SchemaTable kSchemas = { { 1, &kShardV1 }, { 2, &kShardV2 } };',
+      '}',
+      '',
+      'const Schema* ShardHandshake::schemaFor(int version)',
+      '{',
+      '    auto it = kSchemas.find(version);',
+      '    return it == kSchemas.end() ? nullptr : it->second;',
+      '}',
+      '',
+      'void ShardHandshake::onTokenReceived(const Payload& payload)',
+      '{',
+      '    ShardToken tok = ShardToken::parse(payload);',
+      '    m_lastToken = tok;',
+      '',
+      '    // Wild Rift shards started issuing v3 tokens in patch 26.03. This client',
+      '    // still only knows v1 and v2, and the miss is not handled below.',
+      '    const Schema* schema = schemaFor(tok.version);',
+      '',
+      '    ChampSelectSession::begin(schema->deserialize(payload),',
+      '                              tok.regionId);',
+      '}',
+      '',
+      'void ShardHandshake::onHandshakeTimeout()',
+      '{',
+      '    m_retries++;',
+      '    if (m_retries < kMaxRetries)',
+      '        return retry();',
+      '',
+      '    // Timeouts degrade gracefully; unsupported versions do not.',
+      '    reject(RejectReason::Timeout);',
+      '}',
+      '',
+      'void ShardHandshake::reject(RejectReason reason)',
+      '{',
+      '    Telemetry::count("matchmaking.shard.reject", reason);',
+      '    m_state = State::Idle;',
+      '    Client::showQueueError(reason);',
+      '}'
+    ]
+  },
+
+  '#BUG-1282198': {
+    repo: 'league-game-client',
+    branch: 'release/26.04',
+    path: ['src', 'Game', 'Champions', 'AurelionSol', 'AurelionSolQ.cpp'],
+    symbol: 'AurelionSolQ::onStackGained(int)',
+    tabs: ['AurelionSolQ.cpp', 'StackTracker.h'],
+    start: 84,
+    band: [88, 99],
+    error: 91,
+    warn: 98,
+    cursorLine: 91,
+    errCol: 5,
+    problems: [
+      { level: 'error', msg: 'Stack counter is written before the server confirms the kill credit.', where: 'AurelionSolQ.cpp [91, 5]' },
+      { level: 'warn', msg: 'Rollback path clears the HUD but not the tracker.', where: 'AurelionSolQ.cpp [98, 5]' }
+    ],
+    summary: 'Aurelion Sol Q stacks display ahead of the server',
+    ask: 'Stack count on the HUD runs ahead of the real value after a contested kill.',
+    chips: ['@AurelionSolQ.cpp', '#BUG-1282198'],
+    lead: 'Same family as the Yuumi ticket: local state committed before the ack.',
+    steps: [
+      '<code>onStackGained()</code> increments the tracker at line 91 on the client tick.',
+      'Kill credit is resolved server-side one tick later; a contested kill can revoke it.',
+      'The rollback at line 98 refreshes the HUD from a value that was already wrong.'
+    ],
+    tail: 'Route the increment through the same pending/ack path as the shield fix.',
+    diffFile: 'AurelionSolQ.cpp',
+    diff: [
+      { t: 'del', s: '-    m_tracker.add(1);' },
+      { t: 'add', s: '+    m_tracker.addPending(1, ctx.eventId);' }
+    ],
+    code: [
+      '// ---------------------------------------------------------------------------',
+      '// Q: Breath of Light — stacks scale with confirmed takedowns.',
+      '// ---------------------------------------------------------------------------',
+      '',
+      'void AurelionSolQ::onStackGained(int amount)',
+      '{',
+      '    // Optimistic: the HUD updates on the client tick that saw the kill.',
+      '    m_tracker.add(amount);',
+      '    Hud::setStacks(m_tracker.total());',
+      '}',
+      '',
+      'void AurelionSolQ::onKillCreditRevoked(EventId id)',
+      '{',
+      '    // Refreshes the HUD from the tracker, which still holds the bad value.',
+      '    Hud::setStacks(m_tracker.total());',
+      '}',
+      '',
+      'float AurelionSolQ::damage(int level) const',
+      '{',
+      '    return kQBase[level] + kQStackRatio * m_tracker.total();',
+      '}'
+    ]
+  },
+
+  '#BUG-1281740': {
+    repo: 'league-game-client',
+    branch: 'release/26.04',
+    path: ['src', 'World', 'BaronPit', 'NavOverlay.cpp'],
+    symbol: 'NavOverlay::rebuildPitMesh()',
+    tabs: ['NavOverlay.cpp', 'PitGeometry.h'],
+    start: 40,
+    band: [44, 58],
+    error: 47,
+    warn: 57,
+    cursorLine: 47,
+    errCol: 5,
+    problems: [
+      { level: 'error', msg: 'Pit mesh rebuild uses stale bounds after the 26.04 terrain pass.', where: 'NavOverlay.cpp [47, 5]' },
+      { level: 'warn', msg: 'Overlay clamps to the old wall height, leaving a walkable seam.', where: 'NavOverlay.cpp [57, 5]' }
+    ],
+    summary: 'Baron pit navigation seam after terrain pass',
+    ask: 'Players are walking through the Baron pit wall on the north seam since 26.04.',
+    chips: ['@NavOverlay.cpp', '#BUG-1281740'],
+    lead: 'The overlay is rebuilt from cached bounds that predate the terrain pass.',
+    steps: [
+      '<code>rebuildPitMesh()</code> reads <code>m_cachedBounds</code> at line 47 instead of the live geometry.',
+      'The 26.04 terrain pass moved the north wall, so the cache is one patch behind.',
+      'Clamping at line 57 hides the mismatch everywhere except the seam.'
+    ],
+    tail: 'Invalidate the cache on terrain version change.',
+    diffFile: 'NavOverlay.cpp',
+    diff: [
+      { t: 'del', s: '-    const Bounds b = m_cachedBounds;' },
+      { t: 'add', s: '+    const Bounds b = PitGeometry::current().bounds();' }
+    ],
+    code: [
+      '// ---------------------------------------------------------------------------',
+      '// Navigation overlay for the Baron pit.',
+      '// ---------------------------------------------------------------------------',
+      '',
+      'void NavOverlay::rebuildPitMesh()',
+      '{',
+      '    // Cached at map load; not invalidated when terrain data is repacked.',
+      '    const Bounds b = m_cachedBounds;',
+      '',
+      '    m_mesh = NavMesh::fromBounds(b, kPitResolution);',
+      '    m_mesh.markRegion(RegionId::BaronPit);',
+      '}',
+      '',
+      'void NavOverlay::clampToWalls()',
+      '{',
+      '    // Clamps against the pre-26.04 wall height, which papers over the',
+      '    // mismatch everywhere except the north seam.',
+      '    m_mesh.clampHeight(kLegacyWallHeight);',
+      '}',
+      '',
+      'bool NavOverlay::containsPoint(const Vec3& p) const',
+      '{',
+      '    return m_mesh.contains(p);',
+      '}'
+    ]
+  }
+};
+
+/* ---------- tiny C++ tokenizer, enough to read like Dark+ ---------- */
+const KEYWORDS = /^(void|bool|int|float|double|char|const|constexpr|namespace|struct|class|auto|nullptr|true|false|static|inline|using|template|typename|unsigned|size_t)$/;
+const CONTROL = /^(if|else|for|while|return|switch|case|break|continue|do|new|delete)$/;
+const TYPES = /^([A-Z][A-Za-z0-9_]*)$/;
+
+function esc(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function highlight(line) {
+  // whole-line comment or trailing comment
+  const cIdx = line.indexOf('//');
+  if (cIdx !== -1 && !/["']/.test(line.slice(0, cIdx))) {
+    return highlightCode(line.slice(0, cIdx)) +
+      '<span style="color:var(--tok-comment)">' + esc(line.slice(cIdx)) + '</span>';
+  }
+  return highlightCode(line);
+}
+
+function highlightCode(src) {
+  let out = '';
+  const re = /("(?:[^"\\]|\\.)*")|(\b\d+(?:\.\d+)?f?\b)|([A-Za-z_][A-Za-z0-9_]*)|(\s+)|([^\sA-Za-z0-9_"])/g;
+  let m;
+  while ((m = re.exec(src)) !== null) {
+    const [tok, str, num, word, ws, punct] = m;
+    if (str) { out += '<span style="color:var(--tok-str)">' + esc(str) + '</span>'; continue; }
+    if (num) { out += '<span style="color:var(--tok-num)">' + esc(num) + '</span>'; continue; }
+    if (ws) { out += ws; continue; }
+    if (punct) { out += '<span style="color:var(--tok-punct)">' + esc(punct) + '</span>'; continue; }
+    if (word) {
+      const after = src.slice(re.lastIndex);
+      let color;
+      if (CONTROL.test(word)) color = 'var(--tok-control)';
+      else if (KEYWORDS.test(word)) color = 'var(--tok-keyword)';
+      else if (/^\s*\(/.test(after)) color = 'var(--tok-fn)';
+      else if (TYPES.test(word)) color = 'var(--tok-type)';
+      else color = 'var(--tok-var)';
+      out += '<span style="color:' + color + '">' + esc(word) + '</span>';
+    }
+  }
+  return out;
+}
+
+/* ---------- icons ---------- */
+const I = {
+  files: '<path d="M3.5 2.5h5l2 2h5v9h-12z" fill="none" stroke="currentColor" stroke-width="1.2"/>',
+  search: '<circle cx="7.5" cy="7.5" r="4" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M10.5 10.5l3.5 3.5" stroke="currentColor" stroke-width="1.2"/>',
+  git: '<circle cx="5" cy="4" r="1.8" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="5" cy="12" r="1.8" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="12" cy="6" r="1.8" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M5 5.8v4.4M6.6 4.9h2.2A2 2 0 0 1 10.8 7v.6" fill="none" stroke="currentColor" stroke-width="1.2"/>',
+  debug: '<circle cx="8" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M8 2v2M8 12v2M2 8h2M12 8h2M4 4l1.4 1.4M12 12l-1.4-1.4M12 4l-1.4 1.4M4 12l1.4-1.4" stroke="currentColor" stroke-width="1.2"/>',
+  ext: '<rect x="2.5" y="2.5" width="5" height="5" fill="none" stroke="currentColor" stroke-width="1.2"/><rect x="8.5" y="2.5" width="5" height="5" fill="none" stroke="currentColor" stroke-width="1.2"/><rect x="2.5" y="8.5" width="5" height="5" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M11 8.5v5M8.5 11h5" stroke="currentColor" stroke-width="1.2"/>',
+  spark: '<path d="M8 2l1.5 4.5L14 8l-4.5 1.5L8 14l-1.5-4.5L2 8l4.5-1.5z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>',
+  gear: '<circle cx="8" cy="8" r="2.2" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M8 1.6v1.8M8 12.6v1.8M14.4 8h-1.8M3.4 8H1.6M12.5 3.5l-1.3 1.3M4.8 11.2l-1.3 1.3M12.5 12.5l-1.3-1.3M4.8 4.8L3.5 3.5" stroke="currentColor" stroke-width="1.2"/>',
+  chevD: '<path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>',
+  chevR: '<path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>',
+  cpp: '<circle cx="8" cy="8" r="5.6" fill="none" stroke="#9c6ade" stroke-width="1.3"/><path d="M10 6.4a2.6 2.6 0 1 0 0 3.2" fill="none" stroke="#9c6ade" stroke-width="1.3"/>',
+  hpp: '<circle cx="8" cy="8" r="5.6" fill="none" stroke="#4ec9b0" stroke-width="1.3"/><path d="M6.2 5.8v4.4M9.8 5.8v4.4M6.2 8h3.6" fill="none" stroke="#4ec9b0" stroke-width="1.3"/>',
+  x: '<path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>',
+  err: '<circle cx="7" cy="7" r="6" fill="none" stroke="#f14c4c" stroke-width="1.3"/><path d="M7 3.6v4M7 9.6v.8" stroke="#f14c4c" stroke-width="1.4" stroke-linecap="round"/>',
+  warn: '<path d="M7 1.6l6 10.8H1z" fill="none" stroke="#cca700" stroke-width="1.3" stroke-linejoin="round"/><path d="M7 5.4v3M7 10v.8" stroke="#cca700" stroke-width="1.4" stroke-linecap="round"/>',
+  ghost: '<path d="M8 1.6c3 0 5 2.2 5 5.2v7.6l-1.7-1.4-1.6 1.4-1.7-1.4-1.7 1.4-1.6-1.4L3 15.6V6.8c0-3 2-5.2 5-5.2z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><circle cx="6.3" cy="7" r=".9" fill="currentColor"/><circle cx="9.7" cy="7" r=".9" fill="currentColor"/>',
+  send: '<path d="M2.5 8h9M8 4.5L11.5 8 8 11.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>',
+  branch: '<circle cx="4" cy="3.5" r="1.4" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="4" cy="11" r="1.4" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="10.5" cy="5" r="1.4" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M4 5v4.6M5.3 4.2h2.4A2 2 0 0 1 9.6 6.2v.2" fill="none" stroke="currentColor" stroke-width="1.1"/>',
+  check: '<path d="M3 8.4l3 3 7-7" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>'
+};
+const svg = (k, size, cls) =>
+  '<svg width="' + (size || 16) + '" height="' + (size || 16) + '" viewBox="0 0 16 16" fill="none"' +
+  (cls ? ' class="' + cls + '"' : '') + '>' + I[k] + '</svg>';
+
+/* ---------- build the screen ---------- */
+const params = new URLSearchParams(location.search);
+const ticketId = decodeURIComponent(params.get('ticket') || '#BUG-1284719');
+const T = TICKETS[ticketId] || TICKETS['#BUG-1284719'];
+const fileName = T.path[T.path.length - 1];
+const dirPath = T.path.slice(0, -1);
+
+document.title = fileName + ' — Cursor';
+document.getElementById('bootCap').textContent = 'Opening ' + fileName + '…';
+document.getElementById('hoTicket').textContent = ticketId;
+document.getElementById('hoLines').textContent = 'lines ' + T.band[0] + '–' + T.band[1];
+
+function treeHtml() {
+  let h = '<div class="tree-root">' + svg('chevD', 14) + '<span>' + T.repo + '</span></div>';
+  // the folder chain down to the opened file
+  dirPath.forEach((seg, i) => {
+    h += '<div class="row is-open" style="padding-left:' + (8 + i * 12) + 'px">' +
+      '<span class="chev">' + svg('chevD', 14) + '</span><span>' + seg + '</span></div>';
+  });
+  const leafPad = 8 + dirPath.length * 12;
+  const siblings = [
+    { n: fileName, sel: true, ico: 'cpp', dirty: true },
+    { n: fileName.replace('.cpp', '.h'), ico: 'hpp' },
+    { n: 'AbilityState.cpp', ico: 'cpp' },
+    { n: 'AbilityState.h', ico: 'hpp' },
+    { n: 'ChampionController.cpp', ico: 'cpp' }
+  ];
+  siblings.forEach(s => {
+    h += '<div class="row' + (s.sel ? ' is-sel' : '') + (s.dirty && !s.sel ? ' is-dirty' : '') + '"' +
+      ' style="padding-left:' + leafPad + 'px">' +
+      '<span class="chev"></span><span class="fico">' + svg(s.ico, 14) + '</span><span>' + s.n + '</span>' +
+      (s.sel ? '<span class="badge">M</span>' : '') + '</div>';
+  });
+  // a couple of collapsed neighbours so the tree does not look staged
+  h += '<div class="row" style="padding-left:8px"><span class="chev">' + svg('chevR', 14) + '</span><span>tests</span></div>';
+  h += '<div class="row" style="padding-left:8px"><span class="chev">' + svg('chevR', 14) + '</span><span>tools</span></div>';
+  h += '<div class="row" style="padding-left:20px"><span class="chev"></span><span class="fico">' + svg('hpp', 14) + '</span><span>CMakeLists.txt</span></div>';
+  return h;
+}
+
+function codeHtml() {
+  const [b0, b1] = T.band;
+  let h = '';
+  T.code.forEach((line, i) => {
+    const n = T.start + i;
+    const cls = [
+      'ln-row',
+      n >= b0 && n <= b1 ? 'in-band' : '',
+      n === b0 ? 'band-top' : '',
+      n === b1 ? 'band-bot' : '',
+      n === T.error ? 'is-err' : '',
+      n === T.warn ? 'is-warn' : '',
+      n === T.cursorLine ? 'is-cursor' : ''
+    ].filter(Boolean).join(' ');
+
+    let src = highlight(line);
+    if (n === T.error) {
+      // underline the statement itself, not the indentation
+      const lead = line.match(/^\s*/)[0];
+      src = lead + '<span class="squiggle">' + highlight(line.slice(lead.length)) + '</span>';
+    }
+
+    // the inline lens sits just above the flagged function
+    if (n === b0 + 1) {
+      h += '<div class="lens">' +
+        '<span class="pill"><span class="dot"></span>Ghost AI · ' + ticketId + '</span>' +
+        '<span>' + T.summary + '</span>' +
+        '<span class="link">View report</span>' +
+        '</div>';
+    }
+
+    h += '<div class="' + cls + '" style="animation-delay:' + Math.min(i * 8, 420) + 'ms" data-line="' + n + '">' +
+      '<span class="gutter">' + n + '</span>' +
+      '<span class="src">' + (src || '&nbsp;') + '</span>' +
+      '</div>';
+  });
+  return h;
+}
+
+function minimapHtml() {
+  const [b0, b1] = T.band;
+  const rowH = 3;
+  let h = '';
+  T.code.forEach(line => {
+    const t = line.trim();
+    const cls = t.startsWith('//') ? 'c' : /^(void|bool|float|int|namespace|const)/.test(t) ? 'k' : '';
+    const w = Math.min(100, Math.max(6, line.length * 1.15));
+    h += '<div class="mm-line ' + cls + '" style="width:' + w + '%"></div>';
+  });
+  const top = 6 + (b0 - T.start) * rowH;
+  const height = (b1 - b0 + 1) * rowH;
+  h += '<div class="mm-band" style="top:' + top + 'px;height:' + height + 'px"></div>';
+  return h;
+}
+
+function problemsHtml() {
+  return T.problems.map(p =>
+    '<div class="prob">' +
+      '<span class="ico">' + svg(p.level === 'error' ? 'err' : 'warn', 14) + '</span>' +
+      '<span class="msg">' + p.msg + '</span>' +
+      '<span class="where">' + p.where + '</span>' +
+    '</div>'
+  ).join('');
+}
+
+function chatHtml() {
+  const chips = T.chips.map(c => '<span class="chip">' + c + '</span>').join('');
+  const steps = T.steps.map(s => '<li>' + s + '</li>').join('');
+  const diff = T.diff.map(d =>
+    '<div class="diff-line ' + (d.t === 'add' ? 'add' : d.t === 'del' ? 'del' : '') + '">' + esc(d.s) + '</div>'
+  ).join('');
+  return (
+    '<div class="msg-user">' +
+      '<div class="msg-from"><span class="ghost">' + svg('ghost', 13) + '</span>Handed off from Ghost AI · ' + ticketId + '</div>' +
+      '<div class="txt">' + T.ask + '</div>' +
+      '<div class="chips">' + chips + '</div>' +
+    '</div>' +
+    '<div class="msg-ai">' +
+      '<div class="msg-from">' + svg('spark', 13) + 'Cursor Agent</div>' +
+      '<div class="txt">' + T.lead + '</div>' +
+      '<ol class="steps">' + steps + '</ol>' +
+      '<div class="txt">' + T.tail + '</div>' +
+      '<div class="diff">' +
+        '<div class="diff-head">' + svg('cpp', 13) + T.diffFile + '<span style="margin-left:auto">' +
+          '+' + T.diff.filter(d => d.t === 'add').length + ' −' + T.diff.filter(d => d.t === 'del').length +
+        '</span></div>' +
+        '<div class="diff-body">' + diff + '</div>' +
+        '<div class="diff-foot">' +
+          '<button class="btn is-primary">' + svg('check', 12) + 'Apply</button>' +
+          '<button class="btn">Explain more</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>'
+  );
+}
+
+document.getElementById('ide').innerHTML =
+  '<div class="titlebar">' +
+    '<div class="lights"><button class="light r" id="closeBtn" title="Close"></button><span class="light y"></span><span class="light g"></span></div>' +
+    '<div class="tb-nav"><span>' + svg('chevR', 13) + '</span></div>' +
+    '<div class="tb-search">' + svg('search', 12) + fileName + ' — ' + T.repo + '</div>' +
+    '<div class="tb-right">' + svg('spark', 14) + svg('ext', 14) + '</div>' +
+  '</div>' +
+
+  '<div class="body">' +
+    '<div class="activity">' +
+      '<div class="act is-on">' + svg('files', 18) + '</div>' +
+      '<div class="act">' + svg('search', 18) + '</div>' +
+      '<div class="act">' + svg('git', 18) + '</div>' +
+      '<div class="act">' + svg('debug', 18) + '</div>' +
+      '<div class="act">' + svg('ext', 18) + '</div>' +
+      '<div class="act-spacer"></div>' +
+      '<div class="act">' + svg('gear', 18) + '</div>' +
+    '</div>' +
+
+    '<div class="sidebar">' +
+      '<div class="side-head"><span>Explorer</span><span>…</span></div>' +
+      '<div class="side-scroll">' + treeHtml() + '</div>' +
+    '</div>' +
+
+    '<div class="editor-col">' +
+      '<div class="tabs">' +
+        T.tabs.map((t, i) =>
+          '<div class="tab' + (i === 0 ? ' is-on' : '') + '">' +
+            svg(t.endsWith('.h') ? 'hpp' : 'cpp', 14) + t +
+            (i === 0 ? '<span class="x">●</span>' : '<span class="x">' + svg('x', 12) + '</span>') +
+          '</div>').join('') +
+        '<div class="tabs-fill"></div>' +
+      '</div>' +
+      '<div class="breadcrumb">' +
+        T.path.map(p => '<span>' + p + '</span>').join('<span class="sep">›</span>') +
+        '<span class="sep">›</span><span class="sym">' + T.symbol + '</span>' +
+      '</div>' +
+      '<div class="code-wrap">' +
+        '<div class="code-scroll" id="codeScroll">' + codeHtml() + '</div>' +
+        '<div class="minimap">' + minimapHtml() + '</div>' +
+      '</div>' +
+      '<div class="panel">' +
+        '<div class="panel-tabs">' +
+          '<span class="pt is-on">Problems<span class="count">' + T.problems.length + '</span></span>' +
+          '<span class="pt">Output</span>' +
+          '<span class="pt">Terminal</span>' +
+          '<span class="pt">Debug console</span>' +
+        '</div>' +
+        '<div class="panel-body">' + problemsHtml() + '</div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="chat">' +
+      '<div class="chat-head">' + svg('spark', 14) + '<span class="tag">Chat</span>' +
+        '<span class="right">' + svg('chevD', 13) + '</span>' +
+      '</div>' +
+      '<div class="chat-scroll">' + chatHtml() + '</div>' +
+      '<div class="chat-input">' +
+        '<div class="ph">Ask Cursor about ' + fileName + '…<span class="caret"></span></div>' +
+        '<div class="foot">' +
+          '<span class="model">Agent</span>' +
+          '<span class="model">Auto</span>' +
+          '<span class="send">' + svg('send', 13) + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="status">' +
+    '<span class="grp">' + svg('branch', 13) + T.branch + '</span>' +
+    '<span class="grp">' + svg('err', 12) + T.problems.filter(p => p.level === 'error').length +
+      ' &nbsp;' + svg('warn', 12) + T.problems.filter(p => p.level === 'warn').length + '</span>' +
+    '<span class="right">' +
+      '<span>Ln ' + T.cursorLine + ', Col ' + T.errCol + '</span>' +
+      '<span>Spaces: 4</span><span>UTF-8</span><span>C++</span>' +
+      '<span class="grp">' + svg('spark', 12) + 'Cursor Tab</span>' +
+    '</span>' +
+  '</div>';
+
+/* ---------- land on the flagged line, the way a real jump-to-line reads ---------- */
+const scroller = document.getElementById('codeScroll');
+requestAnimationFrame(() => {
+  const target = scroller.querySelector('[data-line="' + T.band[0] + '"]');
+  if (!target) return;
+  const y = target.offsetTop - 90;
+  scroller.scrollTop = Math.max(0, y - 120);
+  setTimeout(() => scroller.scrollTo({ top: Math.max(0, y), behavior: 'smooth' }), 780);
+});
+
+/* The lens pill and the chat header lead with a plain green dot. If the Ghost
+   mark is present on disk, swap it in — probing first means a missing file just
+   leaves the dot rather than flashing a broken image. */
+const GHOST_MARK = 'assets/ghost-track-2d.gif';
+(() => {
+  const probe = new Image();
+  probe.onload = () => {
+    document.querySelectorAll('.lens .dot, .handoff .dot').forEach(d => {
+      const img = document.createElement('img');
+      img.className = 'ghost-mark';
+      img.src = GHOST_MARK;
+      img.alt = '';
+      d.replaceWith(img);
+    });
+  };
+  probe.src = GHOST_MARK;
+})();
+
+/* Embedded in the Ghost AI shell, the shell paints its own "Back" chip along
+   the bottom edge — lift the hand-off toast so the two do not stack. */
+if (window.self !== window.top) {
+  const ho = document.getElementById('handoff');
+  ho.style.bottom = 'auto';
+  ho.style.top = '104px'; // just under the breadcrumb, clear of the Problems rows
+}
+
+/* The red traffic light quits Cursor. Normally this page is its own window, so
+   it closes itself; inside the fallback overlay it asks the shell to drop it. */
+function quitCursor() {
+  if (window.self !== window.top) {
+    try { window.parent.postMessage({ type: 'cursor-close' }, '*'); } catch (e) {}
+    return;
+  }
+  window.close();
+}
+document.getElementById('closeBtn').addEventListener('click', quitCursor);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') quitCursor();
+});
+</script>
+</body>
+</html>
