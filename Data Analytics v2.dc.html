@@ -2334,6 +2334,82 @@
     }
     @keyframes cursorExitIn { to { opacity: 1; } }
     .cursor-exit:hover { background: #1d1d1de6; border-color: #ffffff3d; }
+    /* ---- Impersonation view (Figma 359:22588) --------------------------------
+       No side panel here — you are standing in the player's session, so the game
+       fills the screen and the only chrome is the nameplate and the way out. */
+    .imp-view {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      box-sizing: border-box;
+      animation: impIn 260ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes impIn { from { opacity: 0; } }
+    .imp-stage {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #0b0b0b;
+    }
+    .imp-stage video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    /* Reads as an in-game nameplate rather than app UI, so it sits on the world
+       and not in a panel. */
+    .imp-nameplate {
+      position: absolute;
+      left: 50%;
+      top: 38%;
+      transform: translate(-50%, -50%);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      background: #1c1c1ce6;
+      border: 1px solid #ffffff2e;
+      box-shadow: 0 2px 12px #000000a6;
+      font: 500 13px/18px var(--font-body);
+      color: #fff;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .imp-nameplate .imp-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+    .imp-exit-row {
+      height: 28px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .imp-exit {
+      border: none;
+      background: none;
+      padding: 0;
+      font: 500 14px/28px var(--font-body);
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .imp-exit:hover { color: var(--accent-hover); }
   </style>
 </helmet>
 <div class="dash-shell {{ ghostShellClass }}" style="display:flex;height:100vh;height:100dvh;width:100%" data-screen-label="Data analytics">
@@ -2650,8 +2726,8 @@
                   <span class="td-role-badge">{{ tdRole }}</span>
                 </sc-if>
               </div>
-              <button type="button" onClick="{{ openRecording }}" class="td-imp-btn">{{ tdImpIcon }}Video recording</button>
-              <p class="td-imp-hint">Watch the session this player recorded.</p>
+              <button type="button" onClick="{{ startImpersonating }}" class="td-imp-btn">{{ tdImpIcon }}Impersonation mode</button>
+              <p class="td-imp-hint">Step into this session to reproduce it yourself.</p>
             </div>
             <div class="td-pills">
               <div class="td-pill-wrap">
@@ -3751,6 +3827,20 @@
         <iframe src="{{ cursorIdeSrc }}" title="Cursor — {{ cursorIdeFile }}"></iframe>
       </div>
       <button type="button" onClick="{{ closeCursorIde }}" class="cursor-exit">{{ cursorBackIcon }}Back to Ghost AI</button>
+    </div>
+  </sc-if>
+
+  <!-- Impersonation — Figma 359:22588. Standing in the player's session, so the
+       game takes the whole screen and the only chrome is the way back out. -->
+  <sc-if value="{{ showImpersonation }}" hint-placeholder-val="{{ false }}">
+    <div class="imp-view">
+      <div class="imp-stage">
+        <video class="imp-video" src="assets/League.mp4" autoplay muted loop playsinline></video>
+        <span class="imp-nameplate"><span class="imp-dot"></span>Developer (me)</span>
+      </div>
+      <div class="imp-exit-row">
+        <button type="button" onClick="{{ stopImpersonating }}" class="imp-exit">Stop Impersonating {{ impHandle }}</button>
+      </div>
     </div>
   </sc-if>
 </div>
@@ -5598,6 +5688,7 @@ class Component extends DCLogic {
     analyzedExpanded: false,
     playerLogExpanded: false,
     showCursorIde: false,
+    showImpersonation: false,
     cursorTicket: '',
     messageThreads: MESSAGE_THREADS_SEED.map(t => ({ ...t, messages: t.messages.map(m => ({ ...m })) })),
     selectedThreadId: MESSAGE_THREADS_SEED[0].id,
@@ -6978,10 +7069,20 @@ class Component extends DCLogic {
     this.setState({ detailTicket: null, showBugReport: false, tdPillMenu: null });
   };
 
-  // Opens the recorded session for this ticket. Named for the recording, not for
-  // impersonation — that is a separate view still to be designed.
+  // Opens the recorded session for this ticket — the clip with the Ghost AI panel
+  // beside it. Impersonation is the other door out of the ticket, below.
   openRecording = () => {
     this.setState({ showBugReport: true, analyzedExpanded: false, playerLogExpanded: false, tdPillMenu: null });
+  };
+
+  // Impersonation puts the developer inside the player's session, so it takes the
+  // whole screen with no panel — the ticket stays open underneath to return to.
+  startImpersonating = () => {
+    this.setState({ showImpersonation: true, tdPillMenu: null, ...FB_MENUS_CLOSED });
+  };
+
+  stopImpersonating = () => {
+    if (this.state.showImpersonation) this.setState({ showImpersonation: false });
   };
 
   // "Go to Code" hands the ticket to Cursor. The recording panel is written
@@ -7053,8 +7154,12 @@ class Component extends DCLogic {
     if (e && e.data && e.data.type === 'cursor-close') this.closeCursorIde();
   };
 
+  // Esc backs out of whichever full-screen view is on top. Cursor sits above the
+  // impersonation view, so it gets first refusal.
   handleCursorKeyDown = (e) => {
-    if (e.key === 'Escape' && this.state.showCursorIde) this.closeCursorIde();
+    if (e.key !== 'Escape') return;
+    if (this.state.showCursorIde) this.closeCursorIde();
+    else if (this.state.showImpersonation) this.stopImpersonating();
   };
 
   toggleTdPillMenu = (key) => () => {
@@ -8566,6 +8671,11 @@ class Component extends DCLogic {
       playerLogToggleLabel: this.state.playerLogExpanded ? 'Show less' : 'See all',
       toggleAnalyzed: () => this.setState(s => ({ analyzedExpanded: !s.analyzedExpanded })),
       // ---- Cursor hand-off ----
+      // ---- Impersonation view ----
+      showImpersonation: this.state.showImpersonation,
+      startImpersonating: this.startImpersonating,
+      stopImpersonating: this.stopImpersonating,
+      impHandle: '@' + (detailRow ? detailRow.reporter : 'Vandiril'),
       showCursorIde: this.state.showCursorIde,
       openCursorIde: this.openCursorIde,
       closeCursorIde: this.closeCursorIde,
