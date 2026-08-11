@@ -307,17 +307,17 @@
     .group-panel-close {
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
       width: 18px; height: 18px; border-radius: var(--radius-sm);
-      color: var(--text-tertiary); cursor: pointer;
+      color: var(--text-secondary); cursor: pointer;
     }
     .group-panel-close:hover { background: var(--bg-surface-2); color: var(--text-primary); }
     .group-panel-stamp {
-      font: 400 10px/1.4 var(--font-mono); letter-spacing: 0.05em; color: var(--text-tertiary);
+      font: 400 10px/1.4 var(--font-mono); letter-spacing: 0.05em; color: var(--text-secondary);
     }
     .group-panel-body { font: 400 12px/17px var(--font-alt); color: var(--text-secondary); }
     .group-panel-label {
       margin-top: 3px; padding-top: 9px; border-top: 1px solid var(--border-default);
       font: 400 10px/1.4 var(--font-mono); letter-spacing: 0.06em;
-      text-transform: uppercase; color: var(--text-tertiary);
+      text-transform: uppercase; color: var(--text-secondary);
     }
     .group-proposal {
       display: flex; flex-direction: column; gap: 6px; padding: 9px 10px;
@@ -328,7 +328,7 @@
     .group-proposal:hover { border-color: var(--border-strong); background: var(--bg-surface-raised); }
     .group-proposal-title { font: 500 12px/16px var(--font-body); color: var(--text-primary); }
     .group-proposal-meta { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
-    .group-proposal-status { font: 400 10px/1.4 var(--font-alt); color: var(--text-tertiary); }
+    .group-proposal-status { font: 400 10px/1.4 var(--font-alt); color: var(--text-secondary); }
     .group-proposal-flag {
       padding: 1px 5px; border-radius: var(--radius-sm);
       background: var(--accent-muted); color: var(--accent);
@@ -382,13 +382,13 @@
     .connections-drawer-title { font: 600 15px/20px var(--font-body); color: var(--text-primary); }
     .connections-drawer-close {
       display: flex; align-items: center; justify-content: center;
-      width: 26px; height: 26px; border-radius: var(--radius-sm); color: var(--text-tertiary); cursor: pointer;
+      width: 26px; height: 26px; border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer;
     }
     .connections-drawer-close:hover { background: var(--bg-surface-2); color: var(--text-primary); }
     .connections-drawer-body { flex: 1; min-height: 0; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 14px; }
     .connections-drawer-label {
       padding: 0 6px; font: 500 11px/1.4 var(--font-mono); letter-spacing: 0.06em;
-      text-transform: uppercase; color: var(--text-tertiary);
+      text-transform: uppercase; color: var(--text-secondary);
     }
     .connections-source-row {
       display: flex; align-items: center; gap: 10px; padding: 8px 6px; border-radius: var(--radius-sm);
@@ -409,6 +409,47 @@
       cursor: pointer; transition: border-color 140ms ease, color 140ms ease, background 140ms ease;
     }
     .connections-upload-btn:hover { border-color: var(--accent-border); color: var(--accent); background: var(--accent-muted); }
+    .connections-drawer.is-wide { width: min(360px, 100%); }
+    .canvas-note { cursor: pointer; }
+    /* ===== Canvas note detail drawer — stat breakdown for one card ===== */
+    .note-drawer-section { display: flex; flex-direction: column; gap: 8px; }
+    /* connections-drawer-label carries a 6px inset that matches the connections
+       drawer's own rows, but nothing else in this drawer is inset that way —
+       drop it here so every subheadline lines up with the content below it. */
+    .note-drawer-section > .connections-drawer-label { padding-left: 0; padding-right: 0; }
+    .note-drawer-explanation {
+      margin: 0; font: 400 13.5px/1.5 var(--font-alt); color: var(--text-secondary);
+    }
+    .note-drawer-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+    .note-drawer-badge {
+      padding: 3px 9px; border-radius: var(--radius-full); border: 1px solid var(--border-default);
+      font: 500 11px/1.4 var(--font-mono); color: var(--text-secondary); white-space: nowrap;
+    }
+    .note-drawer-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .note-drawer-stat {
+      display: flex; flex-direction: column; gap: 3px; padding: 10px; box-sizing: border-box;
+      border: 1px solid var(--border-default); border-radius: var(--radius-md); background: var(--bg-surface-2);
+    }
+    .note-drawer-stat-value { font: 600 18px/24px var(--font-body); color: var(--text-primary); }
+    .note-drawer-stat-label { font: 400 11px/1.3 var(--font-mono); color: var(--text-secondary); }
+    .note-drawer-bar-row { display: flex; align-items: center; gap: 8px; }
+    .note-drawer-bar-label { flex-shrink: 0; width: 56px; font: 400 12px/1.3 var(--font-body); color: var(--text-secondary); }
+    /* Same track/fill/radius/transition as the design system's Progress/Slider
+       components (_ds_bundle.js Progress) — fully rounded, not the 4px squared
+       bar this used before. */
+    /* Matches Figma's Progressbar component (node 456:23383) exactly: track
+       fill is --border, bar fill is --chart-1 — both map to tokens this app
+       already has (--border-default, --accent), not new colors. */
+    .note-drawer-bar-track { display: block; flex: 1; height: 8px; border-radius: var(--radius-full); background: var(--border-default); overflow: hidden; }
+    /* Both are <span> tags, and an inline element ignores width/height entirely —
+       the fill's width:NN% was silently a no-op without this. */
+    .note-drawer-bar-fill { display: block; height: 100%; border-radius: var(--radius-full); transition: width 200ms ease; }
+    .note-drawer-bar-value { flex-shrink: 0; width: 34px; text-align: right; font: 400 12px/1.3 var(--font-mono); color: var(--text-secondary); }
+    .note-drawer-table { display: flex; flex-direction: column; border: 1px solid var(--border-default); border-radius: var(--radius-md); overflow: hidden; }
+    .note-drawer-table-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font: 400 13px/1.4 var(--font-body); }
+    .note-drawer-table-row + .note-drawer-table-row { border-top: 1px solid var(--border-default); }
+    .note-drawer-table-name { color: var(--text-primary); }
+    .note-drawer-table-count { color: var(--text-secondary); font-family: var(--font-mono); }
     /* ===== Feedback Analysis — Action Board (Figma 272:23170) =====
        Cards sit flush with the panel and are drawn by their border, the way the
        reference does it; only the raised states (hover, AI rank 1) lift a step. */
@@ -1409,6 +1450,20 @@
       flex-wrap: wrap;
       min-width: 0;
     }
+    .td-back-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-md, 8px);
+      border: none;
+      background: transparent;
+      color: var(--td-secondary-fg);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .td-back-btn:hover { background: var(--td-chip); color: var(--td-fg); }
     .td-subject {
       font: 500 24px/32px var(--font-body);
       letter-spacing: 0;
@@ -2631,7 +2686,7 @@
             </div>
             <span style="font:400 14px/20px var(--font-body);color:#fff">Player cast Yuumi's passive shield and was interrupted mid-cast. The shield applied on the client but never registered server-side, so the ally took full damage through a shield that was visibly on them.</span>
             <div style="display:flex;align-items:flex-end;gap:8px">
-              <img src="assets/bug-report/clip-thumb.png" alt="Clip thumbnail" style="width:42px;height:42px;border-radius:6px;object-fit:cover;flex-shrink:0">
+              <video src="assets/League.mp4" autoplay muted loop playsinline style="width:42px;height:42px;border-radius:6px;object-fit:cover;flex-shrink:0"></video>
               <span style="font:400 12px/16.2px var(--font-mono,ui-monospace,monospace);color:var(--text-secondary)">0:15</span>
             </div>
             <span style="font:400 14px/20px var(--font-body);color:var(--text-secondary);text-decoration:underline;cursor:pointer">See more details</span>
@@ -2839,6 +2894,7 @@
       <sc-if value="{{ showTicketDetail }}" hint-placeholder-val="{{ false }}">
       <div class="td-page">
         <div class="td-title-row">
+          <button type="button" onClick="{{ backToReport }}" class="td-back-btn" aria-label="Back to Player Report" title="Back to Player Report">{{ tdBackIcon }}</button>
           <span class="td-subject">{{ tdSubject }}</span>
           <div class="td-title-tags">
             <sc-for list="{{ tdTags }}" as="t" hint-placeholder-count="2">
@@ -2861,7 +2917,7 @@
               </div>
               <sc-if value="{{ tdHasClip }}" hint-placeholder-val="{{ true }}">
                 <button type="button" onClick="{{ openRecording }}" class="td-clip" aria-label="Replay the recorded session">
-                  <video src="assets/10second.mp4" autoplay muted loop playsinline></video>
+                  <video src="assets/League.mp4" autoplay muted loop playsinline></video>
                   <span class="td-clip-scrim"></span>
                   <span class="td-clip-play">{{ tdPlayIcon }}</span>
                   <span class="td-clip-foot">
@@ -3287,7 +3343,7 @@
 
       <sc-if value="{{ showTaskCanvas }}" hint-placeholder-val="{{ false }}">
         <div style="display:flex;align-items:stretch;height:calc(100vh - 150px);min-height:520px;box-sizing:border-box">
-          <div data-canvas-container="" ref="{{ canvasContainerRef }}" class="task-canvas-shell" style="flex:1;min-width:0;border-radius:18px;display:flex;flex-direction:column;position:relative;overflow:hidden">
+          <div data-canvas-container="" ref="{{ canvasContainerRef }}" onMouseDownCapture="{{ closeCanvasDrawersOnOutsideClick }}" class="task-canvas-shell" style="flex:1;min-width:0;border-radius:18px;display:flex;flex-direction:column;position:relative;overflow:hidden">
 
             <div style="flex-shrink:0;display:flex;flex-direction:column;gap:10px;padding:16px 18px 14px">
               <sc-if value="{{ isCanvasView }}" hint-placeholder-val="{{ true }}">
@@ -3316,54 +3372,51 @@
                     </div>
                   </sc-if>
                 </div>
+                <div style="position:relative;flex-shrink:0;margin-left:auto">
+                  <button type="button" onClick="{{ toggleConfidenceMenu }}" title="Minimum confidence score to auto-group" aria-label="Confidence score" style="display:flex;align-items:center;gap:6px;height:36px;padding:0 11px;border:1px solid var(--border-default);border-radius:var(--radius-full);background:var(--bg-surface);color:var(--text-primary);font:500 13px/1 var(--font-body);cursor:pointer;white-space:nowrap;justify-content:center"><span style="display:flex;color:var(--accent)">{{ taskSparkleIcon }}</span>{{ confidenceLabel }}</button>
+                  <sc-if value="{{ confidenceMenuOpen }}" hint-placeholder-val="{{ false }}">
+                    <div onMouseDown="{{ stopProp }}" style="position:absolute;top:42px;right:0;z-index:25;width:250px;padding:12px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface);box-shadow:var(--shadow-lg,0 20px 40px rgba(0,0,0,0.4))">
+                      <div style="font:var(--text-body-sm);color:var(--text-secondary);margin-bottom:10px">Confidence score</div>
+                      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                        <input type="range" min="{{ confidenceMin }}" max="{{ confidenceMax }}" step="1" value="{{ confidenceValue }}" onChange="{{ setConfidence }}" aria-label="Confidence score" style="flex:1;min-width:0;accent-color:var(--accent);cursor:pointer">
+                        <span style="display:flex;align-items:center;gap:1px;flex-shrink:0">
+                          <input ref="{{ confInputRef }}" type="text" inputmode="numeric" maxlength="2" value="{{ confidenceText }}" onChange="{{ setConfidenceText }}" onKeyDown="{{ confidenceKeyDown }}" aria-label="Confidence score value" class="conf-input" style="width:28px;padding:2px 3px;border-radius:var(--radius-sm);background:transparent;color:var(--text-primary);font:500 14px/1 var(--font-body);font-variant-numeric:tabular-nums;text-align:right;outline:none">
+                          <span style="font:500 14px/1 var(--font-body);color:var(--text-primary)">%</span>
+                        </span>
+                      </div>
+                      <div style="display:flex;align-items:center;justify-content:space-between;padding-top:9px;border-top:1px solid var(--border-default)">
+                        <span style="font:var(--text-caption);color:var(--text-tertiary)">Would group</span>
+                        <span style="font:var(--text-caption);color:var(--accent)">{{ confidenceMatchLabel }}</span>
+                      </div>
+                      <div style="display:flex;gap:3px;margin-top:9px">
+                        <sc-for list="{{ confidenceTicks }}" as="t" hint-placeholder-count="8">
+                          <span title="{{ t.title }}" style="flex:1;height:4px;border-radius:2px;background:{{ t.bg }}"></span>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ showConfidenceDelta }}" hint-placeholder-val="{{ false }}">
+                    <div onMouseDown="{{ stopPropagation }}" class="conf-delta">
+                      <span class="conf-delta-head">{{ confidenceDeltaFrom }} → {{ confidenceDeltaTo }}</span>
+                      <sc-if value="{{ hasConfidenceAdded }}" hint-placeholder-val="{{ true }}">
+                        <span class="conf-delta-label is-add">{{ confidenceAddedLabel }}</span>
+                        <sc-for list="{{ confidenceAdded }}" as="d" hint-placeholder-count="2">
+                          <div class="conf-delta-row"><span class="conf-delta-sign is-add">+</span><span class="conf-delta-title">{{ d.title }}</span><span class="conf-delta-conf">{{ d.conf }}</span></div>
+                        </sc-for>
+                      </sc-if>
+                      <sc-if value="{{ hasConfidenceRemoved }}" hint-placeholder-val="{{ false }}">
+                        <span class="conf-delta-label is-drop">{{ confidenceRemovedLabel }}</span>
+                        <sc-for list="{{ confidenceRemoved }}" as="d" hint-placeholder-count="2">
+                          <div class="conf-delta-row"><span class="conf-delta-sign is-drop">−</span><span class="conf-delta-title">{{ d.title }}</span><span class="conf-delta-conf">{{ d.conf }}</span></div>
+                        </sc-for>
+                      </sc-if>
+                      <span class="conf-delta-foot">Work already under way is never dropped.</span>
+                    </div>
+                  </sc-if>
+                </div>
               </div>
               </sc-if>
             </div>
-
-            <sc-if value="{{ isCanvasView }}" hint-placeholder-val="{{ true }}">
-            <div style="position:absolute;top:16px;right:18px;z-index:15">
-              <button type="button" onClick="{{ toggleConfidenceMenu }}" title="Minimum confidence score to auto-group" aria-label="Confidence score" style="display:flex;align-items:center;gap:6px;height:36px;padding:0 11px;border:1px solid var(--border-default);border-radius:var(--radius-full);background:var(--bg-surface);color:var(--text-primary);font:500 13px/1 var(--font-body);cursor:pointer;white-space:nowrap;justify-content:center"><span style="display:flex;color:var(--accent)">{{ taskSparkleIcon }}</span>{{ confidenceLabel }}</button>
-              <sc-if value="{{ confidenceMenuOpen }}" hint-placeholder-val="{{ false }}">
-                <div onMouseDown="{{ stopProp }}" style="position:absolute;top:42px;right:0;z-index:25;width:250px;padding:12px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface);box-shadow:var(--shadow-lg,0 20px 40px rgba(0,0,0,0.4))">
-                  <div style="font:var(--text-body-sm);color:var(--text-secondary);margin-bottom:10px">Confidence score</div>
-                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                    <input type="range" min="{{ confidenceMin }}" max="{{ confidenceMax }}" step="1" value="{{ confidenceValue }}" onChange="{{ setConfidence }}" aria-label="Confidence score" style="flex:1;min-width:0;accent-color:var(--accent);cursor:pointer">
-                    <span style="display:flex;align-items:center;gap:1px;flex-shrink:0">
-                      <input ref="{{ confInputRef }}" type="text" inputmode="numeric" maxlength="2" value="{{ confidenceText }}" onChange="{{ setConfidenceText }}" onKeyDown="{{ confidenceKeyDown }}" aria-label="Confidence score value" class="conf-input" style="width:28px;padding:2px 3px;border-radius:var(--radius-sm);background:transparent;color:var(--text-primary);font:500 14px/1 var(--font-body);font-variant-numeric:tabular-nums;text-align:right;outline:none">
-                      <span style="font:500 14px/1 var(--font-body);color:var(--text-primary)">%</span>
-                    </span>
-                  </div>
-                  <div style="display:flex;align-items:center;justify-content:space-between;padding-top:9px;border-top:1px solid var(--border-default)">
-                    <span style="font:var(--text-caption);color:var(--text-tertiary)">Would group</span>
-                    <span style="font:var(--text-caption);color:var(--accent)">{{ confidenceMatchLabel }}</span>
-                  </div>
-                  <div style="display:flex;gap:3px;margin-top:9px">
-                    <sc-for list="{{ confidenceTicks }}" as="t" hint-placeholder-count="8">
-                      <span title="{{ t.title }}" style="flex:1;height:4px;border-radius:2px;background:{{ t.bg }}"></span>
-                    </sc-for>
-                  </div>
-                </div>
-              </sc-if>
-              <sc-if value="{{ showConfidenceDelta }}" hint-placeholder-val="{{ false }}">
-                <div onMouseDown="{{ stopPropagation }}" class="conf-delta">
-                  <span class="conf-delta-head">{{ confidenceDeltaFrom }} → {{ confidenceDeltaTo }}</span>
-                  <sc-if value="{{ hasConfidenceAdded }}" hint-placeholder-val="{{ true }}">
-                    <span class="conf-delta-label is-add">{{ confidenceAddedLabel }}</span>
-                    <sc-for list="{{ confidenceAdded }}" as="d" hint-placeholder-count="2">
-                      <div class="conf-delta-row"><span class="conf-delta-sign is-add">+</span><span class="conf-delta-title">{{ d.title }}</span><span class="conf-delta-conf">{{ d.conf }}</span></div>
-                    </sc-for>
-                  </sc-if>
-                  <sc-if value="{{ hasConfidenceRemoved }}" hint-placeholder-val="{{ false }}">
-                    <span class="conf-delta-label is-drop">{{ confidenceRemovedLabel }}</span>
-                    <sc-for list="{{ confidenceRemoved }}" as="d" hint-placeholder-count="2">
-                      <div class="conf-delta-row"><span class="conf-delta-sign is-drop">−</span><span class="conf-delta-title">{{ d.title }}</span><span class="conf-delta-conf">{{ d.conf }}</span></div>
-                    </sc-for>
-                  </sc-if>
-                  <span class="conf-delta-foot">Work already under way is never dropped.</span>
-                </div>
-              </sc-if>
-            </div>
-            </sc-if>
 
             <sc-if value="{{ isCanvasView }}" hint-placeholder-val="{{ true }}">
             <div ref="{{ viewportRef }}" onMouseDown="{{ startPan }}" onContextMenu="{{ onCanvasContextMenu }}" class="task-canvas-viewport" style="flex:1;min-height:0;position:relative;overflow:hidden;cursor:{{ viewportCursor }};background-size:{{ gridSize }};background-position:{{ gridPos }}">
@@ -3434,7 +3487,7 @@
                 </sc-if>
 
                 <sc-for list="{{ notesView }}" as="n" hint-placeholder-count="22">
-                  <div onMouseDown="{{ n.onMouseDown }}" onContextMenu="{{ n.onContextMenu }}" class="canvas-note" style="position:absolute;left:{{ n.left }};top:{{ n.top }};width:190px;height:110px;padding:14px;border-radius:10px;background:{{ n.bg }};border:1px solid var(--border-default);box-shadow:{{ n.shadow }};opacity:{{ n.opacity }};pointer-events:{{ n.pointerEvents }};box-sizing:border-box;overflow:hidden">
+                  <div onMouseDown="{{ n.onMouseDown }}" onContextMenu="{{ n.onContextMenu }}" onClick="{{ n.onClick }}" class="canvas-note" style="position:absolute;left:{{ n.left }};top:{{ n.top }};width:190px;height:110px;padding:14px;border-radius:10px;background:{{ n.bg }};border:1px solid var(--border-default);box-shadow:{{ n.shadow }};opacity:{{ n.opacity }};pointer-events:{{ n.pointerEvents }};box-sizing:border-box;overflow:hidden">
                     <div style="font:600 12.5px/17px var(--font-body);color:var(--text-primary);margin-bottom:6px">{{ n.title }}</div>
                     <div style="font:400 12px/16px var(--font-body);color:var(--text-secondary)">{{ n.body }}</div>
                   </div>
@@ -3516,6 +3569,57 @@
                   <input ref="{{ canvasUploadInputRef }}" type="file" onChange="{{ uploadCanvasFile }}" style="display:none">
                   <button type="button" onClick="{{ triggerCanvasUpload }}" class="connections-upload-btn">{{ canvasUploadIcon }}Upload a data file</button>
                 </div>
+              </div>
+            </div>
+
+            <!-- ===== Canvas note detail drawer — click any card for its stat breakdown ===== -->
+            <div class="{{ noteDetailDrawerClass }}">
+              <div class="connections-drawer-head">
+                <span class="connections-drawer-title">{{ noteDetailTitle }}</span>
+                <span onClick="{{ closeNoteDetail }}" class="connections-drawer-close" role="button" aria-label="Close">{{ taskCloseIcon }}</span>
+              </div>
+              <div class="connections-drawer-body">
+                <div class="note-drawer-badges">
+                  <span class="note-drawer-badge">{{ noteDetailTopicLabel }}</span>
+                </div>
+                <p class="note-drawer-explanation">{{ noteDetailExplanation }}</p>
+                <sc-if value="{{ noteDetailShowChart }}" hint-placeholder-val="{{ true }}">
+                  <div class="note-drawer-section">
+                    <span class="connections-drawer-label">{{ noteDetailChartLabel }}</span>
+                    {{ noteDetailChart }}
+                  </div>
+                </sc-if>
+                <div class="note-drawer-stats">
+                  <sc-for list="{{ noteDetailStatTiles }}" as="st" hint-placeholder-count="3">
+                    <div class="note-drawer-stat">
+                      <span class="note-drawer-stat-value">{{ st.value }}</span>
+                      <span class="note-drawer-stat-label">{{ st.label }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div class="note-drawer-section">
+                  <span class="connections-drawer-label">{{ noteDetailBarsLabel }}</span>
+                  <sc-for list="{{ noteDetailBars }}" as="b" hint-placeholder-count="3">
+                    <div class="note-drawer-bar-row">
+                      <span class="note-drawer-bar-label">{{ b.label }}</span>
+                      <span class="note-drawer-bar-track"><span class="note-drawer-bar-fill" style="width:{{ b.widthPct }};background:{{ b.color }}"></span></span>
+                      <span class="note-drawer-bar-value">{{ b.valueLabel }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ noteDetailShowTable }}" hint-placeholder-val="{{ true }}">
+                  <div class="note-drawer-section">
+                    <span class="connections-drawer-label">By channel</span>
+                    <div class="note-drawer-table">
+                      <sc-for list="{{ noteDetailTable }}" as="row" hint-placeholder-count="4">
+                        <div class="note-drawer-table-row">
+                          <span class="note-drawer-table-name">{{ row.name }}</span>
+                          <span class="note-drawer-table-count">{{ row.count }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-if>
               </div>
             </div>
 
@@ -5880,6 +5984,230 @@ function sparkline(color) {
   );
 }
 
+// ===== Canvas note detail drawer — per-card stat breakdown =====
+// There's no real per-signal dataset behind a canvas note, so the breakdown
+// is generated from a seed built out of the note's own id/title. Same note,
+// same numbers, every time it's opened — not re-randomized per render.
+function seedFromString(str) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function mulberry32(seed) {
+  let a = seed;
+  return function () {
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+// What each card title actually means, so the drawer can explain the data
+// point instead of just repeating the card's own text back at the reader.
+const NOTE_TITLE_EXPLAINERS = {
+  'Volume': 'How many posts or reports are driving this theme.',
+  'Sentiment': 'The share of feedback on this theme reading positive versus negative.',
+  'Top quote': 'A representative quote pulled directly from the feedback.',
+  'Correlation': "What this pattern of complaints actually tracks back to, rather than what players assume.",
+  'Behavior': 'How real play behavior shifted alongside the feedback.',
+  'Accessibility': 'How this theme affects players relying on accessibility features.',
+  'Named element': 'The specific element players call out most often.',
+  'Loudest name': "Who — or what — gets named most often in this theme's feedback.",
+  'Data check': 'Whether the telemetry backs up what players are reporting.',
+  'Overall read': 'The general verdict players are landing on for this theme.',
+  'Counterpoint': 'A dissenting view that complicates the main read on this theme.',
+  'Top ask': 'The specific change players are asking for most.',
+  'Still broken': "An issue players say hasn't been fixed yet.",
+  'Top complaint': 'The single most common complaint in this theme.',
+  'Task time': 'How long a specific in-game action is taking.',
+  'Theme': 'The throughline connecting this group of feedback.',
+  'Creator take': 'How content creators are framing this theme.',
+  'Most praised': "What's getting the most positive callouts.",
+  'Caveat': 'A qualifier that tempers an otherwise positive read.',
+  'Top positive': 'The most-praised change in this theme.',
+  'Who is hit': 'Which players are actually affected by this issue.',
+  'Regions': 'Where this feedback is concentrated geographically.',
+  'Where': 'Where this issue is concentrated.',
+  'Confusion': "What's confusing players about this theme.",
+  'Carry-over': 'A prior ask that shipped in this patch.',
+  'Who is loudest': "Which player group is driving this theme's volume."
+};
+function buildNoteExplanation(note, topicLabel) {
+  const what = NOTE_TITLE_EXPLAINERS[note.title] || 'Context behind this signal.';
+  const theme = topicLabel ? topicLabel.split(' — ')[0] : 'this theme';
+  // No single-channel attribution here — see "By channel" below, this signal
+  // is rolled up across several sources, not just the one it was first spotted on.
+  return what + ' Feeding the "' + theme + '" theme: "' + note.body + '"';
+}
+const NOTE_DETAIL_CHANNELS = ['Reddit', 'Discord', 'Official Forums', 'Support Tickets', 'YouTube', 'In-Game Survey'];
+function buildNoteDetail(note) {
+  const rand = mulberry32(seedFromString(note.id + '|' + note.title));
+  const days = 14;
+  let level = 30 + rand() * 70;
+  // day/label/value matches what CanvasAreaChart (the dashboard's own chart)
+  // expects, so the trend below is that same chart, not a decorative lookalike.
+  const series = [];
+  for (let i = 0; i < days; i++) {
+    level = Math.max(3, level + (rand() - 0.46) * 20);
+    series.push({ day: i + 1, label: 'Day ' + (i + 1), value: Math.round(level) });
+  }
+  const total = series.reduce((a, b) => a + b.value, 0);
+  const change = Math.round(((series[days - 1].value - series[0].value) / Math.max(series[0].value, 1)) * 100);
+  const confidence = Math.round(58 + rand() * 40);
+  const neg = Math.round(38 + rand() * 45);
+  const pos = Math.round(rand() * (100 - neg) * 0.6);
+  const neu = Math.max(0, 100 - neg - pos);
+  const channels = NOTE_DETAIL_CHANNELS
+    .map(name => ({ name, sortKey: rand() }))
+    .sort((a, b) => b.sortKey - a.sortKey)
+    .slice(0, 4)
+    .map(c => ({ name: c.name, count: Math.round(30 + rand() * 900) }))
+    .sort((a, b) => b.count - a.count);
+  return { series, total, change, confidence, pos, neu, neg, channels };
+}
+// Some card titles carry a real number in their own body text — a duration,
+// a percentage, a shipped-ratio — that says more than a generic mentions
+// count ever could. These parse that number back out of the body so the
+// drawer can lead with it instead.
+function parsePercentFromBody(body) {
+  // Two alternatives rather than one shared \b: "%" is itself non-word, so a
+  // trailing \b right after it never matches (no word/non-word transition).
+  const m = body.match(/(\d+)%/) || body.match(/(\d+)\s*points?\b/i);
+  if (!m) return null;
+  const value = parseInt(m[1], 10);
+  const isDown = /\bdown\b/i.test(body);
+  const isUp = /\bup\b/i.test(body);
+  return { value, isChange: isDown || isUp, signed: isDown ? -value : value };
+}
+function parseLeadingCountFromBody(body) {
+  const m = body.match(/^([\d,]+)/);
+  if (!m) return null;
+  if (body[m[0].length] === '%') return null; // a leading percent, not a count
+  return parseInt(m[1].replace(/,/g, ''), 10);
+}
+function parseRatioFromBody(body) {
+  const m = body.match(/(\d+)\s+of\s+(?:the\s+)?(?:top\s+)?(\d+)/i);
+  return m ? { num: parseInt(m[1], 10), den: parseInt(m[2], 10) } : null;
+}
+// "Buying an item takes 4.8s, up from 2.9s on 26.02" states the CURRENT value
+// first and the previous one after "from" — the reverse of reading order, so
+// a plain first-number/last-number split gets current and previous backwards.
+function parseTimeChangeFromBody(body) {
+  const matches = [...body.matchAll(/(\d+(?:\.\d+)?)s\b/g)];
+  if (!matches.length) return { current: null, previous: null };
+  if (matches.length === 1) return { current: parseFloat(matches[0][1]), previous: null };
+  const fromIdx = body.search(/\bfrom\b/i);
+  if (fromIdx === -1) return { current: parseFloat(matches[0][1]), previous: parseFloat(matches[1][1]) };
+  const before = matches.filter(m => m.index < fromIdx);
+  const after = matches.filter(m => m.index >= fromIdx);
+  return {
+    current: parseFloat((before[0] || matches[0])[1]),
+    previous: parseFloat((after[0] || matches[1])[1])
+  };
+}
+// Titles whose body text is fundamentally a different kind of number than
+// "how many people said this" — a measured percentage/change, or a duration —
+// get their own stat layout instead of the generic mentions/trend/confidence one.
+const NOTE_METRIC_PROFILE = {
+  'Sentiment': 'percent', 'Data check': 'percent', 'Overall read': 'percent',
+  'Loudest name': 'percent', 'Who is hit': 'percent', 'Behavior': 'percent',
+  'Task time': 'duration'
+};
+// Figma's Progressbar (node 456:23383) fills every bar with the same accent
+// green regardless of what it measures — the row label carries the meaning
+// (Negative/Neutral/Positive), not the fill color.
+const SENTIMENT_BAR_SPEC = [
+  { key: 'neg', label: 'Negative', color: 'var(--accent)' },
+  { key: 'neu', label: 'Neutral', color: 'var(--accent)' },
+  { key: 'pos', label: 'Positive', color: 'var(--accent)' }
+];
+function sentimentBars(neg, neu, pos) {
+  return SENTIMENT_BAR_SPEC.map(spec => {
+    const value = spec.key === 'neg' ? neg : spec.key === 'neu' ? neu : pos;
+    return { key: spec.key, label: spec.label, color: spec.color, value, valueLabel: value + '%' };
+  });
+}
+// Assembles what the drawer actually shows: which stat tiles, whether the
+// trend chart and channel table make sense at all for this title, and what
+// the "bars" section underneath the quote represents.
+function buildNoteDisplay(note, detail) {
+  const profile = NOTE_METRIC_PROFILE[note.title] || 'volume';
+
+  if (profile === 'duration') {
+    const { current: curr, previous: prev } = parseTimeChangeFromBody(note.body);
+    const pctChange = (prev != null && curr != null) ? Math.round(((curr - prev) / prev) * 100) : null;
+    const maxSec = Math.max(prev || 0, curr || 0, 0.1);
+    return {
+      stats: [
+        { key: 'curr', value: curr != null ? curr.toFixed(1) + 's' : '—', label: 'CURRENT TIME' },
+        { key: 'prev', value: prev != null ? prev.toFixed(1) + 's' : '—', label: 'PREVIOUS PATCH' },
+        { key: 'chg', value: pctChange != null ? (pctChange > 0 ? '+' : '') + pctChange + '%' : '—', label: 'CHANGE' }
+      ],
+      showChart: false, chartLabel: '', showTable: false,
+      barsLabel: 'Then vs. now',
+      bars: [
+        { key: 'prev', label: '26.02', color: 'var(--text-tertiary)',
+          value: prev != null ? Math.round((prev / maxSec) * 100) : 0, valueLabel: prev != null ? prev.toFixed(1) + 's' : '—' },
+        { key: 'curr', label: '26.03', color: 'var(--danger)',
+          value: curr != null ? Math.round((curr / maxSec) * 100) : 0, valueLabel: curr != null ? curr.toFixed(1) + 's' : '—' }
+      ]
+    };
+  }
+
+  if (profile === 'percent') {
+    const parsed = parsePercentFromBody(note.body);
+    const label = parsed && parsed.isChange ? 'MEASURED CHANGE' : 'SHARE OF FEEDBACK';
+    const primaryValue = !parsed ? '—' : parsed.isChange ? (parsed.signed > 0 ? '+' : '') + parsed.signed + '%' : parsed.value + '%';
+    let neg = detail.neg, neu = detail.neu, pos = detail.pos;
+    if (parsed && !parsed.isChange) {
+      const lower = note.body.toLowerCase();
+      if (lower.indexOf('negative') !== -1 || lower.indexOf('worse') !== -1) {
+        neg = parsed.value; pos = Math.round((100 - neg) * 0.4); neu = Math.max(0, 100 - neg - pos);
+      } else if (lower.indexOf('positive') !== -1 || lower.indexOf('right') !== -1) {
+        pos = parsed.value; neg = Math.round((100 - pos) * 0.3); neu = Math.max(0, 100 - neg - pos);
+      }
+    }
+    return {
+      stats: [
+        { key: 'pct', value: primaryValue, label },
+        { key: 'change', value: (detail.change > 0 ? '+' : '') + detail.change + '%', label: '14-DAY CHANGE' },
+        { key: 'confidence', value: detail.confidence + '%', label: 'CONFIDENCE' }
+      ],
+      showChart: true, chartLabel: 'Feedback volume per day', showTable: true,
+      barsLabel: 'Sentiment split',
+      bars: sentimentBars(neg, neu, pos)
+    };
+  }
+
+  // Default "volume" profile — Top quote and every purely qualitative title
+  // fall here too, since a raw mentions count is still an honest fallback for
+  // "how much is this specific observation being echoed."
+  const ratio = parseRatioFromBody(note.body);
+  if (ratio) {
+    const pct = Math.round((ratio.num / ratio.den) * 100);
+    return {
+      stats: [
+        { key: 'ratio', value: ratio.num + ' of ' + ratio.den, label: 'SHIPPED' },
+        { key: 'pct', value: pct + '%', label: 'COMPLETION' },
+        { key: 'confidence', value: detail.confidence + '%', label: 'CONFIDENCE' }
+      ],
+      showChart: true, chartLabel: 'Mentions per day', showTable: true,
+      barsLabel: 'Sentiment split', bars: sentimentBars(detail.neg, detail.neu, detail.pos)
+    };
+  }
+  const count = parseLeadingCountFromBody(note.body);
+  return {
+    stats: [
+      { key: 'total', value: count != null ? count.toLocaleString() : detail.total.toLocaleString(),
+        label: count != null ? 'REPORTED VOLUME' : 'MENTIONS (14D)' },
+      { key: 'change', value: (detail.change > 0 ? '+' : '') + detail.change + '%', label: '14-DAY CHANGE' },
+      { key: 'confidence', value: detail.confidence + '%', label: 'CONFIDENCE' }
+    ],
+    showChart: true, chartLabel: note.title === 'Top quote' ? 'Similar quotes per day' : 'Mentions per day', showTable: true,
+    barsLabel: 'Sentiment split',
+    bars: sentimentBars(detail.neg, detail.neu, detail.pos)
+  };
+}
 const ICON_VIEWBOX = { ellipsisVertical: '0 0 20 20', canvasNav: '0 0 29.8278 28.3062', ghost: '2.585 1.75 16.5 16.5' };
 function navIcon(value, size, centered) {
   const svg = React.createElement('svg', { width: size, height: size, viewBox: ICON_VIEWBOX[value] || '0 0 24 24', fill: 'none', style: { flexShrink: 0 }, dangerouslySetInnerHTML: { __html: FIG_ICON_PATHS[value] || '' } });
@@ -6554,7 +6882,9 @@ class Component extends DCLogic {
     // Connections drawer — which sources are wired up and which of those are
     // actively included in what the canvas shows.
     connectionsPanelOpen: false,
-    canvasSources: CANVAS_SOURCE_DEFS.map(s => ({ ...s, active: s.connected }))
+    canvasSources: CANVAS_SOURCE_DEFS.map(s => ({ ...s, active: s.connected })),
+    // Which canvas note has its stat-breakdown drawer open.
+    noteDetailId: null
   };
 
   viewportRef = React.createRef();
@@ -6718,6 +7048,7 @@ class Component extends DCLogic {
   };
   onNoteMouseDown = note => e => {
     e.stopPropagation();
+    this._noteMoved = false;
     if (this.state.contextMenu) this.setState({ contextMenu: null });
     if (e.shiftKey) {
       this.setState(s => {
@@ -6830,6 +7161,22 @@ class Component extends DCLogic {
   };
   closeGroupPanels = () => this.setState({ openGroupIds: {} });
   stopProp = e => e.stopPropagation();
+  // A note is both draggable and clickable — same guard as the bucket's own
+  // toggleGroupPanel above, so a drag never also pops the stat breakdown open.
+  openNoteDetail = noteId => e => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    if (this._noteMoved) { this._noteMoved = false; return; }
+    this.setState({ noteDetailId: noteId, connectionsPanelOpen: false });
+  };
+  closeNoteDetail = () => this.setState({ noteDetailId: null });
+  // Capture phase, so a click on a note or bucket (which stopPropagation their
+  // own mousedown for drag purposes) still reaches this before that happens —
+  // clicking anywhere else on the canvas closes whichever drawer is open.
+  closeCanvasDrawersOnOutsideClick = e => {
+    if (e.target.closest && e.target.closest('.connections-drawer, .canvas-toolbar')) return;
+    if (!this.state.connectionsPanelOpen && !this.state.noteDetailId) return;
+    this.setState({ connectionsPanelOpen: false, noteDetailId: null, canvasTool: 'select' });
+  };
 
   menuPos = e => {
     const box = this.viewportRef.current ? this.viewportRef.current.closest('[data-canvas-container]') : null;
@@ -7176,6 +7523,11 @@ class Component extends DCLogic {
       this.setState({ pan: { ...this.state.pan, x: this._drag.origX + dx, y: this._drag.origY + dy } });
     } else if (this._drag.type === 'note') {
       const dx = e.clientX - this._drag.startX, dy = e.clientY - this._drag.startY;
+      // A real click is almost never exactly 0px of movement — hand/trackpad
+      // jitter alone can produce 1-2px between mousedown and mouseup. Without a
+      // threshold that jitter reads as a drag and re-triggers the re-home/toast
+      // logic in handleTaskMouseUp even though nothing was actually dragged.
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) this._noteMoved = true;
       const scale = this.state.pan.scale;
       const nx = snap(this._drag.origX + dx / scale), ny = snap(this._drag.origY + dy / scale);
       this.setState(s => ({ taskNotes: s.taskNotes.map(n => n.id === this._drag.id ? { ...n, x: nx, y: ny, pinned: true } : n) }));
@@ -7189,7 +7541,9 @@ class Component extends DCLogic {
       const scale = this.state.pan.scale;
       // Snap the delta rather than each note, so the cluster keeps its spacing.
       const sdx = snap(dx / scale), sdy = snap(dy / scale);
-      if (sdx || sdy) this._groupMoved = true;
+      // Same jitter guard as the single-note drag above, checked in raw screen
+      // pixels rather than the post-snap canvas delta.
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) this._groupMoved = true;
       const moved = {};
       // Home travels with the note, so a signal that later comes back off the parked
       // lane lands beside its theme wherever the theme has been moved to.
@@ -7230,8 +7584,13 @@ class Component extends DCLogic {
       this.setState({ selectedIds: sel, marqueeRect: null });
     }
     // Dropping a note re-homes it: into whichever bucket it landed in, or out
-    // of every bucket if it was dropped on bare canvas.
-    if (this._drag && (this._drag.type === 'note' || this._drag.type === 'multi')) {
+    // of every bucket if it was dropped on bare canvas. Skipped entirely for a
+    // plain click (nothing dragged) — otherwise just clicking a card to open its
+    // detail drawer could still re-home it and pop a stray "Rescoped ..." toast.
+    const dragActuallyMoved = this._drag && (
+      this._drag.type === 'note' ? this._noteMoved : this._groupMoved
+    );
+    if (this._drag && (this._drag.type === 'note' || this._drag.type === 'multi') && dragActuallyMoved) {
       // Captured now: the state updater below can run after this._drag is cleared,
       // and the drop needs the pick-up bounds to apply the stickiness margin.
       const drag = this._drag;
@@ -7562,7 +7921,8 @@ class Component extends DCLogic {
   setCanvasToolRoute = () => {
     this.setState(s => ({
       canvasTool: s.canvasTool === 'route' ? 'select' : 'route',
-      connectionsPanelOpen: s.canvasTool !== 'route'
+      connectionsPanelOpen: s.canvasTool !== 'route',
+      noteDetailId: null
     }));
   };
   closeConnectionsPanel = () => this.setState({ connectionsPanelOpen: false, canvasTool: 'select' });
@@ -8680,7 +9040,8 @@ class Component extends DCLogic {
         pointerEvents: shown ? 'auto' : 'none',
         title: n.title, body: n.body,
         onMouseDown: this.onNoteMouseDown(n),
-        onContextMenu: this.onNoteContextMenu(n)
+        onContextMenu: this.onNoteContextMenu(n),
+        onClick: this.openNoteDetail(n.id)
       };
     });
 
@@ -9017,6 +9378,14 @@ class Component extends DCLogic {
     })) : [];
     const composeContacts = MESSAGE_CONTACTS.map(c => ({ ...c, avatarEl: contactAvatar(c, 28), onClick: () => this.startNewThread(c.id) }));
 
+    // Canvas note detail drawer — stat breakdown for whichever card was clicked.
+    const noteDetailNote = this.state.noteDetailId
+      ? this.state.taskNotes.find(n => n.id === this.state.noteDetailId)
+      : null;
+    const noteDetailTopic = noteDetailNote && TOPIC_GROUPS.find(t => t.id === noteDetailNote.topicId);
+    const noteDetailStats = noteDetailNote && buildNoteDetail(noteDetailNote);
+    const noteDetailDisplay = noteDetailNote && buildNoteDisplay(noteDetailNote, noteDetailStats);
+
     return {
       tab: this.state.tab,
       setTab: v => this.setState({
@@ -9214,6 +9583,11 @@ class Component extends DCLogic {
         width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none',
         style: { display: 'block' },
         dangerouslySetInnerHTML: { __html: '<path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' }
+      }),
+      tdBackIcon: React.createElement('svg', {
+        width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none',
+        style: { display: 'block' },
+        dangerouslySetInnerHTML: { __html: '<path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' }
       }),
       tdImpIcon: navIcon('ghost', 16, false),
       tdTicket: detailRow ? detailRow.ticket : '',
@@ -9669,6 +10043,29 @@ class Component extends DCLogic {
       canvasUploadIcon: taskIcon('arrowUp', 16),
       canvasSourcesCountLabel: this.state.canvasSources.filter(s => s.connected && s.active).length +
         ' of ' + this.state.canvasSources.filter(s => s.connected).length + ' sources shown',
+      // Canvas note detail drawer (click any card)
+      noteDetailOpen: !!noteDetailNote,
+      noteDetailDrawerClass: noteDetailNote ? 'connections-drawer is-open is-wide' : 'connections-drawer is-wide',
+      closeNoteDetail: this.closeNoteDetail,
+      closeCanvasDrawersOnOutsideClick: this.closeCanvasDrawersOnOutsideClick,
+      noteDetailTitle: noteDetailNote ? noteDetailNote.title : '',
+      noteDetailBody: noteDetailNote ? noteDetailNote.body : '',
+      noteDetailExplanation: noteDetailNote ? buildNoteExplanation(noteDetailNote, noteDetailTopic ? noteDetailTopic.label : '') : '',
+      noteDetailTopicLabel: noteDetailTopic ? noteDetailTopic.label : '',
+      // Same chart component (and green accent) the dashboard uses, shown only
+      // when a daily trend actually means something for this title (see
+      // buildNoteDisplay — a duration stat like "Task time" skips it entirely).
+      noteDetailShowChart: !!(noteDetailDisplay && noteDetailDisplay.showChart),
+      noteDetailChartLabel: noteDetailDisplay ? noteDetailDisplay.chartLabel : '',
+      noteDetailChart: (noteDetailDisplay && noteDetailDisplay.showChart)
+        ? buildSmoothAreaChart(noteDetailStats.series, { height: 140 }) : null,
+      noteDetailStatTiles: noteDetailDisplay ? noteDetailDisplay.stats : [],
+      noteDetailBarsLabel: noteDetailDisplay ? noteDetailDisplay.barsLabel : '',
+      noteDetailBars: noteDetailDisplay ? noteDetailDisplay.bars.map(b => ({ ...b, widthPct: b.value + '%' })) : [],
+      noteDetailShowTable: !!(noteDetailDisplay && noteDetailDisplay.showTable),
+      noteDetailTable: (noteDetailDisplay && noteDetailDisplay.showTable) ? noteDetailStats.channels.map((c, i) => ({
+        key: 'ch' + i, name: c.name, count: c.count.toLocaleString()
+      })) : [],
       // auto-group confidence threshold
       confidenceLabel: this.state.groupConfidence + '%',
       confidenceValue: this.state.groupConfidence,
