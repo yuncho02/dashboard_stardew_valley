@@ -193,7 +193,7 @@
     .dash-panel-body {
       background: #171717;
     }
-    /* My Tasks canvas surfaces — theme-aware via design-system tokens */
+    /* Feedback Analysis canvas surfaces — theme-aware via design-system tokens */
     .task-canvas-shell {
       background: var(--bg-surface);
       border: 1px solid var(--border-default);
@@ -244,6 +244,34 @@
       border-radius: 3px; background: var(--bg-surface); border: 1.5px solid var(--accent);
       opacity: 0; transition: opacity 140ms ease;
     }
+    /* Grab the border or the chip to move a whole parent and everything in it. The
+       child buckets paint on top, so a press inside one still moves just that theme —
+       only the parent's own margin between them starts a parent drag. */
+    .canvas-parent-box {
+      position: absolute; pointer-events: none;
+      border: 2px dashed var(--border-strong); border-radius: 28px; opacity: 0.9;
+    }
+    .canvas-parent-box.is-draggable, .canvas-parent-chip.is-draggable {
+      pointer-events: auto; cursor: grab;
+    }
+    .canvas-parent-box.is-draggable:active, .canvas-parent-chip.is-draggable:active { cursor: grabbing; }
+    .canvas-parent-box.is-draggable:hover { opacity: 1; border-color: var(--text-tertiary); }
+    /* The parked lane holds signals rather than themes, so it reads a step quieter
+       still — it is a waiting area, not a grouping anyone asserted. */
+    .canvas-parent-box.is-parked { border-style: dashed; border-color: var(--border-default); opacity: 0.7; }
+    .canvas-parent-chip {
+      position: absolute; pointer-events: none; user-select: none;
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 12px; border-radius: var(--radius-full);
+      border: 1px solid var(--border-strong); background: var(--bg-surface);
+      white-space: nowrap;
+    }
+    /* Deliberately quieter than a theme chip — the parent names the area, the themes
+       inside it are what carry the colour. */
+    .canvas-parent-name {
+      font: 600 13px/16px var(--font-body); letter-spacing: 0.02em; color: var(--text-secondary);
+    }
+    .canvas-parent-count { font: 400 11px/1.4 var(--font-mono); color: var(--text-tertiary); }
     .canvas-bucket-box:hover > .bucket-handle,
     .canvas-bucket-box.is-open > .bucket-handle { opacity: 1; }
     .bucket-handle-nw { left: -7px; top: -7px; cursor: nwse-resize; }
@@ -253,7 +281,7 @@
     .canvas-bucket:active { cursor: grabbing; }
     /* ---- Group summary panel, parked beside each bucket in canvas space ---- */
     .group-panel {
-      position: absolute; box-sizing: border-box;
+      position: absolute; z-index: 6; box-sizing: border-box;
       display: flex; flex-direction: column; gap: 7px; padding: 13px 14px;
       border: 1px solid var(--border-default); border-left: 3px solid var(--border-strong);
       border-radius: var(--radius-xl, 12px);
@@ -310,14 +338,14 @@
         linear-gradient(90deg, rgba(9,9,11,0.05) 1px, transparent 1px) 0 0 / 24px 24px,
         var(--bg-canvas);
     }
-    /* ===== My Tasks — Task Board (Figma 272:23170) =====
+    /* ===== Feedback Analysis — Action Board (Figma 272:23170) =====
        Cards sit flush with the panel and are drawn by their border, the way the
        reference does it; only the raised states (hover, AI rank 1) lift a step. */
     /* The board sizes off its own container, not the viewport, so collapsing the
        nav rail re-flows it the same way widening the window does. */
     .board-shell { container-type: inline-size; width: 100%; min-width: 0; }
     .board-page { display: flex; flex-direction: column; gap: 16px; min-width: 0; min-height: 0; }
-    /* Search, both selects and New Task are siblings in one wrapping row. That is
+    /* Search, both selects and New Action are siblings in one wrapping row. That is
        what lets the button sit with the selects once the search claims its own
        line — nested inside a filter group it could only ever wrap on its own. */
     .board-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; padding-bottom: 2px; }
@@ -365,15 +393,13 @@
       cursor: pointer; white-space: nowrap;
     }
     .board-new:hover { background: var(--bg-surface-2); }
-    /* The rail and the three columns hold their row and shrink together — nobody
-       has a width floor, so the row narrows instead of wrapping or scrolling.
-       Both get a real flex-basis so shrinkage is shared in proportion rather than
-       falling entirely on the columns. */
+    /* The three columns hold their row and shrink together — nobody has a width
+       floor, so the row narrows instead of wrapping or scrolling. */
     .board-cols { display: flex; flex-wrap: nowrap; align-items: flex-start; gap: 24px; min-width: 0; }
-    /* Capped at the reference 350px, so extra room past the design width becomes
-       breathing space rather than oversized cards. */
+    /* Uncapped: with the AI block lifted out of this row there is no fourth member
+       to take up the slack, so the three columns share whatever width there is. */
     .board-col {
-      flex: 1 1 240px; min-width: 0; max-width: 350px;
+      flex: 1 1 240px; min-width: 0;
       display: flex; flex-direction: column; gap: 12px;
       /* Padding pulled back by an equal negative margin, so the drop outline has
          somewhere to sit without shifting the columns. min-height keeps a target
@@ -429,11 +455,6 @@
     .board-chip-p1 { color: var(--danger); }
     .board-chip-p2 { color: var(--warning); }
     .board-chip-p3 { color: var(--text-tertiary); }
-    .board-chip-due { border-color: transparent; background: var(--warning-muted); color: var(--warning); }
-    .board-notes {
-      display: inline-flex; align-items: center; gap: 4px;
-      font: 400 11px/1.4 var(--font-mono); color: var(--text-tertiary);
-    }
     .board-alert {
       display: flex; align-items: flex-start; gap: 8px; min-width: 0; padding: 9px 11px;
       border: 1px solid var(--danger); border-radius: var(--radius-md);
@@ -444,18 +465,6 @@
     .board-alert-icon { display: flex; flex-shrink: 0; margin-top: 1px; }
     .board-alert-text { flex: 1; min-width: 0; overflow-wrap: break-word; }
     .board-alert.is-warn { border-color: var(--warning); background: var(--warning-muted); color: var(--warning); }
-    /* The AI-ranked To do items live in the rail, so the column keeps a stub
-       that says so instead of repeating them as cards. */
-    .board-ai-stub {
-      display: flex; flex-direction: column; gap: 6px; padding: 11px 13px;
-      border: 1px dashed var(--border-strong); border-radius: var(--radius-xl, 12px);
-      color: var(--text-tertiary);
-    }
-    .board-ai-stub-head {
-      display: flex; align-items: center; gap: 6px;
-      font: 400 10px/1.4 var(--font-mono); letter-spacing: 0.06em;
-    }
-    .board-ai-stub-body { min-width: 0; overflow-wrap: break-word; font: 400 12px/18px var(--font-alt); }
     .board-col-empty {
       padding: 14px; border: 1px dashed var(--border-default); border-radius: var(--radius-xl, 12px);
       font: var(--text-body-sm); color: var(--text-tertiary);
@@ -466,9 +475,9 @@
     .board-done-label { font: 500 12px/1.35 var(--font-body); }
     .board-done-chev { margin-left: auto; display: flex; }
     .board-done-item { font: 400 12px/18px var(--font-alt); color: var(--text-tertiary); text-decoration: line-through; }
-    /* ---- AI Assistant rail (374px in the reference) ---- */
+    /* ---- AI Assistant block (a full-width banner above the columns) ---- */
     .ai-rail {
-      flex: 0 1 374px; min-width: 0; box-sizing: border-box;
+      width: 100%; min-width: 0; box-sizing: border-box;
       display: flex; flex-direction: column; gap: 10px; padding: 15px;
       border: 1px solid var(--accent-border); border-radius: var(--radius-xl, 12px);
       background: var(--accent-muted);
@@ -479,9 +488,10 @@
     .ai-rail-stamp { margin-left: auto; font: 400 11px/1.4 var(--font-mono); color: var(--text-tertiary); }
     .ai-rail-summary { margin: 0; min-width: 0; overflow-wrap: break-word; font: 400 13px/19.5px var(--font-alt); color: var(--text-secondary); }
     .ai-rail-list {
-      display: flex; flex-direction: column; gap: 8px; min-width: 0;
+      display: flex; flex-direction: row; align-items: flex-start; gap: 12px; min-width: 0;
       padding-top: 11px; border-top: 1px solid var(--accent-border);
     }
+    .ai-rail-list > * { flex: 1 1 0; min-width: 0; }
     /* One fill for all three ranks. Rank 1 is already unmistakable from its content
        — chips, reasoning callout, note read-out, action buttons — so it does not
        need a raised surface as well. Light is pinned to the reference's #fafafa
@@ -519,7 +529,6 @@
       font: 400 11px/1.4 var(--font-alt); color: var(--text-tertiary); white-space: nowrap;
     }
     .ai-rank-chips { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-width: 0; }
-    .ai-rank-chips .ai-rank-status { margin-left: auto; }
     .ai-rank-callout {
       display: flex; align-items: flex-start; gap: 8px; min-width: 0; padding: 10px 11px;
       border: 1px solid var(--accent-border); border-radius: var(--radius-md);
@@ -549,12 +558,15 @@
       font: 500 13px/1 var(--font-body); cursor: pointer;
     }
     .ai-btn-start:hover { background: var(--accent-hover); }
-    .ai-btn-snooze {
-      height: 35px; padding: 0 15px; border: 1px solid var(--border-default); border-radius: var(--radius-lg, 10px);
-      background: transparent; color: var(--text-primary);
-      font: 500 13px/1 var(--font-body); cursor: pointer;
+    /* Outlined counterpart to .ai-btn-start: same size and weight, accent border and
+       label in place of the accent fill, so it reads as secondary without going grey. */
+    .ai-btn-back {
+      height: 35px; padding: 0 15px;
+      border: 1px solid var(--accent-border); border-radius: var(--radius-lg, 10px);
+      background: transparent; color: var(--accent);
+      font: 500 13px/1 var(--font-body); cursor: pointer; white-space: nowrap;
     }
-    .ai-btn-snooze:hover { background: var(--bg-surface-2); }
+    .ai-btn-back:hover { background: var(--accent-muted); border-color: var(--accent); }
     /* Removal is destructive, so it stays quiet until hovered and then reads red. */
     .ai-btn-trash {
       display: inline-flex; align-items: center; justify-content: center;
@@ -586,12 +598,8 @@
       padding: 22px 26px 20px; border-bottom: 1px solid var(--border-default);
     }
     .td-drawer-eyebrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
-    .td-rank {
-      display: inline-flex; align-items: center; gap: 6px;
-      font: 500 13px/1.35 var(--font-body); color: var(--accent); white-space: nowrap;
-    }
-    /* Both trailing controls sit hard right, the close button last. */
-    .td-drawer-eyebrow > .td-icon-btn:nth-last-child(2) { margin-left: auto; }
+    /* Close sits hard right of the eyebrow, whatever chips precede it. */
+    .td-drawer-eyebrow > .td-icon-btn { margin-left: auto; }
     .td-icon-btn {
       display: flex; align-items: center; justify-content: center;
       width: 28px; height: 28px; flex-shrink: 0; padding: 0;
@@ -630,28 +638,33 @@
       font: 400 10px/1.4 var(--font-mono); letter-spacing: 0.08em;
       text-transform: uppercase; color: var(--text-tertiary);
     }
-    .td-section-count { font: 400 11px/1.4 var(--font-mono); color: var(--text-tertiary); }
-    .td-section-link {
-      margin-left: auto; flex-shrink: 0;
-      font: 500 12px/1.35 var(--font-body); color: var(--accent); cursor: pointer;
+    /* The drawer summarises; the signals themselves live on the canvas, so this is the
+       way back to them. Kept as a quiet link — it is an aside from reading the plan,
+       not a step in it. align-self stops the column stretching it to full width. */
+    .td-canvas-link {
+      align-self: flex-start; display: inline-flex; align-items: center; gap: 7px;
+      font: 500 12.5px/1.35 var(--font-body); color: var(--accent); cursor: pointer;
     }
-    .td-section-link:hover { color: var(--accent-hover); text-decoration: underline; }
-    .td-points { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-    .td-point {
-      display: flex; flex-direction: column; gap: 5px; min-width: 0; padding: 12px 14px;
-      border: 1px solid var(--border-default); border-radius: var(--radius-md);
-      background: var(--bg-surface-2);
+    .td-canvas-link:hover { color: var(--accent-hover); text-decoration: underline; }
+    .td-canvas-icon { display: flex; flex-shrink: 0; }
+    .td-approach {
+      margin: 0; min-width: 0; overflow-wrap: break-word;
+      font: 400 13.5px/21px var(--font-alt); color: var(--text-secondary);
     }
-    .td-point-head { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
-    .td-point-label {
-      font: 400 10px/1.4 var(--font-mono); letter-spacing: 0.08em; color: var(--text-tertiary);
+    .td-section-tally { font: 400 11px/1.4 var(--font-mono); color: var(--text-tertiary); }
+    /* One task and everything under it read as a block, so the gap between two
+       tasks is wider than the gap between a task and its own sub-tasks. */
+    .td-steps { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+    .td-task { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+    .td-substeps {
+      display: flex; flex-direction: column; gap: 1px; min-width: 0;
+      margin-left: 11px; padding-left: 15px; border-left: 1px solid var(--border-default);
     }
-    .td-point-stamp {
-      margin-left: auto; flex-shrink: 0;
-      font: 400 10px/1.4 var(--font-mono); color: var(--text-tertiary); opacity: 0.8;
+    .td-step-count {
+      margin-left: auto; flex-shrink: 0; padding-top: 2px;
+      font: 400 11px/1.4 var(--font-mono); color: var(--text-tertiary);
     }
-    .td-point-body { font: 400 13px/1.5 var(--font-alt); color: var(--text-primary); overflow-wrap: break-word; }
-    .td-steps { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .td-substep .td-step-label { font-size: 13px; color: var(--text-secondary); }
     .td-step {
       display: flex; align-items: flex-start; gap: 10px; min-width: 0;
       padding: 9px 6px; border-radius: var(--radius-sm); cursor: pointer;
@@ -679,13 +692,14 @@
       .ai-note-label { flex-basis: 66px; }
     }
     /* The row is held as far down as it stays legible — around 160px a column can
-       no longer carry a task title, so below this the board stacks: rail first,
-       then one column at a time. Raise this number to stack sooner. */
+       no longer carry an action title, so below this the board stacks: the AI
+       block's cards go vertical and the columns take a row each. */
     @container (max-width: 760px) {
       .board-cols { flex-wrap: wrap; gap: 18px; }
-      .ai-rail { flex: 1 1 100%; }
-      .board-col { flex: 1 1 100%; max-width: none; }
-      /* Search takes its own line; both selects and New Task share the next one. */
+      .ai-rail-list { flex-direction: column; align-items: stretch; }
+      .ai-rail-list > * { flex: 0 0 auto; }
+      .board-col { flex: 1 1 100%; }
+      /* Search takes its own line; both selects and New Action share the next one. */
       .board-search { flex-basis: 100%; max-width: none; }
     }
     /* Too narrow for the two selects plus a labelled button. Dropping the label and
@@ -701,8 +715,9 @@
     @supports not (container-type: inline-size) {
       @media (max-width: 1120px) {
         .board-cols { flex-wrap: wrap; gap: 18px; }
-        .ai-rail { flex: 1 1 100%; }
-        .board-col { flex: 1 1 100%; max-width: none; }
+        .ai-rail-list { flex-direction: column; align-items: stretch; }
+      .ai-rail-list > * { flex: 0 0 auto; }
+        .board-col { flex: 1 1 100%; }
         .board-search { flex-basis: 100%; max-width: none; }
       }
     }
@@ -2715,7 +2730,7 @@
           </sc-if>
           <sc-if value="{{ showTasksBody }}" hint-placeholder-val="{{ false }}">
           <div style="display:flex;align-items:center;gap:2px;padding:2px;border-radius:var(--radius-full);border:1px solid var(--border-default);background:var(--bg-surface-2);flex-shrink:0">
-            <button type="button" onClick="{{ setBoardView }}" style="height:30px;padding:0 14px;border:none;border-radius:var(--radius-full);background:{{ boardToggleBg }};color:{{ boardToggleColor }};font:600 12px/1 var(--font-body);cursor:pointer;white-space:nowrap">Task Board</button>
+            <button type="button" onClick="{{ setBoardView }}" style="height:30px;padding:0 14px;border:none;border-radius:var(--radius-full);background:{{ boardToggleBg }};color:{{ boardToggleColor }};font:600 12px/1 var(--font-body);cursor:pointer;white-space:nowrap">Board</button>
             <button type="button" onClick="{{ setCanvasView }}" style="height:30px;padding:0 14px;border:none;border-radius:var(--radius-full);background:{{ canvasToggleBg }};color:{{ canvasToggleColor }};font:600 12px/1 var(--font-body);cursor:pointer;white-space:nowrap">Canvas</button>
           </div>
           </sc-if>
@@ -3063,7 +3078,7 @@
         </div>
       </sc-if>
 
-      <!-- ===== My Tasks — Task Board (Figma 272:23170) ===== -->
+      <!-- ===== Feedback Analysis — Action Board (Figma 272:23170) ===== -->
       <sc-if value="{{ showTaskBoard }}" hint-placeholder-val="{{ true }}">
         <div class="board-shell">
         <div class="board-page">
@@ -3095,75 +3110,70 @@
                   </div>
                 </sc-if>
               </div>
-            <button type="button" onClick="{{ newBoardTask }}" class="board-new" aria-label="New task">{{ boardPlusIcon }}<span class="board-new-label">New Task</span></button>
+            <button type="button" onClick="{{ newBoardTask }}" class="board-new" aria-label="New action">{{ boardPlusIcon }}<span class="board-new-label">New Action</span></button>
           </div>
 
-          <div class="board-cols">
-            <aside class="ai-rail">
-              <div class="ai-rail-head">
-                <span class="ai-rail-spark">{{ boardSparkIcon }}</span>
-                <span class="ai-rail-title">AI Assistant</span>
-                <span class="ai-rail-stamp">{{ aiOrderBasis }}</span>
-              </div>
-              <sc-if value="{{ showAiSummary }}" hint-placeholder-val="{{ true }}">
-                <p class="ai-rail-summary">{{ aiSummary }}</p>
-              </sc-if>
-              <div class="ai-rail-list">
-                <sc-for list="{{ aiRanks }}" as="a" hint-placeholder-count="3">
-                  <div class="{{ a.cardClass }}" onClick="{{ a.onClick }}" draggable="true" onDragStart="{{ a.onDragStart }}" onDragOver="{{ a.onDragOver }}" onDragEnd="{{ a.onDragEnd }}" style="opacity:{{ a.dragOpacity }}">
-                    <div class="ai-rank-head">
-                      <span class="ai-rank-badge">{{ a.rank }}</span>
-                      <span class="ai-rank-title">{{ a.title }}</span>
-                      <span class="ai-rank-grip" title="Drag to re-rank" aria-label="Drag to re-rank">{{ boardGripIcon }}</span>
-                    </div>
-                    <sc-if value="{{ a.showChips }}" hint-placeholder-val="{{ true }}">
-                      <div class="ai-rank-chips">
-                        <span class="{{ a.priorityClass }}">{{ a.priority }}</span>
-                        <span class="board-notes" title="{{ a.noteTitle }}">{{ boardNoteIcon }}{{ a.noteCount }}</span>
-                        <span class="board-chip">{{ a.estimate }}</span>
-                        <sc-if value="{{ a.hasBug }}" hint-placeholder-val="{{ true }}">
-                          <span class="board-chip">{{ a.bug }}</span>
-                        </sc-if>
-                        <sc-if value="{{ a.hasScale }}" hint-placeholder-val="{{ false }}">
-                          <span class="board-chip">{{ a.scale }}</span>
-                        </sc-if>
-                        <sc-if value="{{ a.hasDue }}" hint-placeholder-val="{{ false }}">
-                          <span class="board-chip board-chip-due">{{ a.due }}</span>
-                        </sc-if>
-                        <span class="ai-rank-status">{{ boardStatusIcon }}{{ a.statusLabel }}</span>
-                      </div>
-                    </sc-if>
-                    <sc-if value="{{ a.showCallout }}" hint-placeholder-val="{{ true }}">
-                      <div class="ai-rank-callout"><span class="ai-rank-spark">{{ boardSparkSmIcon }}</span><span>{{ a.why }}</span></div>
-                    </sc-if>
-                    <sc-if value="{{ a.showWhy }}" hint-placeholder-val="{{ false }}">
-                      <div class="ai-rank-why"><span class="ai-rank-spark">{{ boardSparkSmIcon }}</span><span>{{ a.why }}</span></div>
-                    </sc-if>
-                    <sc-if value="{{ a.showNotes }}" hint-placeholder-val="{{ true }}">
-                      <div class="ai-rank-notes">
-                        <sc-for list="{{ a.notes }}" as="nt" hint-placeholder-count="3">
-                          <div class="ai-note-row">
-                            <span class="ai-note-label">{{ nt.label }}</span>
-                            <span class="ai-note-body">{{ nt.body }}</span>
-                          </div>
-                        </sc-for>
-                        <span onClick="{{ a.onOpenCanvas }}" class="ai-note-more">{{ a.moreLabel }}</span>
-                      </div>
-                    </sc-if>
-                    <sc-if value="{{ a.showActions }}" hint-placeholder-val="{{ true }}">
-                      <div class="ai-rank-actions">
-                        <button type="button" onClick="{{ a.onStart }}" class="ai-btn-start">Start</button>
-                        <button type="button" onClick="{{ a.onDelete }}" class="ai-btn-trash" title="Remove from the board" aria-label="Remove from the board">{{ boardTrashIcon }}</button>
-                      </div>
-                    </sc-if>
+          <aside class="ai-rail">
+            <div class="ai-rail-head">
+              <span class="ai-rail-spark">{{ boardSparkIcon }}</span>
+              <span class="ai-rail-title">AI Assistant</span>
+              <span class="ai-rail-stamp">{{ aiOrderBasis }}</span>
+            </div>
+            <sc-if value="{{ showAiSummary }}" hint-placeholder-val="{{ true }}">
+              <p class="ai-rail-summary">{{ aiSummary }}</p>
+            </sc-if>
+            <div class="ai-rail-list">
+              <sc-for list="{{ aiRanks }}" as="a" hint-placeholder-count="3">
+                <div class="{{ a.cardClass }}" onClick="{{ a.onClick }}" draggable="true" onDragStart="{{ a.onDragStart }}" onDragOver="{{ a.onDragOver }}" onDragEnd="{{ a.onDragEnd }}" style="opacity:{{ a.dragOpacity }}">
+                  <div class="ai-rank-head">
+                    <span class="ai-rank-badge">{{ a.rank }}</span>
+                    <span class="ai-rank-title">{{ a.title }}</span>
+                    <span class="ai-rank-grip" title="Drag to re-rank" aria-label="Drag to re-rank">{{ boardGripIcon }}</span>
                   </div>
-                </sc-for>
-                <sc-if value="{{ aiRailEmpty }}" hint-placeholder-val="{{ false }}">
-                  <div class="board-col-empty">Nothing on the board to rank.</div>
-                </sc-if>
-              </div>
-            </aside>
-
+                  <sc-if value="{{ a.showChips }}" hint-placeholder-val="{{ true }}">
+                    <div class="ai-rank-chips">
+                      <span class="{{ a.priorityClass }}">{{ a.priority }}</span>
+                      <span class="board-chip">{{ a.estimate }}</span>
+                      <sc-if value="{{ a.hasScale }}" hint-placeholder-val="{{ false }}">
+                        <span class="board-chip">{{ a.scale }}</span>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ a.showWhy }}" hint-placeholder-val="{{ true }}">
+                    <div class="ai-rank-why"><span class="ai-rank-spark">{{ boardSparkSmIcon }}</span><span>{{ a.why }}</span></div>
+                  </sc-if>
+                  <sc-if value="{{ a.showNotes }}" hint-placeholder-val="{{ true }}">
+                    <div class="ai-rank-notes">
+                      <sc-for list="{{ a.notes }}" as="nt" hint-placeholder-count="3">
+                        <div class="ai-note-row">
+                          <span class="ai-note-label">{{ nt.label }}</span>
+                          <span class="ai-note-body">{{ nt.body }}</span>
+                        </div>
+                      </sc-for>
+                      <span onClick="{{ a.onOpenCanvas }}" class="ai-note-more">{{ a.moreLabel }}</span>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ a.showActions }}" hint-placeholder-val="{{ true }}">
+                    <div class="ai-rank-actions">
+                      <sc-if value="{{ a.showCta }}" hint-placeholder-val="{{ true }}">
+                        <button type="button" onClick="{{ a.onCta }}" class="ai-btn-start">{{ a.ctaLabel }}</button>
+                      </sc-if>
+                      <sc-if value="{{ a.showBack }}" hint-placeholder-val="{{ false }}">
+                        <button type="button" onClick="{{ a.onBack }}" class="ai-btn-back">{{ a.backLabel }}</button>
+                      </sc-if>
+                      <sc-if value="{{ a.showDelete }}" hint-placeholder-val="{{ true }}">
+                        <button type="button" onClick="{{ a.onDelete }}" class="ai-btn-trash" title="Remove from the board" aria-label="Remove from the board">{{ boardTrashIcon }}</button>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+              <sc-if value="{{ aiRailEmpty }}" hint-placeholder-val="{{ false }}">
+                <div class="board-col-empty">Nothing on the board to rank.</div>
+              </sc-if>
+            </div>
+          </aside>
+          <div class="board-cols">
             <sc-for list="{{ boardColumns }}" as="c" hint-placeholder-count="3">
               <div class="{{ c.colClass }}" onDragOver="{{ c.onDragOver }}" onDragLeave="{{ c.onDragLeave }}" onDrop="{{ c.onDrop }}">
                 <div class="board-col-head">
@@ -3171,21 +3181,14 @@
                   <span class="board-col-name">{{ c.label }}</span>
                   <span class="board-col-count">{{ c.count }}</span>
                   <sc-if value="{{ c.isTodo }}" hint-placeholder-val="{{ true }}">
-                    <span onClick="{{ c.onAdd }}" class="board-col-add" title="Add a task" aria-label="Add a task">{{ boardPlusSmIcon }}</span>
+                    <span onClick="{{ c.onAdd }}" class="board-col-add" title="Add an action" aria-label="Add an action">{{ boardPlusSmIcon }}</span>
                   </sc-if>
                 </div>
-                <sc-if value="{{ c.showAiStub }}" hint-placeholder-val="{{ true }}">
-                  <div class="board-ai-stub">
-                    <div class="board-ai-stub-head">{{ boardSparkSmIcon }}{{ c.aiStubHead }}</div>
-                    <span class="board-ai-stub-body">{{ c.aiStubBody }}</span>
-                  </div>
-                </sc-if>
                 <sc-for list="{{ c.cards }}" as="k" hint-placeholder-count="3">
                   <div onClick="{{ k.onClick }}" class="board-card" draggable="true" onDragStart="{{ k.onDragStart }}" onDragOver="{{ k.onDragOver }}" onDragEnd="{{ k.onDragEnd }}" style="opacity:{{ k.dragOpacity }}">
                     <span class="board-card-title">{{ k.title }}</span>
                     <div class="board-card-meta">
                       <span class="{{ k.priorityClass }}">{{ k.priority }}</span>
-                      <span class="board-notes" title="{{ k.noteTitle }}">{{ boardNoteIcon }}{{ k.noteCount }}</span>
                       <span class="board-chip">{{ k.estimate }}</span>
                       <sc-if value="{{ k.showInColumn }}" hint-placeholder-val="{{ false }}">
                         <span class="board-card-sub">{{ k.inColumn }}</span>
@@ -3203,7 +3206,7 @@
                   </div>
                 </sc-for>
                 <sc-if value="{{ c.isEmpty }}" hint-placeholder-val="{{ false }}">
-                  <div class="board-col-empty">Nothing here for this patch.</div>
+                  <div class="board-col-empty">{{ c.emptyLabel }}</div>
                 </sc-if>
                 <sc-if value="{{ c.showDone }}" hint-placeholder-val="{{ true }}">
                   <div class="board-done">
@@ -3306,6 +3309,22 @@
             <sc-if value="{{ isCanvasView }}" hint-placeholder-val="{{ true }}">
             <div ref="{{ viewportRef }}" onMouseDown="{{ startPan }}" onContextMenu="{{ onCanvasContextMenu }}" class="task-canvas-viewport" style="flex:1;min-height:0;position:relative;overflow:hidden;cursor:{{ viewportCursor }};background-size:{{ gridSize }};background-position:{{ gridPos }}">
               <div style="position:absolute;left:0;top:0;width:{{ canvasW }};height:{{ canvasH }};transform:translate({{ panXpx }}, {{ panYpx }}) scale({{ scale }});transform-origin:0 0;transition:{{ canvasTransition }}">
+
+                <sc-if value="{{ hasParked }}" hint-placeholder-val="{{ false }}">
+                  <div class="canvas-parent-box is-parked" style="left:{{ parkedLane.left }};top:{{ parkedLane.top }};width:{{ parkedLane.width }};height:{{ parkedLane.height }}"></div>
+                  <div class="canvas-parent-chip" style="left:{{ parkedLane.labelLeft }};top:{{ parkedLane.labelTop }}">
+                    <span class="canvas-parent-name">Below the confidence bar</span>
+                    <span class="canvas-parent-count">{{ parkedLane.countLabel }}</span>
+                  </div>
+                </sc-if>
+
+                <sc-for list="{{ parentTopicsView }}" as="pt" hint-placeholder-count="0">
+                  <div onMouseDown="{{ pt.onDragStart }}" class="canvas-parent-box is-draggable" style="left:{{ pt.left }};top:{{ pt.top }};width:{{ pt.width }};height:{{ pt.height }}"></div>
+                  <div onMouseDown="{{ pt.onDragStart }}" class="canvas-parent-chip is-draggable" style="left:{{ pt.labelLeft }};top:{{ pt.labelTop }}">
+                    <span class="canvas-parent-name">{{ pt.label }}</span>
+                    <span class="canvas-parent-count">{{ pt.countLabel }}</span>
+                  </div>
+                </sc-for>
 
                 <sc-for list="{{ bucketsView }}" as="b" hint-placeholder-count="0">
                   <div onMouseDown="{{ b.onDragStart }}" onClick="{{ b.onClick }}" class="{{ b.boxClass }}" style="position:absolute;left:{{ b.left }};top:{{ b.top }};width:{{ b.width }};height:{{ b.height }};border-radius:20px;border:{{ b.borderWidth }} dashed {{ b.borderColor }};background:{{ b.bg }};box-shadow:{{ b.glow }};transition:box-shadow 300ms ease">
@@ -3811,36 +3830,34 @@
     </div>
   </sc-if>
 
-  <!-- ===== Task detail drawer — opened by clicking any task card ===== -->
+  <!-- ===== Action detail drawer — opened by clicking any action card ===== -->
   <sc-if value="{{ showTaskDetail }}" hint-placeholder-val="{{ false }}">
     <div class="td-scrim" onClick="{{ closeTaskDetail }}">
-      <aside class="td-drawer" onClick="{{ stopPropagation }}" role="dialog" aria-label="Task detail">
+      <aside class="td-drawer" onClick="{{ stopPropagation }}" role="dialog" aria-label="Action detail">
         <div class="td-drawer-head">
           <div class="td-drawer-eyebrow">
-            <span class="board-chip">{{ taskDetail.bug }}</span>
             <span class="{{ taskDetail.priorityClass }}">{{ taskDetail.priority }}</span>
-            <sc-if value="{{ taskDetail.ranked }}" hint-placeholder-val="{{ true }}">
-              <span class="td-rank">{{ boardSparkSmIcon }}{{ taskDetail.rankLabel }}</span>
-            </sc-if>
-            <sc-if value="{{ taskDetail.notRanked }}" hint-placeholder-val="{{ false }}">
-              <span class="ai-rank-status">{{ boardStatusIcon }}{{ taskDetail.statusLabel }}</span>
-            </sc-if>
-            <span onClick="{{ taskDetail.onOpenCanvas }}" class="td-icon-btn" title="Open in canvas" aria-label="Open in canvas">{{ tdCanvasIcon }}</span>
+            <span class="ai-rank-status">{{ boardStatusIcon }}{{ taskDetail.statusLabel }}</span>
             <button type="button" onClick="{{ closeTaskDetail }}" class="td-icon-btn" title="Close" aria-label="Close">{{ taskCloseIcon }}</button>
           </div>
           <h2 class="td-drawer-title">{{ taskDetail.title }}</h2>
           <div class="td-drawer-actions">
-            <sc-if value="{{ taskDetail.canStart }}" hint-placeholder-val="{{ true }}">
-              <button type="button" onClick="{{ taskDetail.onStart }}" class="ai-btn-start">Start</button>
+            <sc-if value="{{ taskDetail.showCta }}" hint-placeholder-val="{{ true }}">
+              <button type="button" onClick="{{ taskDetail.onCta }}" class="ai-btn-start">{{ taskDetail.ctaLabel }}</button>
             </sc-if>
-            <button type="button" onClick="{{ taskDetail.onDelete }}" class="ai-btn-trash" title="Remove from the board" aria-label="Remove from the board">{{ boardTrashIcon }}</button>
-            <sc-if value="{{ taskDetail.showMove }}" hint-placeholder-val="{{ false }}">
-              <button type="button" onClick="{{ taskDetail.onMove }}" class="ai-btn-snooze">{{ taskDetail.moveLabel }}</button>
+            <sc-if value="{{ taskDetail.showBack }}" hint-placeholder-val="{{ false }}">
+              <button type="button" onClick="{{ taskDetail.onBack }}" class="ai-btn-back">{{ taskDetail.backLabel }}</button>
+            </sc-if>
+            <sc-if value="{{ taskDetail.showDelete }}" hint-placeholder-val="{{ true }}">
+              <button type="button" onClick="{{ taskDetail.onDelete }}" class="ai-btn-trash" title="Remove from the board" aria-label="Remove from the board">{{ boardTrashIcon }}</button>
             </sc-if>
           </div>
         </div>
 
         <div class="td-drawer-body">
+          <sc-if value="{{ taskDetail.hasWhy }}" hint-placeholder-val="{{ true }}">
+            <div class="ai-rank-callout"><span class="ai-rank-spark">{{ boardSparkSmIcon }}</span><span>{{ taskDetail.why }}</span></div>
+          </sc-if>
           <sc-if value="{{ taskDetail.hasConflict }}" hint-placeholder-val="{{ false }}">
             <div class="board-alert is-warn"><span class="board-alert-icon">{{ boardAlertIcon }}</span><span class="board-alert-text">{{ taskDetail.conflictText }}</span></div>
           </sc-if>
@@ -3870,39 +3887,42 @@
             </div>
           </div>
 
-          <div class="td-section-head">
-            <span class="td-section-label">Linked data points</span>
-            <span class="td-section-count">{{ taskDetail.pointCount }}</span>
-            <span onClick="{{ taskDetail.onOpenCanvas }}" class="td-section-link">Open in canvas</span>
-          </div>
-          <div class="td-points">
-            <sc-for list="{{ taskDetail.points }}" as="p" hint-placeholder-count="4">
-              <div class="td-point">
-                <div class="td-point-head">
-                  <span class="td-point-label">{{ p.label }}</span>
-                  <span class="td-point-stamp">{{ p.stamp }}</span>
-                </div>
-                <span class="td-point-body">{{ p.body }}</span>
-              </div>
-            </sc-for>
-          </div>
+          <span onClick="{{ taskDetail.onOpenCanvas }}" class="td-canvas-link" role="button" tabindex="0">
+            <span class="td-canvas-icon">{{ tdCanvasIcon }}</span>Open in canvas
+          </span>
 
-          <sc-if value="{{ taskDetail.hasWhy }}" hint-placeholder-val="{{ true }}">
+          <sc-if value="{{ taskDetail.hasApproach }}" hint-placeholder-val="{{ true }}">
             <div class="td-section-head">
-              <span class="td-section-label">{{ taskDetail.whyHeading }}</span>
+              <span class="td-section-label">Suggested approach</span>
             </div>
-            <div class="ai-rank-callout"><span class="ai-rank-spark">{{ boardSparkSmIcon }}</span><span>{{ taskDetail.why }}</span></div>
+            <p class="td-approach">{{ taskDetail.approach }}</p>
           </sc-if>
 
-          <sc-if value="{{ taskDetail.hasSteps }}" hint-placeholder-val="{{ true }}">
+          <sc-if value="{{ taskDetail.hasPlan }}" hint-placeholder-val="{{ true }}">
             <div class="td-section-head">
-              <span class="td-section-label">Suggested steps</span>
+              <span class="td-section-label">Projected tasks</span>
+              <span class="td-section-tally">{{ taskDetail.planTally }}</span>
             </div>
             <div class="td-steps">
-              <sc-for list="{{ taskDetail.steps }}" as="s" hint-placeholder-count="3">
-                <div onClick="{{ s.onToggle }}" class="td-step">
-                  <span class="{{ s.boxClass }}">{{ s.checkIcon }}</span>
-                  <span class="td-step-label">{{ s.label }}</span>
+              <sc-for list="{{ taskDetail.plan }}" as="s" hint-placeholder-count="3">
+                <div class="td-task">
+                  <div onClick="{{ s.onToggle }}" class="td-step">
+                    <span class="{{ s.boxClass }}">{{ s.checkIcon }}</span>
+                    <span class="td-step-label">{{ s.label }}</span>
+                    <sc-if value="{{ s.hasSubs }}" hint-placeholder-val="{{ true }}">
+                      <span class="td-step-count">{{ s.countLabel }}</span>
+                    </sc-if>
+                  </div>
+                  <sc-if value="{{ s.hasSubs }}" hint-placeholder-val="{{ true }}">
+                    <div class="td-substeps">
+                      <sc-for list="{{ s.subs }}" as="sub" hint-placeholder-count="2">
+                        <div onClick="{{ sub.onToggle }}" class="td-step td-substep">
+                          <span class="{{ sub.boxClass }}">{{ sub.checkIcon }}</span>
+                          <span class="td-step-label">{{ sub.label }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
                 </div>
               </sc-for>
             </div>
@@ -3970,7 +3990,7 @@ const NARROW_RAIL_WIDTH = 1024;
 const NAV_ITEMS = [
   { value: 'analytics', label: 'Dashboard', icon: 'home' },
   { value: 'player', label: 'Player Report', icon: 'trendUp2' },
-  { value: 'tasks', label: 'My Tasks', icon: 'tasks' },
+  { value: 'tasks', label: 'Feedback Analysis', icon: 'tasks' },
   { value: 'messages', label: 'Messages', icon: 'messages' }
 ];
 const TAB_ITEMS = [
@@ -3979,7 +3999,7 @@ const TAB_ITEMS = [
   { value: 'engagement', label: 'Engagement' },
   { value: 'raw', label: 'Raw data' }
 ];
-// ===== My Tasks view (task board / canvas / task plan) — ported from the standalone reference =====
+// ===== Feedback Analysis view (action board / feedback canvas) — ported from the standalone reference =====
 const TASK_ICON_PATHS = {
   plus: '<line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
   minus: '<line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
@@ -3992,9 +4012,8 @@ const TASK_ICON_PATHS = {
   grip: '<circle cx="9" cy="6" r="1.3" fill="currentColor"/><circle cx="15" cy="6" r="1.3" fill="currentColor"/><circle cx="9" cy="12" r="1.3" fill="currentColor"/><circle cx="15" cy="12" r="1.3" fill="currentColor"/><circle cx="9" cy="18" r="1.3" fill="currentColor"/><circle cx="15" cy="18" r="1.3" fill="currentColor"/>',
   close: '<line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
   group: '<rect x="3" y="3" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>',
-  // Task Board glyphs
+  // Action Board glyphs
   columns: '<rect x="3" y="4" width="18" height="16" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><line x1="9.5" y1="4" x2="9.5" y2="20" stroke="currentColor" stroke-width="2"/>',
-  note: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
   alert: '<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="9.5" x2="12" y2="13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
   checkCircle: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="22 4 12 14.01 9 11.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
   trash: '<polyline points="3 6 5 6 21 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
@@ -4020,67 +4039,132 @@ const COLOR_MAP = {
   accent: { border: 'var(--accent)', bg: 'var(--accent-muted)', chip: 'var(--accent)' },
   neutral: { border: 'var(--border-strong)', bg: 'var(--bg-surface-2)', chip: 'var(--text-secondary)' }
 };
-// `confidence` is how sure the model is that these notes belong in one bucket.
-// A single role with one kind of work scores high; a lane that mixes coordination
-// with hands-on fixes scores lower, because the boundary is genuinely fuzzier.
-// This page belongs to the developer who owns the build, not to the producer running
-// the sprint. So the clusters are the defects and systems this developer is actually
-// holding — cross-team coordination, comms and investigation work live elsewhere.
-// `relation` is what the group's summary panel says about why these points belong
+// `confidence` is how sure the model is that these feedback signals describe one
+// theme. A theme where every channel names the same element scores high; one where
+// the model is inferring a shared cause from loosely related complaints scores lower,
+// because the boundary is genuinely fuzzier.
+// This page reads what players said about patch 26.03 — how the game feels to play,
+// what the item and UI changes did to it, and what they are willing to pay for. Defect
+// triage lives on Player Report; what arrives here is sentiment, volume and quotes.
+// `relation` is what the group's summary panel says about why these signals belong
 // together. Positions are not authored — they come from the grid below, which gives
-// every group the same footprint plus room for its panel alongside.
+// every theme the same footprint plus room for its panel alongside.
 const TOPIC_GROUPS = [
-  { id: 'yuumi', label: 'Yuumi passive desync — P0', color: 'danger', significant: true, confidence: 97,
-    relation: 'One defect traced end to end: a reproducible interrupt, the line of code behind it, and the player count it has reached.' },
-  { id: 'crash', label: 'Wild Rift cross-region crash', color: 'danger', significant: true, confidence: 94,
-    relation: 'A crash-rate jump, the stack it resolves to, and the fact nobody owns it yet — all pointing at cross-region matchmaking.' },
-  { id: 'viego', label: 'Viego spellblade cooldown', color: 'accent', significant: true, confidence: 92,
-    relation: 'Reported behaviour set against documented intent: possession is resetting the item window instead of respecting it.' },
-  { id: 'smolder', label: 'Smolder balance implementation', color: 'success', significant: false, confidence: 86,
-    relation: 'A blocked start, the band the numbers have to land in, and the scope agreed for this patch.' },
-  { id: 'perf', label: 'Min-spec frame time', color: 'warning', significant: true, confidence: 81,
-    relation: 'A frame-time miss on min-spec, the allocation causing it, and the hardware tier where it actually shows up.' },
-  { id: 'lp', label: 'LP write on shard failover', color: 'accent', significant: false, confidence: 88,
-    relation: 'Still recurring on shard failover, but recoverable by replaying the match record — which is why it has not escalated past P1.' },
-  { id: 'polish', label: 'Client polish defects (P3–P4)', color: 'info', significant: false, confidence: 74,
-    relation: 'Three unrelated low-severity client defects, held together only by severity and the fact they ship together.' },
-  { id: 'release', label: 'Patch 26.04 release prep', color: 'info', significant: false, confidence: 68,
-    relation: 'The two gates the patch has to clear before sign-off: no open P0s, and a clean regression pass.' },
-  { id: 'queue', label: 'Ranked queue dodge exploit', color: 'danger', significant: true, confidence: 91,
-    relation: 'A reproducible client-side dodge that skips the penalty, the ladder distortion it causes, and the window it is being abused in.' },
-  { id: 'store', label: 'Store checkout failures (EU)', color: 'danger', significant: true, confidence: 89,
-    relation: 'Failed purchases isolated to one payment region: the error rate, the gateway response behind it, and the revenue it is costing per hour.' },
-  { id: 'voice', label: 'Voice chat drop-outs', color: 'warning', significant: false, confidence: 84,
-    relation: 'Party voice dropping mid-game, narrowed to a single relay region and a specific reconnect path.' },
-  { id: 'sentiment', label: 'Post-patch sentiment dip', color: 'warning', significant: false, confidence: 77,
-    relation: 'Sentiment fell after 26.03 across three channels at once, which points at the patch rather than any single community flashpoint.' },
-  { id: 'loc', label: 'Localization gaps (26.03)', color: 'info', significant: false, confidence: 71,
-    relation: 'Untranslated strings shipped in the patch, grouped by the locales that reported them and the surfaces they appear on.' },
-  { id: 'esports', label: 'LEC broadcast overlay bugs', color: 'info', significant: false, confidence: 64,
-    relation: 'Overlay defects raised by broadcast ops during LEC. Loosely related — same tool, different failure each time.' }
+  { id: 'combat', label: 'Ability responsiveness — 26.03', color: 'danger', significant: true, confidence: 96,
+    relation: 'The loudest theme in 26.03 feedback: players in every channel describe the same half-beat delay on cast, and it tracks the new queue window rather than their ping.' },
+  { id: 'items', label: 'Mythic item rework', color: 'danger', significant: true, confidence: 93,
+    relation: 'Feedback on the item rework splits cleanly — players accept the removal, but say the replacements read as strictly worse and no longer explain themselves in the shop.' },
+  { id: 'hud', label: 'New HUD readability', color: 'warning', significant: true, confidence: 90,
+    relation: 'The redesigned HUD reads as cleaner in screenshots and worse in play. Every complaint here is about legibility during a fight, not about the look itself.' },
+  { id: 'balance', label: 'Champion balance sentiment', color: 'accent', significant: true, confidence: 91,
+    relation: 'Balance feedback concentrates on three champions, and for once the sentiment matches the win-rate data instead of running ahead of it.' },
+  { id: 'store', label: 'Battle pass and skin pricing', color: 'danger', significant: true, confidence: 89,
+    relation: 'Monetization feedback is unusually specific: the objection is to the pass grind rate, and it is loudest among the players who already bought it.' },
+  { id: 'perf', label: 'Frame rate on older hardware', color: 'warning', significant: true, confidence: 88,
+    relation: 'A performance theme that only exists below recommended spec — the players reporting it cluster in exactly the regions running older machines.' },
+  { id: 'ranked', label: 'Ranked feels punishing', color: 'accent', significant: false, confidence: 87,
+    relation: 'Ranked frustration is about the cost of a loss rather than how often they lose — the same complaint arrives from players who are climbing.' },
+  { id: 'shop', label: 'In-game shop redesign', color: 'warning', significant: false, confidence: 86,
+    relation: 'Shop feedback is about speed, not styling: the new layout costs players time at the exact moment they have the least of it.' },
+  { id: 'vfx', label: 'Visual clarity in fights', color: 'accent', significant: false, confidence: 84,
+    relation: 'Players are not asking for fewer effects — they are asking to tell whose effects they are, which makes this a contrast problem rather than a density one.' },
+  { id: 'map', label: 'Map art update', color: 'success', significant: false, confidence: 81,
+    relation: 'The clearest positive in 26.03, with a single consistent caveat about how the new brush silhouettes read at low settings.' },
+  { id: 'praise', label: 'What players liked in 26.03', color: 'success', significant: false, confidence: 79,
+    relation: 'The positive signal in this patch, held together by one thing: every item here is something players asked for in 26.02 feedback and actually got.' },
+  { id: 'onboard', label: 'New player experience', color: 'info', significant: false, confidence: 76,
+    relation: 'Quiet but consistent. New players are not complaining so much as leaving, and the feedback that does arrive keeps naming the same tutorial.' },
+  { id: 'audio', label: 'Audio mix after the patch', color: 'info', significant: false, confidence: 68,
+    relation: 'A small, well-evidenced theme — three separate channels report the same mix change, and none of them disagree about what it is.' },
+  { id: 'social', label: 'Party and voice chat', color: 'info', significant: false, confidence: 63,
+    relation: 'Social feedback is thin and mostly regional. Enough to log against the patch, not yet enough to attribute to it.' }
 ];
-// One cell per group: the bucket sits left, its AI summary panel right. Laying the
-// canvas out on a grid is what keeps that panel from landing on a neighbour.
-// Every measurement here is a multiple of the 24px canvas grid, so snap() leaves
-// positions exactly where the layout puts them and columns line up across groups.
-// Cell height allows three rows of data points; the canvas sizes itself from the grid
-// below, so adding a topic can never overflow the surface.
-const TOPIC_CELL_W = 816, TOPIC_CELL_H = 648, TOPIC_COLS = 4;
+const NOTE_W = 190, NOTE_H = 110, PAD = 46, GRID = 24;
+// Signals sit on a two-column grid within their theme rather than at authored
+// offsets, so every card lines up with the one above and beside it. The canvas layout
+// below is derived from these, so the two can never drift apart.
+const NOTE_COLS = 2, NOTE_STEP_X = 216, NOTE_STEP_Y = 144;
+// The themes above are the fine grain; these are the areas of the game they belong to.
+// A parent is drawn as a container around whichever of its themes are currently
+// grouped — it holds no notes of its own and carries no state, so it can never
+// disagree with what is inside it.
+const TOPIC_PARENTS = [
+  { id: 'p_feel', label: 'Gameplay feel', children: ['combat', 'balance', 'ranked'] },
+  { id: 'p_ui', label: 'Presentation & UI', children: ['hud', 'shop', 'vfx', 'map', 'audio'] },
+  { id: 'p_econ', label: 'Items & economy', children: ['items', 'store'] },
+  { id: 'p_tech', label: 'Performance & platform', children: ['perf', 'social'] },
+  { id: 'p_players', label: 'Player sentiment', children: ['praise', 'onboard'] }
+];
+// Each parent is a column: its themes stack straight down inside it, and the parents
+// sit side by side. Every measurement is a multiple of the 24px canvas grid, so snap()
+// leaves positions exactly where the layout puts them and the columns stay aligned.
 const GROUP_PANEL_W = 268, GROUP_PANEL_GAP = 24;
-TOPIC_GROUPS.forEach((t, i) => {
-  t.x = 72 + (i % TOPIC_COLS) * TOPIC_CELL_W;
-  t.y = 72 + Math.floor(i / TOPIC_COLS) * TOPIC_CELL_H;
-});
-const TOPIC_ROWS = Math.ceil(TOPIC_GROUPS.length / TOPIC_COLS);
-const CANVAS_W = 72 + (TOPIC_COLS - 1) * TOPIC_CELL_W + 498 + GROUP_PANEL_GAP + GROUP_PANEL_W + 96;
-const CANVAS_H = 72 + (TOPIC_ROWS - 1) * TOPIC_CELL_H + 552 + 96;
-// Opening view, derived so it keeps framing the grid as topics are added.
-const CANVAS_HOME = { x: -48, y: -32, scale: 0.42 };
+// A theme's box as bucketBox draws it: two note columns wide, two note rows tall,
+// plus the padding it adds and the strip its chip straddles.
+const THEME_BOX_W = 498, THEME_BOX_H = 384;
+// How far a parent's border sits outside the themes it holds.
+const PARENT_INSET = 40;
+// Down: a theme box plus enough clearance for the next theme's chip, which overhangs
+// its box by 14. Across: a parent box plus a gutter. The summary panel is deliberately
+// not reserved for — it is an opaque popover that opens on click, so letting it sit
+// over the next column costs nothing and saves ~290px of permanently empty canvas
+// between every pair of parents.
+const THEME_STEP_Y = 432;
+const PARENT_STEP_X = THEME_BOX_W + PARENT_INSET * 2 + 70;
+const CANVAS_MARGIN = 96;
+// Offsets that put the first parent's border on the margin: bucketBox starts a theme's
+// box 46 left and 84 above its first note, and the parent border clears that by
+// PARENT_INSET again.
+const THEME_ORIGIN_X = CANVAS_MARGIN + 46 + PARENT_INSET;
+const THEME_ORIGIN_Y = CANVAS_MARGIN + 84 + PARENT_INSET;
+const TOPIC_LAYOUT = (() => {
+  let tallest = 1;
+  TOPIC_PARENTS.forEach((p, col) => {
+    const kids = p.children.map(id => TOPIC_GROUPS.find(t => t.id === id)).filter(Boolean);
+    kids.forEach((t, i) => {
+      t.parentId = p.id;
+      t.x = THEME_ORIGIN_X + col * PARENT_STEP_X;
+      t.y = THEME_ORIGIN_Y + i * THEME_STEP_Y;
+    });
+    tallest = Math.max(tallest, kids.length);
+  });
+  return { cols: TOPIC_PARENTS.length, rows: tallest };
+})();
+// Where a signal sits for a given set of live themes: back in its own theme's slot on
+// the grid, or in the parked lane if that theme has fallen below the bar. Both the
+// opening state and every move of the slider run through this, so what the bar says
+// and where the signals are can never disagree. A signal the user has dragged is
+// pinned and stays put — the bar reshapes the layout, it does not overrule a person.
+function placeNotes(notes, liveGroups) {
+  let slot = 0;
+  return notes.map(n => {
+    const gid = n.manualGroupId !== undefined ? n.manualGroupId : n.topicId;
+    const grouped = !!liveGroups[gid];
+    const placed = { ...n, groupId: grouped ? gid : null };
+    if (n.pinned || n.manualGroupId !== undefined) return placed;
+    if (grouped) return { ...placed, x: n.homeX, y: n.homeY };
+    const i = slot++;
+    return {
+      ...placed,
+      x: PARKED_X + (i % PARKED_COLS) * NOTE_STEP_X,
+      y: PARKED_Y + Math.floor(i / PARKED_COLS) * NOTE_STEP_Y
+    };
+  });
+}
+// Opening view, derived so it keeps framing the grid as topics are added. The y
+// offset leaves room for the first parent's chip, which hangs above its box.
+const CANVAS_HOME = { x: -24, y: 16, scale: 0.42 };
 const CONFIDENCE_DEFAULT = 70;
+const liveGroupMap = groups => {
+  const live = {};
+  groups.forEach(g => { live[g.id] = true; });
+  return live;
+};
 const CONFIDENCE_MIN = 50, CONFIDENCE_MAX = 99;
 const autoGroupsFor = threshold => TOPIC_GROUPS
   .filter(t => t.confidence >= threshold)
   .map(t => ({ id: t.id, label: t.label, color: t.color, significant: t.significant, confidence: t.confidence, auto: true }));
+const LIVE_AT_DEFAULT = liveGroupMap(autoGroupsFor(CONFIDENCE_DEFAULT));
 const NEW_GROUP_COLORS = ['info', 'warning', 'danger', 'success', 'accent'];
 // Patch cycles run a fortnight, so anything past a quarter is noise here — hence the
 // ceiling. The default sits at that ceiling so the canvas opens whole and narrowing
@@ -4093,107 +4177,149 @@ const TASK_RANGE_OPTIONS = [
   { id: '1m', label: 'Past month', days: 30 },
   { id: '3m', label: 'Past 3 months', days: 90 }
 ];
-// Roughly when each finding landed, so the range filter has a real spread: the P0 and
-// the post-patch crash cluster are fresh, polish items are stale. Nothing here exceeds
-// the 3-month ceiling on the range filter — anything older could never be surfaced.
+// Roughly when each signal landed, so the range filter has a real spread. Patch 26.03
+// shipped nine days ago, so the reaction themes are fresh and the slower-moving ones —
+// onboarding, retention, creator reviews — trail behind. Nothing here exceeds the
+// 3-month ceiling on the range filter, since anything older could never be surfaced.
 const DAYS_AGO = {
-  n1: 6, n2: 6, n3: 9, n4: 2, n5: 2, n6: 3,
-  n7: 24, n8: 24, n9: 30, n10: 1, n11: 1, n12: 2,
-  n13: 48, n14: 55,
-  n17: 5, n18: 5, n19: 8, n20: 4, n21: 4, n22: 6, n23: 3,
-  n24: 11, n25: 2,
-  n26: 4, n27: 4, n28: 6, n29: 2,
-  n30: 1, n31: 1, n32: 1, n33: 2,
-  n34: 7, n35: 7, n36: 12,
-  n37: 9, n38: 6, n39: 10,
-  n40: 16, n41: 19, n42: 22,
-  n43: 31, n44: 38, n45: 13
+  f1: 8, f2: 7, f3: 8, f4: 5,
+  f5: 8, f6: 6, f7: 7, f8: 4,
+  f9: 7, f10: 8, f11: 6, f12: 3,
+  f13: 8, f14: 5, f15: 6, f16: 4,
+  f17: 6, f18: 5, f19: 7, f20: 2,
+  f21: 7, f22: 4, f23: 8, f24: 3,
+  f25: 6, f26: 5, f27: 3,
+  f28: 8, f29: 6, f30: 4,
+  f31: 7, f32: 5, f33: 3,
+  f34: 9, f35: 7, f36: 4,
+  f37: 8, f38: 6, f39: 5, f40: 2,
+  f41: 21, f42: 17, f43: 12,
+  f44: 9, f45: 6, f46: 3,
+  f47: 5, f48: 2
 };
+// Each note is one signal about how 26.03 landed — a volume count, a sentiment score,
+// a quote players keep repeating, or the telemetry that either backs it up or does not.
+// `source` is the channel it arrived through, and it is what the drawer stamps beside
+// the date, so a theme carrying four different channels reads as corroborated rather
+// than as one loud subreddit.
 const NOTES = [
-  { id: 'n1', source: 'QA', topicId: 'yuumi', title: 'Repro', body: 'Interrupt the cast anywhere in the 0.25s window — 100% repro' },
-  { id: 'n2', source: 'code scan', topicId: 'yuumi', title: 'Root cause', body: 'onCastComplete() applies the shield before syncToServer() confirms it' },
-  { id: 'n3', source: 'telemetry', topicId: 'yuumi', title: 'Blast radius', body: '2,140 games affected since 26.03 — replay clip attached' },
-  { id: 'n4', source: 'telemetry', topicId: 'crash', title: 'Crash rate', body: '0.42% of sessions on 26.03, up from 0.11% on 26.02' },
-  { id: 'n5', source: 'crash reports', topicId: 'crash', title: 'Top stack', body: 'Null deref in MatchmakingSvc::resolveCrossRegion()' },
-  { id: 'n6', source: 'triage', topicId: 'crash', title: 'Still unowned', body: 'P0 at 78% repro with no assignee on day 8 of 14' },
-  { id: 'n7', source: 'player reports', topicId: 'viego', title: 'Symptom', body: 'Spellblade procs on every consecutive basic attack instead of once' },
-  { id: 'n8', source: 'design doc', topicId: 'viego', title: 'Expected', body: 'One proc, then a 1.5s item window — possession resets it to 0' },
-  { id: 'n9', source: 'design lock', topicId: 'smolder', title: 'Blocked', body: 'Cannot start until the design lock closes on day 7' },
-  { id: 'n10', source: 'telemetry', topicId: 'smolder', title: 'Target band', body: 'Win rate has sat 18% above band since 26.03' },
-  { id: 'n11', source: 'design doc', topicId: 'smolder', title: 'Scope', body: 'Numbers only — no ability rework lands in this patch' },
-  { id: 'n12', source: 'profiler', topicId: 'perf', title: 'Frame time', body: '45ms median on min-spec during recall — target is 16ms' },
-  { id: 'n13', source: 'profiler', topicId: 'perf', title: 'Worst offender', body: 'Recall VFX allocates per frame instead of pooling' },
-  { id: 'n14', source: 'hardware survey', topicId: 'perf', title: 'Affected hardware', body: '45% repro on low-end, 0% at recommended spec' },
-  { id: 'n17', source: 'support', topicId: 'lp', title: 'Recovery path', body: 'Replaying the match record restores LP in 9 of 10 cases' },
-  { id: 'n23', source: 'incident log', topicId: 'lp', title: 'Recurrence', body: 'Two more reports this week, both during a regional shard failover' },
-  { id: 'n18', source: 'player reports', topicId: 'polish', title: 'Ward clipping', body: 'Wards on the Baron pit lip fall through and give no vision' },
-  { id: 'n19', source: 'QA', topicId: 'polish', title: 'Hitbox mismatch', body: 'Aurelion Sol tornado — fix submitted, awaiting QA' },
-  { id: 'n20', source: 'player reports', topicId: 'polish', title: 'Shop search', body: 'Partial champion names return no results' },
-  { id: 'n24', source: 'playtest', topicId: 'viego', title: 'Reproduction', body: 'Fires on 4 of 5 possessions when the item is on cooldown' },
-  { id: 'n25', source: 'match replay', topicId: 'crash', title: 'Shared trigger', body: 'Every crashed match had a party spanning two regions' },
-  { id: 'n26', source: 'QA', topicId: 'queue', title: 'Repro steps', body: 'Alt-F4 during champ select skips the dodge penalty entirely' },
-  { id: 'n27', source: 'ladder data', topicId: 'queue', title: 'Ladder impact', body: '1,180 games affected in Diamond+ over four days' },
-  { id: 'n28', source: 'code scan', topicId: 'queue', title: 'Root cause', body: 'Penalty is applied on client disconnect, never re-checked server side' },
-  { id: 'n29', source: 'discord', topicId: 'queue', title: 'Being shared', body: 'Method posted in three regional Discords since Tuesday' },
-  { id: 'n30', source: 'payments', topicId: 'store', title: 'Failure rate', body: '6.4% of EU checkouts failing since the 26.03 deploy' },
-  { id: 'n31', source: 'gateway log', topicId: 'store', title: 'Gateway response', body: 'Provider returns 402 on 3DS retry, client treats it as success' },
-  { id: 'n32', source: 'finance', topicId: 'store', title: 'Revenue at risk', body: 'Roughly \u00a318k per hour of failed EU purchases' },
-  { id: 'n33', source: 'support', topicId: 'store', title: 'Ticket volume', body: '240 refund requests opened in two days' },
-  { id: 'n34', source: 'telemetry', topicId: 'voice', title: 'Drop rate', body: 'Party voice drops in 3.1% of games, up from 0.4%' },
-  { id: 'n35', source: 'network trace', topicId: 'voice', title: 'Relay region', body: 'Isolated to the Frankfurt relay after the 26.03 rollout' },
-  { id: 'n36', source: 'QA', topicId: 'voice', title: 'Reconnect path', body: 'Client never retries after the first failed handshake' },
-  { id: 'n37', source: 'community survey', topicId: 'sentiment', title: 'Survey delta', body: 'Patch sentiment down 14 points week over week' },
-  { id: 'n38', source: 'reddit', topicId: 'sentiment', title: 'Loudest thread', body: 'Recall performance is the top complaint, not balance' },
-  { id: 'n39', source: 'discord', topicId: 'sentiment', title: 'Cross-channel', body: 'Same three themes surface in Discord and in-game reports' },
-  { id: 'n40', source: 'localization QA', topicId: 'loc', title: 'Missing strings', body: '48 untranslated keys shipped in the 26.03 client' },
-  { id: 'n41', source: 'player reports', topicId: 'loc', title: 'Worst locales', body: 'pt-BR and tr-TR account for two thirds of the reports' },
-  { id: 'n42', source: 'localization QA', topicId: 'loc', title: 'Surfaces hit', body: 'Mostly the new store banners and the recall tooltip' },
-  { id: 'n43', source: 'broadcast ops', topicId: 'esports', title: 'Scoreboard desync', body: 'Gold totals lag the game state by about two seconds' },
-  { id: 'n44', source: 'broadcast ops', topicId: 'esports', title: 'Name overflow', body: 'Long team names clip the lower-third overlay' },
-  { id: 'n45', source: 'esports ops', topicId: 'esports', title: 'Window', body: 'Needs fixing before the LEC weekend broadcast' },
-  { id: 'n21', source: 'release plan', topicId: 'release', title: 'Release gate', body: 'No P0 may be open at the day 13 sign-off' },
-  { id: 'n22', source: 'release plan', topicId: 'release', title: 'PBE window', body: 'Full regression pass runs day 11–13' }
+  { id: 'f1', source: 'reddit', topicId: 'combat', title: 'Volume', body: '4,120 posts in the 26.03 megathread mention input delay' },
+  { id: 'f2', source: 'sentiment model', topicId: 'combat', title: 'Sentiment', body: '82% negative — the sharpest drop of any 26.03 theme' },
+  { id: 'f3', source: 'reddit', topicId: 'combat', title: 'Top quote', body: '“Abilities fire a half-beat after I press them now”' },
+  { id: 'f4', source: 'telemetry', topicId: 'combat', title: 'Correlation', body: 'Complaints track the new 30ms cast-queue window, not ping' },
+  { id: 'f5', source: 'forums', topicId: 'items', title: 'Volume', body: '2,860 threads on the mythic removal in the first week' },
+  { id: 'f6', source: 'in-game survey', topicId: 'items', title: 'Sentiment', body: '68% rate the new item system worse than 26.02' },
+  { id: 'f7', source: 'reddit', topicId: 'items', title: 'Top ask', body: 'Give builds back a spike — they feel flat until three items' },
+  { id: 'f8', source: 'community poll', topicId: 'items', title: 'Who is loudest', body: 'Jungle mains are three times more negative than supports' },
+  { id: 'f9', source: 'in-game survey', topicId: 'hud', title: 'Sentiment', body: '54% negative on the new HUD, 71% positive on the menus' },
+  { id: 'f10', source: 'discord', topicId: 'hud', title: 'Top quote', body: '“Looks great in a screenshot, unreadable in a teamfight”' },
+  { id: 'f11', source: 'reddit', topicId: 'hud', title: 'Named element', body: 'Health bar contrast is the single most-named element' },
+  { id: 'f12', source: 'support', topicId: 'hud', title: 'Accessibility', body: '90 tickets from colourblind players since the rollout' },
+  { id: 'f13', source: 'reddit', topicId: 'balance', title: 'Loudest name', body: 'Smolder appears in 38% of all balance posts this patch' },
+  { id: 'f14', source: 'telemetry', topicId: 'balance', title: 'Data check', body: 'Smolder win rate is 18% above band — the feedback is right' },
+  { id: 'f15', source: 'discord', topicId: 'balance', title: 'Counterpoint', body: 'Viego complaints describe a bug, not his numbers' },
+  { id: 'f16', source: 'community poll', topicId: 'balance', title: 'Overall read', body: '41% call 26.03 the least balanced patch of the season' },
+  { id: 'f17', source: 'reddit', topicId: 'store', title: 'Volume', body: '3,410 posts on the 26.03 pass grind rate' },
+  { id: 'f18', source: 'in-game survey', topicId: 'store', title: 'Sentiment', body: '73% of pass owners call the new tier pace worse' },
+  { id: 'f19', source: 'discord', topicId: 'store', title: 'Top quote', body: '“I bought the pass and now it feels like a second job”' },
+  { id: 'f20', source: 'telemetry', topicId: 'store', title: 'Behaviour', body: 'Pass completion down 22% against the 26.02 pass' },
+  { id: 'f21', source: 'app store', topicId: 'perf', title: 'Volume', body: '1,340 one-star reviews cite stutter since 26.03' },
+  { id: 'f22', source: 'telemetry', topicId: 'perf', title: 'Who is hit', body: '45% of reports come from below-min-spec machines' },
+  { id: 'f23', source: 'reddit', topicId: 'perf', title: 'Top quote', body: '“My game stutters on every recall since the patch”' },
+  { id: 'f24', source: 'support', topicId: 'perf', title: 'Regions', body: 'BR and TR account for over half the reports' },
+  { id: 'f25', source: 'forums', topicId: 'ranked', title: 'Theme', body: 'LP losses feel heavier than gains after the 26.03 reset' },
+  { id: 'f26', source: 'reddit', topicId: 'ranked', title: 'Top quote', body: '“Two bad games erase a week of climbing”' },
+  { id: 'f27', source: 'telemetry', topicId: 'ranked', title: 'Behaviour', body: 'Ranked session length down 9% since the patch' },
+  { id: 'f28', source: 'playtest', topicId: 'shop', title: 'Task time', body: 'Buying an item takes 4.8s, up from 2.9s on 26.02' },
+  { id: 'f29', source: 'reddit', topicId: 'shop', title: 'Top complaint', body: 'Recommended items sit below the fold at 1080p' },
+  { id: 'f30', source: 'support', topicId: 'shop', title: 'Still broken', body: 'Partial champion names in shop search return nothing' },
+  { id: 'f31', source: 'reddit', topicId: 'vfx', title: 'Theme', body: 'Enemy and ally effects read the same in a crowded fight' },
+  { id: 'f32', source: 'youtube', topicId: 'vfx', title: 'Creator take', body: 'Top-channel review calls 26.03 the noisiest patch in years' },
+  { id: 'f33', source: 'community poll', topicId: 'vfx', title: 'Top ask', body: '62% want an enemy-only VFX intensity slider' },
+  { id: 'f34', source: 'in-game survey', topicId: 'map', title: 'Sentiment', body: '77% positive on the updated map art' },
+  { id: 'f35', source: 'reddit', topicId: 'map', title: 'Most praised', body: 'River and jungle lighting leads every art thread' },
+  { id: 'f36', source: 'discord', topicId: 'map', title: 'Caveat', body: 'New brush edges are hard to read at low graphics settings' },
+  { id: 'f37', source: 'in-game survey', topicId: 'praise', title: 'Top positive', body: 'Queue times are the most-praised change in the patch' },
+  { id: 'f38', source: 'reddit', topicId: 'praise', title: 'Top quote', body: '“Best patch notes readability in years”' },
+  { id: 'f39', source: 'youtube', topicId: 'praise', title: 'Creator take', body: 'Creator sentiment on the ARAM changes is 88% positive' },
+  { id: 'f40', source: 'community poll', topicId: 'praise', title: 'Carry-over', body: '3 of the top 5 asks from 26.02 shipped in this patch' },
+  { id: 'f41', source: 'app store', topicId: 'onboard', title: 'Volume', body: '410 reviews from accounts under 20 games played' },
+  { id: 'f42', source: 'in-game survey', topicId: 'onboard', title: 'Confusion', body: 'The item shop tutorial is the most-named sticking point' },
+  { id: 'f43', source: 'telemetry', topicId: 'onboard', title: 'Behaviour', body: 'Day-7 retention on new accounts down 4 points' },
+  { id: 'f44', source: 'reddit', topicId: 'audio', title: 'Theme', body: 'Ability SFX now sit under the new music bed' },
+  { id: 'f45', source: 'discord', topicId: 'audio', title: 'Top quote', body: '“I cannot hear Baron spawn over the new theme”' },
+  { id: 'f46', source: 'forums', topicId: 'audio', title: 'Top ask', body: 'Players want separate music and SFX sliders back' },
+  { id: 'f47', source: 'support', topicId: 'social', title: 'Volume', body: '260 tickets on party voice dropping mid-game' },
+  { id: 'f48', source: 'telemetry', topicId: 'social', title: 'Where', body: 'Concentrated in EU West since the 26.03 rollout' }
 ];
-// Sprint 26.04 runs Aug 1–14, 2026 and today is day 8, so dueDays is measured from
-// there: the design lock (day 7) has passed and the patch ships in 6 days.
-// `short` is the board-card title (the reference drops the bug id into a chip),
-// `board` is the column, and `patch` is what the Patch filter narrows on — the
-// release-prep pair is 26.04 work, which is why the AI summary defers it.
-const TASKS = [
-  { id: 't1', text: 'Fix the Yuumi passive desync (#BUG-1284719)', short: 'Fix the Yuumi passive desync', bug: '#BUG-1284719', priority: 'P0', board: 'todo', patch: '26.03', topicId: 'yuumi', dueDays: 1, estimate: '6 hrs', scale: '2,140 games' },
-  { id: 't2', text: 'Pick up the unowned Wild Rift cross-region crash (#BUG-1283904)', short: 'Fix the Wild Rift cross-region crash', bug: '#BUG-1283904', priority: 'P0', board: 'todo', patch: '26.03', topicId: 'crash', dueDays: 0, estimate: '2 days', due: 'Due in 6 days' },
-  { id: 't3', text: 'Push the Aurelion Sol hitbox fix to PBE for QA (#BUG-1282198)', short: 'Push the Aurelion Sol hitbox fix to PBE', bug: '#BUG-1282198', priority: 'P1', board: 'review', patch: '26.03', topicId: 'polish', dueDays: -1, estimate: '3 hrs' },
-  { id: 't4', text: 'Land the Viego spellblade cooldown fix (#BUG-1284561)', short: 'Land the Viego spellblade cooldown fix', bug: '#BUG-1284561', priority: 'P1', board: 'doing', patch: '26.03', topicId: 'viego', dueDays: 2, estimate: '1 day', inColumn: '2 days in column' },
-  { id: 't5', text: 'Implement the locked Smolder balance numbers', short: 'Implement the locked Smolder balance numbers', priority: 'P2', board: 'todo', patch: '26.03', topicId: 'smolder', dueDays: 3, estimate: '1 day' },
-  { id: 't6', text: 'Guard the match-end LP write against shard failover (#BUG-1278610)', short: 'Guard the match-end LP write against shard failover', bug: '#BUG-1278610', priority: 'P1', board: 'todo', patch: '26.03', topicId: 'lp', dueDays: 4, estimate: '3 days' },
-  { id: 't7', text: 'Pool the recall VFX allocation on min-spec (#BUG-1275104)', short: 'Reduce min-spec frame time during recall', bug: '#BUG-1275104', priority: 'P2', board: 'doing', patch: '26.03', topicId: 'perf', dueDays: 5, estimate: '2 days', stalled: 'Stalled 5 days — no commits since 26.02' },
-  { id: 't8', text: 'Fix partial-name matching in item shop search (#BUG-1269840)', short: 'Shop search returns no partial matches', bug: '#BUG-1269840', priority: 'P3', board: 'review', patch: '26.03', topicId: 'polish', dueDays: 6, estimate: '4 hrs', waiting: 'Waiting on QA · 1 day' },
-  { id: 't9', text: 'Add a crash-rate regression gate to the 26.04 build', short: 'Add a crash-rate regression gate to the 26.04 build', priority: 'P2', board: 'todo', patch: '26.04', topicId: 'release', dueDays: 3, estimate: '1 day' },
-  { id: 't10', text: 'Run the PBE regression pass and sign off 26.04', short: 'Run the PBE regression pass and sign off 26.04', priority: 'P2', board: 'todo', patch: '26.04', topicId: 'release', dueDays: 5, estimate: '2 days' },
-  { id: 't11', text: 'Fix ward clipping on the Baron pit lip (#BUG-1271455)', short: 'Fix ward clipping on the Baron pit lip', bug: '#BUG-1271455', priority: 'P3', board: 'todo', patch: '26.03', topicId: 'polish', dueDays: 7, estimate: '2 hrs' },
-  { id: 't12', text: 'Close the ranked dodge penalty bypass (#BUG-1285502)', short: 'Close the ranked dodge penalty bypass', bug: '#BUG-1285502', priority: 'P0', board: 'todo', patch: '26.03', topicId: 'queue', dueDays: 2, estimate: '1 day', scale: '1,180 games', due: 'Due in 4 days' },
-  { id: 't13', text: 'Fix EU checkout 3DS retry handling (#BUG-1285610)', short: 'Fix EU checkout 3DS retry handling', bug: '#BUG-1285610', priority: 'P0', board: 'doing', patch: '26.03', topicId: 'store', dueDays: 0, estimate: '6 hrs', inColumn: '1 day in column' },
-  { id: 't14', text: 'Reconcile the open EU refund requests (#SUP-4471)', short: 'Reconcile the open EU refund requests', bug: '#SUP-4471', priority: 'P1', board: 'todo', patch: '26.03', topicId: 'store', dueDays: 3, estimate: '4 hrs' },
-  { id: 't15', text: 'Add a voice relay reconnect retry (#BUG-1284980)', short: 'Add a voice relay reconnect retry', bug: '#BUG-1284980', priority: 'P1', board: 'doing', patch: '26.03', topicId: 'voice', dueDays: 4, estimate: '1 day', inColumn: '3 days in column' },
-  { id: 't16', text: 'Move the Frankfurt voice relay to the new pool (#INF-2210)', short: 'Move the Frankfurt voice relay to the new pool', bug: '#INF-2210', priority: 'P2', board: 'review', patch: '26.03', topicId: 'voice', dueDays: 1, estimate: '3 hrs', waiting: 'Waiting on QA · 2 days' },
-  { id: 't17', text: 'Add cross-region party guard in matchmaking (#BUG-1283911)', short: 'Add cross-region party guard in matchmaking', bug: '#BUG-1283911', priority: 'P1', board: 'doing', patch: '26.03', topicId: 'crash', dueDays: 5, estimate: '2 days', stalled: 'Stalled 4 days — blocked on infra review' },
-  { id: 't18', text: 'Ship the recall VFX pooling fix to PBE (#BUG-1275104)', short: 'Ship the recall VFX pooling fix to PBE', bug: '#BUG-1275104', priority: 'P1', board: 'review', patch: '26.03', topicId: 'perf', dueDays: 1, estimate: '2 hrs', waiting: 'Waiting on QA · 1 day' },
-  { id: 't19', text: 'Add a regression test for the 0.25s cast window', short: 'Add a regression test for the 0.25s cast window', priority: 'P2', board: 'review', patch: '26.03', topicId: 'yuumi', dueDays: 2, estimate: '2 hrs', waiting: 'Waiting on review · 1 day' },
-  { id: 't20', text: 'Publish a 26.03 recall performance note', short: 'Publish a 26.03 recall performance note', priority: 'P2', board: 'todo', patch: '26.03', topicId: 'sentiment', dueDays: 4, estimate: '3 hrs' },
-  { id: 't21', text: 'Ship the 48 missing 26.03 translations (#LOC-889)', short: 'Ship the 48 missing 26.03 translations', bug: '#LOC-889', priority: 'P2', board: 'todo', patch: '26.03', topicId: 'loc', dueDays: 6, estimate: '2 days' },
-  { id: 't22', text: 'Fix recall tooltip overflow in tr-TR (#LOC-901)', short: 'Fix recall tooltip overflow in tr-TR', bug: '#LOC-901', priority: 'P3', board: 'review', patch: '26.03', topicId: 'loc', dueDays: 3, estimate: '1 hr', waiting: 'Waiting on loc QA · 1 day' },
-  { id: 't23', text: 'Fix broadcast scoreboard gold desync (#BUG-1281440)', short: 'Fix broadcast scoreboard gold desync', bug: '#BUG-1281440', priority: 'P2', board: 'todo', patch: '26.03', topicId: 'esports', dueDays: 3, estimate: '1 day', due: 'Due in 3 days' },
-  { id: 't24', text: 'Reflow the lower-third for long team names (#BUG-1281455)', short: 'Reflow the lower-third for long team names', bug: '#BUG-1281455', priority: 'P3', board: 'todo', patch: '26.04', topicId: 'esports', dueDays: 9, estimate: '4 hrs' },
-  { id: 't25', text: 'Run a sentiment re-survey after the hotfix', short: 'Run a sentiment re-survey after the hotfix', priority: 'P3', board: 'todo', patch: '26.04', topicId: 'sentiment', dueDays: 12, estimate: '1 day' }
+// Suggested actions, not a hand-written backlog: each one is what Ghost AI proposes a
+// developer do about a theme on the canvas, scoped against the signals inside it.
+// Patch 26.03 shipped nine days ago and the 26.04 hotfix window closes in six, so
+// dueDays is measured from there — negative means it has already missed the cutoff.
+// `short` is the title everywhere it appears, `board` is the column, and `patch` is
+// what the Patch filter narrows on: 26.03 is what answers this patch's feedback, 26.04
+// is what the slower themes get deferred into. Actions carry no ticket id — they are
+// responses to a theme, not entries in the defect tracker.
+const ACTIONS = [
+  { id: 'a1', short: 'Tune the cast-queue window back toward 26.02', priority: 'P0', board: 'todo', patch: '26.03', topicId: 'combat', dueDays: 0, estimate: '1 day', scale: '4,120 posts' },
+  { id: 'a2', short: 'Add an input-latency readout to the practice tool', priority: 'P1', board: 'review', patch: '26.03', topicId: 'combat', dueDays: 2, estimate: '4 hrs', waiting: 'Waiting on QA · 1 day' },
+  { id: 'a3', short: 'Restore a readable power spike in the new mythics', priority: 'P0', board: 'todo', patch: '26.03', topicId: 'items', dueDays: 1, estimate: '2 days', scale: '2,860 threads' },
+  { id: 'a4', short: 'Rewrite the item tooltips to state the spike', priority: 'P1', board: 'doing', patch: '26.03', topicId: 'items', dueDays: 3, estimate: '1 day', inColumn: '2 days in column' },
+  { id: 'a5', short: 'Raise health-bar contrast in the new HUD', priority: 'P1', board: 'todo', patch: '26.03', topicId: 'hud', dueDays: 2, estimate: '6 hrs' },
+  { id: 'a6', short: 'Ship a colourblind-safe HUD palette', priority: 'P1', board: 'todo', patch: '26.03', topicId: 'hud', dueDays: 5, estimate: '3 days' },
+  { id: 'a7', short: 'Bring Smolder back inside the win-rate band', priority: 'P1', board: 'todo', patch: '26.03', topicId: 'balance', dueDays: 2, estimate: '1 day' },
+  { id: 'a8', short: 'Publish a balance note naming the three champions', priority: 'P2', board: 'todo', patch: '26.03', topicId: 'balance', dueDays: 4, estimate: '3 hrs' },
+  { id: 'a9', short: 'Cut the 26.03 pass tier pace by 20%', priority: 'P0', board: 'todo', patch: '26.03', topicId: 'store', dueDays: 2, estimate: '1 day', scale: '3,410 posts' },
+  { id: 'a10', short: 'Grant retroactive tiers to current pass owners', priority: 'P1', board: 'todo', patch: '26.03', topicId: 'store', dueDays: 4, estimate: '2 days' },
+  { id: 'a11', short: 'Pool the recall VFX allocation on min-spec', priority: 'P0', board: 'doing', patch: '26.03', topicId: 'perf', dueDays: 3, estimate: '2 days', scale: '1,340 reviews', stalled: 'Stalled 5 days — no commits since 26.02' },
+  { id: 'a12', short: 'Ship the low-spec graphics preset to PBE', priority: 'P1', board: 'review', patch: '26.03', topicId: 'perf', dueDays: -1, estimate: '2 hrs', waiting: 'Waiting on QA · 1 day' },
+  { id: 'a13', short: 'Rebalance LP gain and loss after the reset', priority: 'P1', board: 'todo', patch: '26.03', topicId: 'ranked', dueDays: 4, estimate: '2 days' },
+  { id: 'a14', short: 'Show LP change reasons on the post-game screen', priority: 'P2', board: 'doing', patch: '26.03', topicId: 'ranked', dueDays: 6, estimate: '1 day', inColumn: '3 days in column' },
+  { id: 'a15', short: 'Move recommended items above the fold at 1080p', priority: 'P2', board: 'doing', patch: '26.03', topicId: 'shop', dueDays: 3, estimate: '4 hrs', inColumn: '1 day in column' },
+  { id: 'a16', short: 'Fix partial-name matching in shop search', priority: 'P3', board: 'review', patch: '26.03', topicId: 'shop', dueDays: 5, estimate: '4 hrs', waiting: 'Waiting on QA · 2 days' },
+  { id: 'a17', short: 'Add an enemy-only VFX intensity slider', priority: 'P2', board: 'todo', patch: '26.03', topicId: 'vfx', dueDays: 5, estimate: '3 days' },
+  { id: 'a18', short: 'Recolour ally casts toward the team palette', priority: 'P2', board: 'todo', patch: '26.03', topicId: 'vfx', dueDays: 6, estimate: '1 day' },
+  { id: 'a19', short: 'Raise brush-edge contrast at low settings', priority: 'P3', board: 'todo', patch: '26.03', topicId: 'map', dueDays: 7, estimate: '4 hrs' },
+  { id: 'a20', short: 'Publish a 26.03 feedback response post', priority: 'P2', board: 'todo', patch: '26.03', topicId: 'praise', dueDays: 2, estimate: '3 hrs' },
+  { id: 'a21', short: 'Re-survey the three loudest themes after the hotfix', priority: 'P3', board: 'todo', patch: '26.04', topicId: 'praise', dueDays: 11, estimate: '1 day' },
+  { id: 'a22', short: 'Rebuild the item shop tutorial for new accounts', priority: 'P2', board: 'todo', patch: '26.04', topicId: 'onboard', dueDays: 9, estimate: '3 days' },
+  { id: 'a23', short: 'Split music and SFX volume sliders', priority: 'P2', board: 'review', patch: '26.03', topicId: 'audio', dueDays: 3, estimate: '6 hrs', waiting: 'Waiting on QA · 1 day' },
+  { id: 'a24', short: 'Duck the music bed under objective SFX', priority: 'P3', board: 'todo', patch: '26.03', topicId: 'audio', dueDays: 6, estimate: '4 hrs' },
+  { id: 'a25', short: 'Add a voice relay reconnect retry in EU West', priority: 'P2', board: 'doing', patch: '26.03', topicId: 'social', dueDays: 5, estimate: '1 day', stalled: 'Stalled 4 days — blocked on infra review' }
 ];
 // `tone` is the column's identity colour: it tints the header dot, the count, and
 // the highlight a card gets when dragged over the column.
 const BOARD_COLUMNS = [
-  { id: 'todo', label: 'To do', tone: 'neutral' },
+  { id: 'todo', label: 'Suggested', tone: 'neutral' },
   { id: 'doing', label: 'In progress', tone: 'warning' },
   { id: 'review', label: 'In review', tone: 'success' }
 ];
 const PRIORITY_RANK = { P0: 0, P1: 1, P2: 2, P3: 3 };
+// The advance action for a stage: what the button says, and what it does. The two
+// stages that have a column ahead of them name it; nothing follows In review on the
+// board, so completing there ends the action — `sign` marks the one CTA that leaves
+// the board rather than moving a column along.
+function stageCta(columnId) {
+  const idx = BOARD_COLUMNS.findIndex(c => c.id === columnId);
+  const next = idx === -1 ? null : BOARD_COLUMNS[idx + 1];
+  if (next) return { label: columnId === 'doing' ? 'Move to review' : 'Start', nextId: next.id, sign: false };
+  return { label: 'Complete', nextId: null, sign: true };
+}
+// Only the last stage offers a way back. Everywhere else the CTA is the only move on
+// the card, and dragging between columns already covers correcting a mis-click — but
+// completing is terminal, so it gets an explicit undo standing beside it.
+const STAGE_BACK = { label: 'Mark incomplete', toId: 'doing' };
+const stageBack = columnId => columnId === 'review' ? STAGE_BACK : null;
+// Removing an action is for ones that should never have been raised. By In review the
+// work is already done, so the way off the board there is Complete, not the bin.
+const stageCanRemove = columnId => columnId !== 'review';
+// How far an action sits from its patch cutoff, in words, for the drawer's Due tile.
+// Negative slack has already missed it.
+function dueLabel(days) {
+  if (days < 0) return 'Overdue by ' + (-days) + (days === -1 ? ' day' : ' days');
+  if (days === 0) return 'Due today';
+  return 'Due in ' + days + (days === 1 ? ' day' : ' days');
+}
 const PRIORITY_OPTIONS = [
   { id: 'all', label: 'Priority', menuLabel: 'Any priority' },
   { id: 'P0', label: 'P0 only', menuLabel: 'P0 only' },
@@ -4205,22 +4331,24 @@ const PATCH_OPTIONS = [
   { id: '26.04', label: 'Patch 26.04' },
   { id: 'all', label: 'All patches' }
 ];
-// The rail's opening order and the sentence each task shows for itself. How much of
+// The rail's opening order and the sentence each action shows for itself. How much of
 // a card is drawn comes from its *position* — top gets the full read-out, second a
 // one-line reason, the rest a stub — so dragging a card up expands it in place.
 const AI_RANKING = [
-  { taskId: 't1', why: 'Only P0 with a confirmed root cause. Six hours of work clears 2,140 affected games.' },
-  { taskId: 't2', why: 'P0 at 78% repro with nobody assigned on day 8, and the fix window closes on day 14.' },
-  { taskId: 't3', why: 'Already fixed — it only needs a PBE push before the day 13 sign-off.' }
+  { taskId: 'a1', why: 'The loudest theme in the patch and the only one with a named cause — one config change answers 4,120 posts.' },
+  { taskId: 'a3', why: 'Second-loudest theme, and the one players forgive least: item feel decides whether they stay on this patch.' },
+  { taskId: 'a9', why: 'The only theme where sentiment and spend move together — pass completion is already down 22%.' }
 ];
+// Rank 1 gets the signal read-out and the action buttons; the rest are the same card
+// without them. The reason itself is on every rank, styled identically.
 const AI_DETAIL_BY_RANK = ['full', 'brief'];
-// The rail is a do-next shortlist, not a list of everything above the bar — past this
-// many, tasks stay as ordinary cards in their columns.
+// The rail is an act-on-this-first shortlist, not a list of everything above the bar —
+// past this many, actions stay as ordinary cards in their columns.
 const AI_RAIL_LIMIT = 3;
 // Derived, not written: the board changes constantly and a fixed paragraph would keep
-// claiming the wrong number of P0s.
+// claiming the wrong number of critical themes.
 function aiSummaryFor(tasks, columnOf, bar, parkedCount) {
-  if (!tasks.length) return 'Nothing on the board at this patch and confidence bar.';
+  if (!tasks.length) return 'No suggested actions at this patch and confidence bar.';
   const p0 = tasks.filter(t => t.priority === 'P0');
   const stalled = tasks.filter(t => t.stalled);
   const doing = tasks.filter(t => columnOf(t) === 'doing');
@@ -4228,102 +4356,356 @@ function aiSummaryFor(tasks, columnOf, bar, parkedCount) {
   const bits = [];
   if (p0.length) {
     const names = p0.slice(0, 2).map(t => t.short).join(', then ');
-    bits.push(`${p0.length} P0${p0.length === 1 ? '' : 's'} open — start with ${names}${p0.length > 2 ? `, with ${p0.length - 2} more behind` : ''}.`);
+    bits.push(`${p0.length} theme${p0.length === 1 ? '' : 's'} need a response this patch — start with ${names}${p0.length > 2 ? `, with ${p0.length - 2} more behind` : ''}.`);
   } else {
-    bits.push('No P0s open, so this is a cleanup patch.');
+    bits.push('Nothing critical left in the feedback, so this is a polish pass.');
   }
-  bits.push(`${doing.length} task${doing.length === 1 ? '' : 's'} in flight${stalled.length ? `, ${stalled.length} of them stalled` : ''}.`);
-  if (overdue.length) bits.push(`${overdue.length} past due.`);
+  bits.push(`${doing.length} action${doing.length === 1 ? '' : 's'} under way${stalled.length ? `, ${stalled.length} of them stalled` : ''}.`);
+  if (overdue.length) bits.push(`${overdue.length} past the patch cutoff.`);
   if (parkedCount) bits.push(`${parkedCount} below your ${bar}% confidence bar and parked.`);
   return bits.join(' ');
 }
-// Detail-drawer copy that cannot be derived from the board data: what the impact and
-// confidence numbers mean, and the steps Ghost AI proposes. Estimate, priority, due
-// slack, linked data points and the ranking rationale all come from existing data, so
-// a task missing an entry here still opens a complete drawer minus the steps.
+// Detail-drawer copy that cannot be derived from the canvas: what the impact and
+// confidence numbers actually mean for this theme, plus the plan Ghost AI proposes.
+// Every action is a broad topic rather than a single fix, so the plan is two levels:
+// `approach` says how to come at the theme, and `plan` is the work it breaks into —
+// related pieces held together as one item with its own sub-tasks rather than listed
+// flat. Estimate, priority, cutoff slack and the ranking rationale all come from
+// existing data, so an action missing an entry here still opens a complete drawer.
 const TASK_DETAILS = {
-  t1: {
-    impact: '2,140 games', impactNote: 'Since the 26.03 rollout',
-    confidenceNote: 'Root cause confirmed in code',
-    estimateNote: 'Ghost AI estimate from 4 similar fixes',
-    steps: [
-      'Move the shield application behind the syncToServer() callback',
-      'Add a regression test for the 0.25s interrupt window',
-      'Verify on PBE against the attached replay clip'
+  a1: {
+    impact: '4,120 posts', impactNote: 'Reddit, Discord and the in-game survey',
+    confidenceNote: 'Complaints match the 26.03 cast-queue change',
+    estimateNote: 'Ghost AI estimate from 3 similar tuning passes',
+    approach: 'Treat this as a tuning pass, not a rewrite. The 26.03 queue window is the one variable players are actually describing, so change it, prove the change with a number they can see, and say so publicly before the theme hardens into received wisdom.',
+    plan: [
+      { label: 'Roll the cast-queue window back', subs: [
+        'Drop the window from 30ms to 20ms behind a server flag',
+        'Keep the 26.03 reconnect buffering — that part is not contested',
+        'Ship to PBE for a weekend soak'
+      ] },
+      { label: 'Prove it with numbers', subs: [
+        'Capture practice-tool latency against a 26.02 client',
+        'Sample the twenty abilities named most in the megathread'
+      ] },
+      { label: 'Close the loop with players', subs: [
+        'Name the change in the hotfix notes',
+        'Re-measure sentiment on the theme a week later'
+      ] }
     ]
   },
-  t2: {
-    impact: '0.42% of sessions', impactNote: 'Up from 0.11% on 26.02',
-    confidenceNote: 'Stack trace consistent across reports',
-    estimateNote: 'Ghost AI estimate from 2 similar crashes',
-    steps: [
-      'Guard the null deref in MatchmakingSvc::resolveCrossRegion()',
-      'Reproduce against a cross-region queue in staging',
-      'Add a crash-rate gate before the day 13 sign-off'
+  a2: {
+    approach: 'The readout is the cheap half of the responsiveness work. It does not make the game feel better — it gets players and the team arguing about the same number instead of about vibes.',
+    plan: [
+      { label: 'Finish the practice-tool readout', subs: [
+        'Show input-to-cast time per ability',
+        'Log a rolling median players can screenshot'
+      ] },
+      { label: 'Get it through QA', subs: [
+        'Verify the number against a 240fps capture'
+      ] }
     ]
   },
-  t3: {
-    impact: 'Fix already submitted', impactNote: 'Waiting on a PBE window',
-    confidenceNote: 'QA reproduced the original report',
-    estimateNote: 'Ghost AI estimate from the submitted diff',
-    steps: ['Push the branch to PBE', 'Ask QA to re-run the tornado hitbox case']
-  },
-  t4: {
-    impact: 'Every consecutive basic attack', impactNote: 'Possession resets the item window to 0',
-    confidenceNote: 'Expected behaviour documented',
-    estimateNote: 'Ghost AI estimate from 3 similar item fixes'
-  },
-  t12: {
-    impact: '1,180 ranked games', impactNote: 'Diamond+ over four days',
-    confidenceNote: 'Repro steps confirmed by QA',
-    estimateNote: 'Ghost AI estimate from 3 similar exploit fixes',
-    steps: [
-      'Re-check the dodge penalty server side on reconnect',
-      'Backfill penalties for the affected four-day window',
-      'Add a queue-integrity regression case'
+  a3: {
+    impact: '2,860 threads', impactNote: '68% rate the new items worse than 26.02',
+    confidenceNote: 'Sentiment and build data agree on the flat curve',
+    estimateNote: 'Ghost AI estimate from 2 similar item passes',
+    approach: 'Players are not asking for mythics back — they are asking for a moment where a build starts working. Rebuild that spike into the three worst-rated items before reopening the wider system.',
+    plan: [
+      { label: 'Re-tune the three worst-rated mythics', subs: [
+        'Front-load the second-item power curve',
+        'Leave the removal itself alone — it is not what players object to',
+        'Simulate build paths against the 26.02 curves'
+      ] },
+      { label: 'Validate with the loudest cohort', subs: [
+        'Ship to PBE and re-survey jungle mains first',
+        'Compare win rate by item count against 26.02'
+      ] }
     ]
   },
-  t13: {
-    impact: '6.4% of EU checkouts', impactNote: 'Roughly £18k per hour at risk',
-    confidenceNote: 'Gateway response reproduced in staging',
-    estimateNote: 'Ghost AI estimate from the gateway trace',
-    steps: [
-      'Treat a 402 on 3DS retry as a failure, not a success',
-      'Replay the failed EU transactions',
-      'Add a synthetic checkout probe per payment region'
+  a4: {
+    approach: 'Half the item complaint is legibility rather than balance: the spike exists in the numbers but never in the text. Say what the item does at each stage of the build.',
+    plan: [
+      { label: 'Rewrite the tooltip copy', subs: [
+        'State the power spike explicitly on every reworked item',
+        'Show which stage the item is currently at'
+      ] },
+      { label: 'Check it reads in play', subs: [
+        'Playtest at 1080p with the shop open mid-fight'
+      ] }
     ]
   },
-  t17: {
-    impact: 'Every cross-region party', impactNote: 'Confirmed in all crashed matches',
-    confidenceNote: 'Shared trigger identified across replays',
-    estimateNote: 'Ghost AI estimate from 2 similar guards'
+  a5: {
+    impact: '54% negative on the HUD', impactNote: 'Health bar is the most-named element',
+    confidenceNote: 'Same element named in every channel',
+    estimateNote: 'Ghost AI estimate from 2 similar UI passes',
+    approach: 'Keep the redesign, fix the legibility. Every complaint names the same element and nobody is asking for the old HUD back, so this is a contrast pass rather than a revert.',
+    plan: [
+      { label: 'Raise bar contrast to 4.5:1', subs: [
+        'Re-tune health, resource and shield fills',
+        'Thicken the enemy bar outline during fights'
+      ] },
+      { label: 'Check it against every palette', subs: [
+        'Verify in all three colourblind modes',
+        'Screenshot-diff the HUD against 26.02 at 1080p'
+      ] }
+    ]
   },
-  t7: {
-    impact: '45ms median frame time', impactNote: 'Target is 16ms on min-spec',
-    confidenceNote: 'Profiler points at per-frame allocation',
+  a6: {
+    impact: '90 accessibility tickets', impactNote: 'Opened since the 26.03 rollout',
+    confidenceNote: 'Reported directly by affected players',
+    estimateNote: 'Ghost AI estimate from the 26.01 palette work',
+    approach: 'The accessibility tickets are a different problem from general contrast. Treat the palettes as a first-class mode rather than a filter laid over the new HUD.',
+    plan: [
+      { label: 'Author the three palettes properly', subs: [
+        'Deuteranopia, protanopia and tritanopia sets',
+        'Cover HUD, minimap pings and damage numbers'
+      ] },
+      { label: 'Test with the people who reported it', subs: [
+        'Recruit a PBE pass from the ninety open tickets'
+      ] }
+    ]
+  },
+  a7: {
+    impact: '38% of balance posts', impactNote: 'Win rate 18% above band confirms it',
+    confidenceNote: 'Sentiment and telemetry agree for once',
+    estimateNote: 'Ghost AI estimate from 4 similar number changes',
+    approach: 'The feedback and the data point the same way, which makes this a numbers change with a public explanation attached. No kit work — players have not asked for any.',
+    plan: [
+      { label: 'Bring the numbers inside the band', subs: [
+        'Cut base damage and scaling on the outlier ability',
+        'Re-simulate against the 26.03 win-rate curve'
+      ] },
+      { label: 'Say what you did not change', subs: [
+        'State in the note that the kit is untouched'
+      ] }
+    ]
+  },
+  a8: {
+    approach: 'Balance sentiment is partly an information problem. Players name three champions; the notes name thirty changes. Lead with the three.',
+    plan: [
+      { label: 'Restructure the balance note', subs: [
+        'Open with the three champions players actually named',
+        'Show the band each one is being moved toward'
+      ] },
+      { label: 'Publish it alongside the hotfix' }
+    ]
+  },
+  a9: {
+    impact: '3,410 posts', impactNote: 'Pass completion down 22% on 26.02',
+    confidenceNote: 'Survey and completion data point the same way',
+    estimateNote: 'Ghost AI estimate from the pass config',
+    approach: 'The only theme where sentiment and spend move together, so treat it as a live revenue fix: cut the pace, make current owners whole, and announce it while the thread is still open.',
+    plan: [
+      { label: 'Cut the tier pace', subs: [
+        'Reduce tier XP requirements by 20%',
+        'Re-check the end-of-pass completion projection'
+      ] },
+      { label: 'Make current owners whole', subs: [
+        'Grant the difference retroactively to everyone who bought in',
+        'Notify in-client on next login'
+      ] },
+      { label: 'Announce before the weekend', subs: [
+        'Post ahead of the next pass reset'
+      ] }
+    ]
+  },
+  a10: {
+    approach: 'The grant is what turns a pricing climbdown into goodwill, and it only works if it lands before players finish the pass at the old rate.',
+    plan: [
+      { label: 'Backfill the tier grant', subs: [
+        'Compute the per-account delta against the new curve',
+        'Grant on next login rather than waiting for a patch'
+      ] },
+      { label: 'Handle the edge cases', subs: [
+        'Accounts that already completed the pass',
+        'Refund requests already sitting in the support queue'
+      ] }
+    ]
+  },
+  a11: {
+    impact: '1,340 one-star reviews', impactNote: 'Almost all below min-spec, in BR and TR',
+    confidenceNote: 'Profiler confirms the per-frame allocation',
     estimateNote: 'Ghost AI estimate from 2 similar perf fixes',
-    steps: ['Pool the recall VFX allocation', 'Re-profile on low-end hardware', 'Post a before/after frame trace']
+    approach: 'A narrow fix with a concentrated audience. The stutter is one allocation on one hardware tier, so pool it and prove the frame time on the machines that actually reported it.',
+    plan: [
+      { label: 'Pool the recall VFX allocation', subs: [
+        'Move the per-frame allocation into the effect pool',
+        'Audit the other 26.03 effects for the same pattern'
+      ] },
+      { label: 'Prove it on the reported hardware', subs: [
+        'Re-profile on a min-spec machine',
+        'Post a before/after frame trace with the hotfix'
+      ] }
+    ]
+  },
+  a12: {
+    approach: 'A preset is the fastest relief for the BR and TR reports while the pooling work lands. It costs fidelity this tier was never getting anyway.',
+    plan: [
+      { label: 'Finish the low-spec preset', subs: [
+        'Cap effect density and shadow resolution',
+        'Offer it below min-spec rather than forcing it on'
+      ] },
+      { label: 'Get it through QA', subs: [
+        'Verify it holds 60fps on the reported machines'
+      ] }
+    ]
+  },
+  a13: {
+    impact: 'Session length down 9%', impactNote: 'Since the 26.03 ranked reset',
+    confidenceNote: 'Scored from survey and telemetry together',
+    estimateNote: 'Ghost AI estimate from 1 similar LP change',
+    approach: 'Players are describing the cost of a loss, not how often they lose. Rebalance the gain-loss asymmetry before touching placements or MMR.',
+    plan: [
+      { label: 'Rebalance gain against loss', subs: [
+        'Narrow the post-reset asymmetry',
+        'Model the effect on climb time per tier'
+      ] },
+      { label: 'Watch what it does to sessions', subs: [
+        'Track ranked session length for a week after'
+      ] }
+    ]
+  },
+  a14: {
+    approach: 'Half the frustration is opacity — players cannot see why a loss cost what it did. Show the reasoning on the screen where they feel it.',
+    plan: [
+      { label: 'Show the LP breakdown post-game', subs: [
+        'Name the MMR and streak components',
+        'Link out to a plain-language explainer'
+      ] }
+    ]
+  },
+  a15: {
+    impact: 'Buy time up 1.9s', impactNote: '4.8s per purchase, against 2.9s on 26.02',
+    confidenceNote: 'Measured in playtest, not inferred',
+    estimateNote: 'Ghost AI estimate from the shop layout diff',
+    approach: 'The shop is slower to use, not worse-looking. Put the thing players reach for back where their hand already goes.',
+    plan: [
+      { label: 'Move recommended items above the fold', subs: [
+        'Fix 1080p first — it is the modal resolution',
+        'Re-measure purchase time in playtest'
+      ] }
+    ]
+  },
+  a16: {
+    approach: 'A small, long-standing defect that keeps getting swept into shop-redesign feedback. Fix the matching and it stops counting against the redesign.',
+    plan: [
+      { label: 'Fix partial-name matching', subs: [
+        'Match on substrings and the common abbreviations',
+        'Add the reported champion names as test cases'
+      ] }
+    ]
+  },
+  a17: {
+    impact: '62% asked for it', impactNote: 'Top request in the clarity poll',
+    confidenceNote: 'A stated ask, not an inferred one',
+    estimateNote: 'Ghost AI estimate from 2 similar settings additions',
+    approach: 'This is the stated ask, almost verbatim. Ship the slider rather than tuning effects globally, so the players who like the density keep it.',
+    plan: [
+      { label: 'Add an enemy-only VFX intensity slider', subs: [
+        'Scale enemy effect opacity and particle count',
+        'Leave ally and neutral effects untouched',
+        'Default to current behaviour'
+      ] },
+      { label: 'Verify it does not hide information', subs: [
+        'Check telegraphs stay readable at the lowest setting'
+      ] }
+    ]
+  },
+  a18: {
+    approach: 'The other half of the clarity work: if enemy effects can be dimmed, ally effects should be identifiable without dimming anything at all.',
+    plan: [
+      { label: 'Recolour ally casts to the team palette', subs: [
+        'Shift ally effect hues toward the team colour',
+        'Keep champion identity colours on the caster itself'
+      ] }
+    ]
+  },
+  a19: {
+    approach: 'The map update is the best-received change in the patch and carries exactly one caveat. Fix the caveat at the setting where it shows up.',
+    plan: [
+      { label: 'Raise brush-edge contrast at low settings', subs: [
+        'Add a silhouette outline below medium quality',
+        'Verify against the reported screenshots'
+      ] }
+    ]
+  },
+  a20: {
+    approach: 'Players noticed that 26.02 asks actually shipped. Say so explicitly and name what is coming from this round, so the loop is visible rather than something they have to infer.',
+    plan: [
+      { label: 'Write the 26.03 response post', subs: [
+        'Name the themes by volume, including ones not being actioned',
+        'List what shipped from 26.02 feedback',
+        'Give dates for the hotfix items'
+      ] }
+    ]
+  },
+  a21: {
+    approach: 'Nothing here counts as fixed until the same instrument says so. Re-run the survey on the three loudest themes once the hotfix has landed.',
+    plan: [
+      { label: 'Re-survey the three loudest themes', subs: [
+        'Reuse the 26.03 question set unchanged',
+        'Segment by whether the player saw the hotfix'
+      ] }
+    ]
+  },
+  a22: {
+    approach: 'New players are leaving rather than complaining, and the one thing they do name is the shop tutorial. Rebuild that before widening the onboarding work.',
+    plan: [
+      { label: 'Rebuild the item shop tutorial', subs: [
+        'Teach the new item stages, not the old mythic model',
+        'Run it inside a real match rather than a sandbox'
+      ] },
+      { label: 'Instrument it', subs: [
+        'Track drop-off per step',
+        'Watch day-7 retention on new accounts'
+      ] }
+    ]
+  },
+  a23: {
+    approach: 'Restore the control players used to have. The argument about the mix mostly goes away once they can set it themselves.',
+    plan: [
+      { label: 'Split music and SFX volume', subs: [
+        'Separate sliders, with the old defaults',
+        'Migrate existing settings without resetting anyone'
+      ] }
+    ]
+  },
+  a24: {
+    approach: 'A default that fixes the common case for the players who never open settings: objective audio should win over the music bed.',
+    plan: [
+      { label: 'Duck the music under objective SFX', subs: [
+        'Baron, Dragon and Herald spawn cues',
+        'Keep the duck short enough not to read as a dropout'
+      ] }
+    ]
+  },
+  a25: {
+    approach: 'Thin evidence, cheap fix. Add the retry now so the theme either resolves or proves it was never the relay.',
+    plan: [
+      { label: 'Add a reconnect retry on the EU West relay', subs: [
+        'Retry with backoff after a failed handshake',
+        'Log the failure reason for the next look'
+      ] }
+    ]
   }
 };
 const TASK_DETAIL_FALLBACK = {
-  impactNote: 'No telemetry attached yet',
+  impactNote: 'No volume figure attached yet',
   confidenceNote: 'Scored from the linked data points',
   estimateNote: 'Ghost AI estimate from similar work'
 };
-const RANK_ORDINALS = ['first', 'second', 'third', 'fourth', 'fifth'];
+// Feedback the team has already answered — shipped since the patch landed. Kept beside
+// the board so a theme that looks unaddressed can be checked against what went out.
 const DONE_THIS_WEEK = [
-  'Cap the ARAM snowball cooldown at 40s',
-  'Restore the missing champion mastery banners',
-  'Fix the Baron timer desync in spectator',
-  'Ship the 26.03 hotfix changelog',
-  'Patch the profile page avatar cache',
-  'Re-enable the EU West login queue metrics',
-  'Roll back the loot-orb store banner'
+  'Restored the 26.02 minimap scale option',
+  'Re-enabled the classic health bar colours',
+  'Hotfixed shop tooltip truncation at 1080p',
+  'Cut Smolder base damage by 8',
+  'Shipped the pt-BR patch note translation',
+  'Raised the ARAM snowball cooldown to 40s',
+  'Published the 26.03 feedback digest'
 ];
-const NOTE_W = 190, NOTE_H = 110, PAD = 46, GRID = 24;
-// Data points sit on a two-column grid within their group rather than at authored
-// offsets, so every card lines up with the one above and beside it.
-const NOTE_COLS = 2, NOTE_STEP_X = 216, NOTE_STEP_Y = 144;
 (() => {
   const seen = {};
   NOTES.forEach(n => {
@@ -4333,6 +4715,22 @@ const NOTE_COLS = 2, NOTE_STEP_X = 216, NOTE_STEP_Y = 144;
     n.dy = Math.floor(i / NOTE_COLS) * NOTE_STEP_Y;
   });
 })();
+// Signals whose theme has dropped below the confidence bar are held in a lane past the
+// last parent column — clear of the space that column's summary panel opens into, so
+// the two never collide. Four across rather than a theme's two, because at a high bar
+// almost every signal ends up here.
+const PARKED_COLS = 4;
+const PARKED_X = THEME_ORIGIN_X + (TOPIC_PARENTS.length - 1) * PARENT_STEP_X +
+  (THEME_BOX_W - PAD) + GROUP_PANEL_GAP + GROUP_PANEL_W + 96;
+const PARKED_Y = THEME_ORIGIN_Y;
+// Sized off the layout above, so adding a theme, a parent or a parked signal can never
+// overflow it. Width runs to the far side of the parked lane; height to whichever is
+// taller, the deepest parent column or a fully-populated lane.
+const CANVAS_W = PARKED_X + PARKED_COLS * NOTE_STEP_X + CANVAS_MARGIN;
+const CANVAS_H = Math.max(
+  THEME_ORIGIN_Y + (TOPIC_LAYOUT.rows - 1) * THEME_STEP_Y + (THEME_BOX_H - 84) + PARENT_INSET,
+  PARKED_Y + Math.ceil(NOTES.length / PARKED_COLS) * NOTE_STEP_Y + NOTE_H
+) + CANVAS_MARGIN;
 // How far past the bucket it started in a data point has to travel before that
 // bucket lets go. Measured against the bucket as it looked when the drag began, so
 // pulling one card out does not shrink the target under the pointer.
@@ -5617,13 +6015,13 @@ const GHOST_CONTEXTS = {
     ]
   },
   tasks: {
-    subject: 'your tasks',
-    greeting: 'Ask me about your tasks.',
-    detail: 'Ask anything about the board or the canvas, or pick a starter below.',
+    subject: 'this feedback',
+    greeting: 'Ask me about player feedback.',
+    detail: 'Ask anything about the 26.03 themes or the actions I have suggested.',
     starters: [
-      { id: 't_first', label: 'What should I do first?' },
-      { id: 't_risk', label: 'What is at risk this patch?' },
-      { id: 't_groups', label: 'Which groupings look weak?' }
+      { id: 't_first', label: 'What should I act on first?' },
+      { id: 't_risk', label: 'Which actions are slipping?' },
+      { id: 't_groups', label: 'Which themes look thin?' }
     ]
   },
   messages: {
@@ -5719,6 +6117,26 @@ function ghostReasoningPlan(id) {
       'Tallying requests by topic and channel',
       'Weighing creator vs. player signal',
       'Summarizing what the community wants next'
+    ],
+    // Feedback Analysis starters. The board and canvas are read live in
+    // ghostReplyFor(); these are the steps shown while that read happens.
+    t_first: [
+      `Reading ${NOTES.length} feedback signals across ${TOPIC_GROUPS.length} themes`,
+      'Weighting each theme by volume and sentiment',
+      'Checking which ones have a named cause',
+      'Ordering the suggested actions by what they answer'
+    ],
+    t_risk: [
+      'Checking every action against the patch cutoff',
+      'Flagging anything stalled or waiting on review',
+      'Re-reading the themes behind them for new volume',
+      'Naming what is actually slipping'
+    ],
+    t_groups: [
+      'Re-scoring how tightly each theme clusters',
+      'Counting corroborating channels per theme',
+      'Marking the ones resting on a single source',
+      'Listing what I am least sure about'
     ],
     overview: [
       `Ingesting ${n} open tickets from the report`,
@@ -5818,20 +6236,26 @@ class Component extends DCLogic {
     selectedThreadId: MESSAGE_THREADS_SEED[0].id,
     showComposeMenu: false,
     messageDraft: '',
-    // --- My Tasks view state (task board / canvas) ---
-    // Tasks are state, not a constant: regrouping data points on the canvas
+    // --- Feedback Analysis view state (action board / canvas) ---
+    // Suggested actions are state, not a constant: regrouping signals on the canvas
     // rescopes them, and a change to already-started work spawns a new one.
-    // `groupId` is the canvas group that proposes the task and `scopeNoteIds` the
-    // data points it was scoped against.
-    tasks: TASKS.map(t => ({
+    // `groupId` is the theme that proposes the action and `scopeNoteIds` the
+    // signals it was scoped against.
+    tasks: ACTIONS.map(t => ({
       ...t,
       groupId: t.topicId,
       scopeNoteIds: NOTES.filter(n => n.topicId === t.topicId).map(n => n.id)
     })),
     taskSeq: 0,
     taskHeaderNarrow: false,
-    // Confident groups are already formed when the board opens.
-    taskNotes: NOTES.map(n => ({ ...n, x: snap(TOPIC_GROUPS.find(b => b.id === n.topicId).x + n.dx), y: snap(TOPIC_GROUPS.find(b => b.id === n.topicId).y + n.dy), groupId: TOPIC_GROUPS.find(b => b.id === n.topicId).confidence >= CONFIDENCE_DEFAULT ? n.topicId : null, daysAgo: DAYS_AGO[n.id] })),
+    // Confident themes are already formed when the board opens; the rest start parked.
+    // homeX/homeY is the slot a signal belongs in, kept so it can find its way back
+    // when the bar comes down again.
+    taskNotes: placeNotes(NOTES.map(n => {
+      const topic = TOPIC_GROUPS.find(b => b.id === n.topicId);
+      const homeX = snap(topic.x + n.dx), homeY = snap(topic.y + n.dy);
+      return { ...n, homeX, homeY, x: homeX, y: homeY, daysAgo: DAYS_AGO[n.id] };
+    }), LIVE_AT_DEFAULT),
     taskGroups: autoGroupsFor(CONFIDENCE_DEFAULT),
     groupConfidence: CONFIDENCE_DEFAULT,
     confidenceMenuOpen: false,
@@ -5845,7 +6269,7 @@ class Component extends DCLogic {
     rangeMenuOpen: false,
     rangeDays: TASK_RANGE_DEFAULT,
     taskViewMode: 'board',
-    // --- Task Board (Figma 272:23170) ---
+    // --- Action Board (Figma 272:23170) ---
     boardSearch: '',
     boardPriority: 'all',
     boardPatch: '26.03',
@@ -5857,11 +6281,14 @@ class Component extends DCLogic {
     boardMoves: {},
     removedTasks: {},
     doneWeekOpen: false,
+    // Seeded from the constant but written to by Reviewed, so signing an action off
+    // lands it somewhere visible instead of just dropping it off the board.
+    shippedWeek: DONE_THIS_WEEK.slice(),
     // Hand-dragged rail order. Empty means "no opinion yet" — the rail is ordered by
     // confidence and severity until the user actually drags something, otherwise the
     // seed would masquerade as a preference and outrank a better-evidenced task.
     aiOrder: [],
-    // Task detail drawer: which task is open, and which suggested steps are ticked.
+    // Action detail drawer: which action is open, and which suggested steps are ticked.
     taskDetailId: null,
     taskSteps: {},
     // Group whose title is being edited inline, and the in-flight text.
@@ -6080,11 +6507,33 @@ class Component extends DCLogic {
     if (this.state.contextMenu) this.setState({ contextMenu: null });
     const members = this.state.taskNotes
       .filter(n => n.groupId === groupId)
-      .map(n => ({ id: n.id, x: n.x, y: n.y }));
+      .map(n => ({ id: n.id, x: n.x, y: n.y, homeX: n.homeX, homeY: n.homeY }));
     if (!members.length) return;
     this._groupMoved = false;
     const ob = this.state.groupBoxes[groupId];
-    this._drag = { type: 'group', groupId, startX: e.clientX, startY: e.clientY, members, origBox: ob ? { ...ob } : null };
+    this._drag = { type: 'group', groupId, startX: e.clientX, startY: e.clientY, members,
+      boxes: ob ? { [groupId]: { ...ob } } : {} };
+  };
+  // Dragging a parent moves every theme inside it at once. Same movement as a bucket
+  // drag — it just starts with more members and more hand-set boxes to carry.
+  startParentDrag = parentId => e => {
+    if (this.spaceDown || e.button === 1) return;
+    e.stopPropagation();
+    if (this.state.contextMenu) this.setState({ contextMenu: null });
+    const parent = TOPIC_PARENTS.find(x => x.id === parentId);
+    if (!parent) return;
+    const own = {};
+    parent.children.forEach(id => { own[id] = true; });
+    const members = this.state.taskNotes
+      .filter(n => n.groupId && own[n.groupId])
+      .map(n => ({ id: n.id, x: n.x, y: n.y, homeX: n.homeX, homeY: n.homeY }));
+    if (!members.length) return;
+    this._groupMoved = false;
+    const boxes = {};
+    parent.children.forEach(id => {
+      if (this.state.groupBoxes[id]) boxes[id] = { ...this.state.groupBoxes[id] };
+    });
+    this._drag = { type: 'group', startX: e.clientX, startY: e.clientY, members, boxes };
   };
   startGroupResize = (groupId, corner) => e => {
     if (this.spaceDown || e.button === 1) return;
@@ -6186,14 +6635,10 @@ class Component extends DCLogic {
   confidencePatch = (s, pct) => {
     const manual = s.taskGroups.filter(g => !g.auto);
     const groups = manual.concat(autoGroupsFor(pct).filter(a => !manual.some(m => m.id === a.id)));
-    const live = {};
-    groups.forEach(g => { live[g.id] = true; });
     return {
       groupConfidence: pct,
       taskGroups: groups,
-      taskNotes: s.taskNotes.map(n => n.manualGroupId !== undefined
-        ? { ...n, groupId: live[n.manualGroupId] ? n.manualGroupId : null }
-        : { ...n, groupId: live[n.topicId] ? n.topicId : null })
+      taskNotes: placeNotes(s.taskNotes, liveGroupMap(groups))
     };
   };
   // Live off the slider, so the board regroups as the bar moves. No toast —
@@ -6225,7 +6670,7 @@ class Component extends DCLogic {
   confidenceKeyDown = e => {
     if (e.key === 'Enter') { this.commitConfidenceText(); if (e.target && e.target.blur) e.target.blur(); }
   };
-  // ---- Task Board interactions ----
+  // ---- Action Board interactions ----
   setBoardSearch = e => this.setState({ boardSearch: e.target.value });
   clearBoardSearch = () => this.setState({ boardSearch: '' });
   toggleBoardPriorityMenu = () => this.setState(s => ({ boardPriorityMenuOpen: !s.boardPriorityMenuOpen, boardPatchMenuOpen: false }));
@@ -6233,10 +6678,21 @@ class Component extends DCLogic {
   setBoardPriority = id => () => this.setState({ boardPriority: id, boardPriorityMenuOpen: false });
   setBoardPatch = id => () => this.setState({ boardPatch: id, boardPatchMenuOpen: false });
   toggleDoneWeek = () => this.setState(s => ({ doneWeekOpen: !s.doneWeekOpen }));
-  newBoardTask = () => this.showToast('New task drafted in ' + (this.state.boardPatch === 'all' ? '26.03' : this.state.boardPatch));
-  // In progress is capped, and the board opens with the counter already at the cap,
-  // so this reports the block rather than silently overfilling the column.
-  startTask = id => this.moveTaskTo(id, 'doing');
+  newBoardTask = () => this.showToast('New action drafted for patch ' + (this.state.boardPatch === 'all' ? '26.03' : this.state.boardPatch));
+  // Complete an action. Nothing follows In review on the board, so this is where the
+  // action ends: it joins the shipped list and comes off the columns. Removal is the
+  // same filter deleteTask uses, so nothing is actually destroyed.
+  completeTask = id => e => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    const task = this.state.tasks.find(t => t.id === id);
+    this.setState(s => ({
+      shippedWeek: [task ? task.short : 'Action', ...s.shippedWeek],
+      removedTasks: { ...s.removedTasks, [id]: true },
+      taskDetailId: s.taskDetailId === id ? null : s.taskDetailId,
+      doneWeekOpen: true
+    }));
+    this.showToast('Completed — moved to shipped this week');
+  };
   // Take a task off the board when it does not belong there. Filtered rather than
   // spliced, so the seed data is never actually destroyed.
   deleteTask = id => e => {
@@ -6246,7 +6702,7 @@ class Component extends DCLogic {
       removedTasks: { ...s.removedTasks, [id]: true },
       taskDetailId: s.taskDetailId === id ? null : s.taskDetailId
     }));
-    this.showToast('Removed “' + (task ? task.short : 'task') + '” from the board');
+    this.showToast('Removed “' + (task ? task.short : 'action') + '” from the board');
   };
   // The rail links back to the canvas, which is where the full note set lives.
   openTopicInCanvas = topicId => e => {
@@ -6254,12 +6710,22 @@ class Component extends DCLogic {
     this.setState({ taskDetailId: null, taskViewMode: 'canvas' }, () => this.highlightTopic(topicId));
   };
 
-  // ---- Task detail drawer ----
+  // ---- Action detail drawer ----
   openTaskDetail = id => e => {
     if (e && e.stopPropagation) e.stopPropagation();
     this.setState({ taskDetailId: id, boardPriorityMenuOpen: false, boardPatchMenuOpen: false });
   };
   closeTaskDetail = () => this.setState({ taskDetailId: null });
+  // Committing a parent commits its sub-tasks with it — the parent has no checked
+  // state of its own to set, it is just a read-out of theirs.
+  toggleTaskSubtree = (id, idx, count, next) => e => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    this.setState(s => {
+      const steps = { ...s.taskSteps };
+      for (let j = 0; j < count; j++) steps[id + ':' + idx + ':' + j] = next;
+      return { taskSteps: steps };
+    });
+  };
   toggleTaskStep = (id, idx) => e => {
     if (e && e.stopPropagation) e.stopPropagation();
     const key = id + ':' + idx;
@@ -6412,7 +6878,7 @@ class Component extends DCLogic {
       const dx = e.clientX - this._drag.startX, dy = e.clientY - this._drag.startY;
       const scale = this.state.pan.scale;
       const nx = snap(this._drag.origX + dx / scale), ny = snap(this._drag.origY + dy / scale);
-      this.setState(s => ({ taskNotes: s.taskNotes.map(n => n.id === this._drag.id ? { ...n, x: nx, y: ny } : n) }));
+      this.setState(s => ({ taskNotes: s.taskNotes.map(n => n.id === this._drag.id ? { ...n, x: nx, y: ny, pinned: true } : n) }));
       this.previewDropTarget([this._drag.id]);
     } else if (this._drag.type === 'resize') {
       this.resizeGroupTo(e.clientX - this._drag.startX, e.clientY - this._drag.startY);
@@ -6425,14 +6891,24 @@ class Component extends DCLogic {
       const sdx = snap(dx / scale), sdy = snap(dy / scale);
       if (sdx || sdy) this._groupMoved = true;
       const moved = {};
-      this._drag.members.forEach(m => { moved[m.id] = { x: m.x + sdx, y: m.y + sdy }; });
-      const gid = this._drag.groupId;
+      // Home travels with the note, so a signal that later comes back off the parked
+      // lane lands beside its theme wherever the theme has been moved to.
+      this._drag.members.forEach(m => {
+        moved[m.id] = { x: m.x + sdx, y: m.y + sdy };
+        if (m.homeX !== undefined) { moved[m.id].homeX = m.homeX + sdx; moved[m.id].homeY = m.homeY + sdy; }
+      });
+      const carried = this._drag.boxes || {};
       this.setState(s => {
-        const patch = { taskNotes: s.taskNotes.map(n => moved[n.id] ? { ...n, ...moved[n.id] } : n) };
-        // A resized bucket travels with the cards it holds.
-        if (gid && s.groupBoxes[gid] && this._drag.origBox) {
-          const ob = this._drag.origBox;
-          patch.groupBoxes = { ...s.groupBoxes, [gid]: { ...ob, minX: ob.minX + sdx, minY: ob.minY + sdy } };
+        const patch = { taskNotes: s.taskNotes.map(n => moved[n.id] ? { ...n, ...moved[n.id], pinned: true } : n) };
+        // Resized buckets travel with the cards they hold — one for a bucket drag,
+        // every resized child for a parent drag.
+        const ids = Object.keys(carried).filter(id => s.groupBoxes[id]);
+        if (ids.length) {
+          patch.groupBoxes = { ...s.groupBoxes };
+          ids.forEach(id => {
+            const ob = carried[id];
+            patch.groupBoxes[id] = { ...ob, minX: ob.minX + sdx, minY: ob.minY + sdy };
+          });
         }
         return patch;
       });
@@ -6482,7 +6958,7 @@ class Component extends DCLogic {
     this._drag = null;
   };
 
-  // ---- Canvas groups → task board ----
+  // ---- Canvas themes → suggested actions ----
   groupMeta = (gid, groups) => {
     const g = (groups || this.state.taskGroups).find(x => x.id === gid);
     const topic = TOPIC_GROUPS.find(x => x.id === gid);
@@ -6502,7 +6978,7 @@ class Component extends DCLogic {
       .filter(Boolean);
     const sources = [...new Set(members.map(n => n.source))].filter(Boolean);
     return 'Grouped by hand from ' + members.length + ' data point' + (members.length === 1 ? '' : 's') +
-      (topics.length > 1 ? ' spanning ' + topics.length + ' existing topics' : '') +
+      (topics.length > 1 ? ' spanning ' + topics.length + ' existing themes' : '') +
       '. Evidence from ' + (sources.join(', ') || 'the canvas') + '.';
   };
   // Severity follows the strongest evidence in the group.
@@ -6518,12 +6994,11 @@ class Component extends DCLogic {
     const extra = opts || {};
     return {
       id: 'gt' + seq,
-      text: 'Act on ' + meta.label,
       short: extra.short || ('Act on ' + meta.label),
       priority,
       board: 'todo',
       patch: '26.03',
-      topicId: (s.taskNotes.find(n => memberIds.indexOf(n.id) !== -1) || {}).topicId || 'polish',
+      topicId: (s.taskNotes.find(n => memberIds.indexOf(n.id) !== -1) || {}).topicId || 'combat',
       dueDays: 7,
       estimate: 'TBD',
       groupId: gid,
@@ -6532,12 +7007,12 @@ class Component extends DCLogic {
       conflictWith: extra.conflictWith || null
     };
   };
-  // Run after anything that changes which group a data point belongs to. Each
-  // group is compared against the tasks it proposed: a task still sitting in To do
-  // is rescoped in place, but one already under way is left alone and a fresh task
+  // Run after anything that changes which theme a signal belongs to. Each theme is
+  // compared against the actions it proposed: one still sitting in Suggested is
+  // rescoped in place, but one already under way is left alone and a fresh action
   // is raised beside it, flagged as a possible conflict.
-  // `newGroupsOnly` is the mode the confidence slider uses: propose a task for a
-  // group that has none, but never rescope or fork. Raising the bar dissolves groups,
+  // `newGroupsOnly` is the mode the confidence slider uses: propose an action for a
+  // theme that has none, but never rescope or fork. Raising the bar dissolves groups,
   // and "I am less sure these cluster" must not be read as "the evidence is gone".
   syncTasksToGroups = (opts) => {
     const newGroupsOnly = !!(opts && opts.newGroupsOnly);
@@ -6561,7 +7036,7 @@ class Component extends DCLogic {
           if (!members.length) return;
           seq += 1;
           tasks = tasks.concat(this.makeGroupTask(gid, members, Object.assign({}, s, { tasks }), seq));
-          notices.push({ kind: 'new', text: 'New task proposed for ' + label });
+          notices.push({ kind: 'new', text: 'New action proposed for ' + label });
           return;
         }
         if (newGroupsOnly) return;
@@ -6575,7 +7050,7 @@ class Component extends DCLogic {
         if (open.length) {
           const ids = open.map(t => t.id);
           tasks = tasks.map(t => ids.indexOf(t.id) === -1 ? t : { ...t, scopeNoteIds: members.slice() });
-          const who = open.length === 1 ? open[0].short : open.length + ' tasks';
+          const who = open.length === 1 ? open[0].short : open.length + ' actions';
           notices.push({
             kind: 'update',
             text: members.length
@@ -6589,7 +7064,7 @@ class Component extends DCLogic {
             short: 'Re-scoped: ' + label,
             conflictWith: started.id
           }));
-          notices.push({ kind: 'conflict', text: '“' + started.short + '” is already under way — raised a new task instead' });
+          notices.push({ kind: 'conflict', text: '“' + started.short + '” is already under way — raised a new action instead' });
         }
       });
       return tasks === s.tasks && seq === s.taskSeq ? null : { tasks, taskSeq: seq };
@@ -6655,7 +7130,7 @@ class Component extends DCLogic {
         tasks: s.tasks.map(t => (
           t.groupId === gid && t.proposed && (s.boardMoves[t.id] || t.board) === 'todo' &&
           prev && t.short === 'Act on ' + prev
-        ) ? { ...t, short: 'Act on ' + next, text: 'Act on ' + next } : t)
+        ) ? { ...t, short: 'Act on ' + next } : t)
       };
     });
   };
@@ -7022,7 +7497,7 @@ class Component extends DCLogic {
         const top = order.slice(0, 3)
           .map((t, i) => `\u2022 ${i + 1}. ${t.short} \u2014 ${t.priority}, ${t.estimate}`).join('\n');
         const lead = order[0];
-        return `Ordered by severity then due date, the next three are:\n\n${top}\n\nI\u2019d start with ${lead ? lead.short : 'the top item'}: it is the highest ${lead ? lead.priority : 'priority'} on the board and due soonest, so everything else slips behind it.`;
+        return `Ordered by how loud the theme is and how little slack is left, the next three are:\n\n${top}\n\nI\u2019d start with ${lead ? lead.short : 'the top item'}: it answers the loudest theme on the canvas and is closest to the patch cutoff, so everything else slips behind it.`;
       }
       if (starterId === 't_risk') {
         const stalled = onBoard.filter(t => t.stalled);
@@ -7031,25 +7506,25 @@ class Component extends DCLogic {
         const lines = [
           `\u2022 ${cols.doing.length} in progress, ${cols.review.length} in review`,
           `\u2022 ${stalled.length} stalled: ${stalled.map(t => t.short).join(', ') || 'none'}`,
-          `\u2022 ${overdue.length} past due: ${overdue.map(t => t.short).join(', ') || 'none'}`
+          `\u2022 ${overdue.length} past the cutoff: ${overdue.map(t => t.short).join(', ') || 'none'}`
         ];
         if (conflicts.length) lines.push(`\u2022 ${conflicts.length} raised by a regroup that may overlap started work`);
-        return `Here is what is actually at risk:\n\n${lines.join('\n')}\n\nThe stalled item is the one I would chase — it has had no commits since 26.02 while the patch window keeps closing.`;
+        return `Here is what is actually slipping:\n\n${lines.join('\n')}\n\nThe stalled item is the one I would chase — it answers a theme that is still gaining posts while the hotfix window closes.`;
       }
       if (starterId === 't_groups') {
         const weak = TOPIC_GROUPS
           .map(t => ({ t, members: this.state.taskNotes.filter(n => n.groupId === t.id).length }))
           .filter(x => x.members > 0 && (x.t.confidence < 85 || x.members < 2))
-          .map(x => `\u2022 ${x.t.label} \u2014 ${x.t.confidence}% confidence, ${x.members} data point${x.members === 1 ? '' : 's'}`);
+          .map(x => `\u2022 ${x.t.label} \u2014 ${x.t.confidence}% confidence, ${x.members} signal${x.members === 1 ? '' : 's'}`);
         const below = TOPIC_GROUPS.filter(t => t.confidence < bar).length;
         const parked = below === 1
-          ? `1 topic sits below your ${bar}% bar`
-          : `${below} topics sit below your ${bar}% bar`;
+          ? `1 theme sits below your ${bar}% bar`
+          : `${below} themes sit below your ${bar}% bar`;
         return weak.length
-          ? `These groupings are the thinnest on the canvas:\n\n${weak.join('\n')}\n\n${parked}, so that work is parked. Drag a data point out of any of these if you disagree with the grouping — I will rescope the task behind it.`
-          : `Every live grouping is above 85% with at least two data points, so nothing looks thin right now. ${parked} and is parked.`;
+          ? `These themes rest on the thinnest evidence:\n\n${weak.join('\n')}\n\n${parked}, so the actions behind them are parked. Drag a signal out of any of these if you read it differently — I will rescope the action behind it.`
+          : `Every live theme is above 85% and carries at least two signals, so nothing looks thin right now. ${parked} and is parked.`;
       }
-      return `The board has ${cols.todo.length} in To do, ${cols.doing.length} in progress and ${cols.review.length} in review, at a ${bar}% confidence bar. Ask me what to start, what is at risk, or which groupings look weak.`;
+      return `I have ${cols.todo.length} suggested action${cols.todo.length === 1 ? '' : 's'}, ${cols.doing.length} in progress and ${cols.review.length} in review, at a ${bar}% confidence bar. Ask me what to act on, what is slipping, or which themes look thin.`;
     }
 
     if (nav === 'messages') {
@@ -7559,7 +8034,7 @@ class Component extends DCLogic {
     const showTicketDetail = !!detailRow && !this.state.showBugReport && this.state.nav === 'player';
     const showPlayerBody = this.state.nav === 'player' && !showTicketDetail;
     const tdDetail = detailRow ? (TICKET_DETAILS[detailRow.ticket] || null) : null;
-    const headerTitle = this.state.nav === 'tasks' ? 'My Tasks'
+    const headerTitle = this.state.nav === 'tasks' ? 'Feedback Analysis'
       : this.state.nav === 'messages' ? 'Messages'
       : this.state.nav === 'player' ? 'Player Report'
       : 'Dashboard';
@@ -7687,7 +8162,7 @@ class Component extends DCLogic {
       navIcon('chevronsUpDown', 16, false)
     );
 
-    // ---- My Tasks view builders (canvas notes, buckets, task plan) ----
+    // ---- Feedback Analysis builders (canvas signals, themes, group panels) ----
     const tNotes = this.state.taskNotes;
     const tGroupsById = {};
     this.state.taskGroups.forEach(g => { tGroupsById[g.id] = g; });
@@ -7713,6 +8188,47 @@ class Component extends DCLogic {
     const tBucketNotes = Object.keys(tReleased).length
       ? tNotes.filter(n => !tReleased[n.id])
       : tNotes;
+
+    // A parent is derived from its themes rather than stored: it wraps the ones that
+    // are currently grouped, so raising the confidence bar shrinks it and dissolving
+    // every child removes it entirely. Nothing to drag, resize or rename.
+    const parentTopicsView = TOPIC_PARENTS.map(pt => {
+      const boxes = pt.children
+        .filter(id => tGroupsById[id])
+        .map(id => resolveGroupBox(tBucketNotes, id, this.state.groupBoxes))
+        .filter(Boolean);
+      if (!boxes.length) return null;
+      const minX = Math.min(...boxes.map(b => b.minX)) - PARENT_INSET;
+      const minY = Math.min(...boxes.map(b => b.minY)) - PARENT_INSET;
+      const maxX = Math.max(...boxes.map(b => b.minX + b.w)) + PARENT_INSET;
+      const maxY = Math.max(...boxes.map(b => b.minY + b.h)) + PARENT_INSET;
+      return {
+        key: pt.id,
+        left: minX + 'px', top: minY + 'px',
+        width: (maxX - minX) + 'px', height: (maxY - minY) + 'px',
+        // Clear of the theme chips, which sit on their own boxes 40px further in.
+        labelLeft: (minX + 20) + 'px', labelTop: (minY - 18) + 'px',
+        label: pt.label,
+        countLabel: boxes.length + (boxes.length === 1 ? ' theme' : ' themes'),
+        onDragStart: this.startParentDrag(pt.id)
+      };
+    }).filter(Boolean);
+
+    // The holding lane, drawn round whatever is actually parked. Like a parent it is
+    // derived and inert — the signals inside it are ungrouped, and this only says why.
+    const tParked = tNotes.filter(n => !n.groupId && !n.pinned);
+    const parkedLane = tParked.length ? (() => {
+      const minX = Math.min(...tParked.map(n => n.x)) - PAD;
+      const minY = Math.min(...tParked.map(n => n.y)) - PAD;
+      const maxX = Math.max(...tParked.map(n => n.x + NOTE_W)) + PAD;
+      const maxY = Math.max(...tParked.map(n => n.y + NOTE_H)) + PAD;
+      return {
+        left: minX + 'px', top: minY + 'px',
+        width: (maxX - minX) + 'px', height: (maxY - minY) + 'px',
+        labelLeft: (minX + 20) + 'px', labelTop: (minY - 18) + 'px',
+        countLabel: tParked.length + (tParked.length === 1 ? ' signal' : ' signals')
+      };
+    })() : null;
 
     const bucketsView = this.state.taskGroups.map(g => {
       const box = resolveGroupBox(tBucketNotes, g.id, this.state.groupBoxes);
@@ -7818,7 +8334,7 @@ class Component extends DCLogic {
     const mLeft = mq ? Math.min(mq.x1, mq.x2) : 0, mTop = mq ? Math.min(mq.y1, mq.y2) : 0;
     const mW = mq ? Math.abs(mq.x2 - mq.x1) : 0, mH = mq ? Math.abs(mq.y2 - mq.y1) : 0;
 
-    // ---- Task Board builders (AI rail + three columns) ----
+    // ---- Action Board builders (AI rail + three columns) ----
     const bQuery = this.state.boardSearch.trim().toLowerCase();
     const bPriorityCap = this.state.boardPriority === 'all' ? 9 : PRIORITY_RANK[this.state.boardPriority];
     // A task's data points are the ones its scope names — that is what makes a
@@ -7838,8 +8354,7 @@ class Component extends DCLogic {
       if (PRIORITY_RANK[t.priority] > bPriorityCap) return false;
       if (!bQuery) return true;
       const topic = TOPIC_GROUPS.find(x => x.id === t.topicId);
-      const hay = t.short + ' ' + t.text + ' ' + (t.bug || '') + ' ' + t.priority + ' ' +
-        (topic ? topic.label : '');
+      const hay = t.short + ' ' + t.priority + ' ' + (topic ? topic.label : '');
       return hay.toLowerCase().indexOf(bQuery) !== -1;
     };
     // ---- The confidence bar decides what the board carries ----
@@ -7895,6 +8410,8 @@ class Component extends DCLogic {
       .map(id => ({ r: AI_RANKING.find(x => x.taskId === id) || {}, t: boardTasks.find(t => t.id === id) }))
       .map(({ r, t }, idx) => {
         const column = this.boardColumnOf(t);
+        const railCta = stageCta(column);
+        const railBack = stageBack(column);
         // Position, not the task, decides how much of the card is drawn.
         const detail = AI_DETAIL_BY_RANK[idx] || 'compact';
         // Rank 1 reads out its topic's notes; the rest of the set stays in canvas.
@@ -7912,22 +8429,17 @@ class Component extends DCLogic {
           title: t.short,
           priority: t.priority,
           priorityClass: 'board-chip board-chip-' + t.priority.toLowerCase(),
-          bug: t.bug || '', hasBug: !!t.bug,
-          // Same three tags as a board card, ahead of the rail's own extras.
-          noteCount: topicNotes.length,
-          noteTitle: topicNotes.length + ' related data point' + (topicNotes.length === 1 ? '' : 's'),
+          // Same tags as a board card, ahead of the rail's own extras.
           estimate: t.estimate,
           scale: t.scale || '', hasScale: !!t.scale,
-          due: t.due || '', hasDue: !!t.due,
-          statusLabel: boardStatusLabel(column),
           cardClass: detail === 'full' ? 'ai-rank'
             : detail === 'brief' ? 'ai-rank ai-rank-brief'
             : 'ai-rank ai-rank-compact',
-          // Every rank carries the tag row, compact included — position controls how
-          // much *explanation* a card gets, never which tags it shows.
+          // Every rank carries the tag row and its reason, compact included, and both
+          // read the same on all three. What position still controls is the extras —
+          // the signal read-out and the action buttons on the top card.
           showChips: true,
-          showCallout: detail === 'full' && !!whyText,
-          showWhy: detail === 'brief' && !!whyText,
+          showWhy: !!whyText,
           why: whyText,
           showNotes: detail === 'full' && shown.length > 0,
           notes: shown.map(n => ({ key: n.id, label: n.title.toUpperCase(), body: n.body })),
@@ -7937,7 +8449,17 @@ class Component extends DCLogic {
           showActions: detail === 'full',
           onClick: this.openTaskDetail(t.id),
           onOpenCanvas: this.openTopicInCanvas(t.topicId),
-          onStart: this.startTask(t.id),
+          // Follows the card's own stage, so the button a Start click produced reads
+          // as Complete on the very next render rather than still offering Start.
+          showCta: !!railCta,
+          ctaLabel: railCta ? railCta.label : '',
+          onCta: !railCta ? null
+            : railCta.sign ? this.completeTask(t.id)
+            : this.moveTaskTo(t.id, railCta.nextId),
+          showBack: !!railBack,
+          backLabel: railBack ? railBack.label : '',
+          onBack: railBack ? this.moveTaskTo(t.id, railBack.toId) : null,
+          showDelete: stageCanRemove(column),
           onDelete: this.deleteTask(t.id),
           // Drag to re-rank within the rail, or out onto a column to change stage.
           // The whole card is the drag source, the grip is the affordance.
@@ -7955,7 +8477,7 @@ class Component extends DCLogic {
         };
       });
 
-    // ---- Task detail drawer ----
+    // ---- Action detail drawer ----
     const detailTask = this.state.taskDetailId
       ? this.state.tasks.find(t => t.id === this.state.taskDetailId)
       : null;
@@ -7968,39 +8490,38 @@ class Component extends DCLogic {
       const topic = TOPIC_GROUPS.find(x => x.id === detailTask.topicId);
       const rankIdx = boardRankedIds.indexOf(detailTask.id);
       const ranked = rankIdx !== -1;
-      const rank = rankIdx + 1;
       const ranking = AI_RANKING.find(r => r.taskId === detailTask.id);
-      // The next stage along, minus the move Start already offers.
-      const colIdx = BOARD_COLUMNS.findIndex(c => c.id === column);
-      const next = colIdx !== -1 ? BOARD_COLUMNS[colIdx + 1] : null;
-      const canStart = column === 'todo';
-      const showMove = !!next && !(canStart && next.id === 'doing');
-      const points = taskPoints(detailTask);
-      const steps = td.steps || [];
+      const cta = stageCta(column);
+      const back = stageBack(column);
+      const plan = td.plan || [];
+      const planLeaves = plan.map((item, i) => (item.subs || []).length
+        ? (item.subs || []).map((_, j) => detailTask.id + ':' + i + ':' + j)
+        : [detailTask.id + ':' + i]);
+      const planTotal = planLeaves.reduce((n, keys) => n + keys.length, 0);
+      const planDone = planLeaves.reduce(
+        (n, keys) => n + keys.filter(k => this.state.taskSteps[k]).length, 0);
       taskDetail = {
-        bug: detailTask.bug || 'No ticket',
         priority: detailTask.priority,
         priorityClass: 'board-chip board-chip-' + detailTask.priority.toLowerCase(),
         title: detailTask.short,
         ranked,
-        notRanked: !ranked,
-        rankLabel: 'Ranked ' + rank + ' in do next',
         statusLabel: boardStatusLabel(column),
-        canStart,
-        showMove,
-        moveLabel: next ? ('Move to ' + next.label.toLowerCase()) : '',
-        onStart: this.startTask(detailTask.id),
+        showCta: !!cta,
+        ctaLabel: cta ? cta.label : '',
+        onCta: !cta ? null
+          : cta.sign ? this.completeTask(detailTask.id)
+          : this.moveTaskTo(detailTask.id, cta.nextId),
+        showBack: !!back,
+        backLabel: back ? back.label : '',
+        onBack: back ? this.moveTaskTo(detailTask.id, back.toId) : null,
+        showDelete: stageCanRemove(column),
         onDelete: this.deleteTask(detailTask.id),
-        onMove: next ? this.moveTaskTo(detailTask.id, next.id) : null,
         estimate: detailTask.estimate,
         estimateNote: td.estimateNote,
         // Everything gates on the patch, so the headline is the cutoff and the
         // sub-line is this task's own slack against it.
         dueLabel: 'Patch ' + detailTask.patch + ' cutoff',
-        dueNote: detailTask.dueDays < 0
-          ? ('Overdue by ' + (-detailTask.dueDays) + (detailTask.dueDays === -1 ? ' day' : ' days'))
-          : detailTask.dueDays === 0 ? 'Due today'
-          : (detailTask.dueDays + (detailTask.dueDays === 1 ? ' day out' : ' days out')),
+        dueNote: dueLabel(detailTask.dueDays),
         impact: td.impact || (detailTask.scale || '—'),
         impactNote: td.impactNote,
         confidence: (topic ? topic.confidence : 0) + '%',
@@ -8011,25 +8532,41 @@ class Component extends DCLogic {
           : '',
         isProposed: !!detailTask.proposed,
         proposedText: 'Raised by Ghost AI from a canvas regroup.',
-        pointCount: points.length,
-        points: points.map(n => ({
-          key: n.id,
-          label: n.title.toUpperCase(),
-          stamp: n.source + ' · ' + (n.daysAgo === 0 ? 'today' : n.daysAgo + 'd ago'),
-          body: n.body
-        })),
         hasWhy: ranked && !!(ranking && ranking.why),
-        whyHeading: 'Why it is ranked ' + (RANK_ORDINALS[rankIdx] || ('#' + rank)),
         why: ranking ? ranking.why : '',
-        hasSteps: steps.length > 0,
-        steps: steps.map((label, i) => {
-          const on = !!this.state.taskSteps[detailTask.id + ':' + i];
+        hasApproach: !!td.approach,
+        approach: td.approach || '',
+        hasPlan: plan.length > 0,
+        // Tally counts leaves, not headings: a parent with sub-tasks is a container
+        // for them, so counting it as well would double-count the same work.
+        planTally: planDone + '/' + planTotal,
+        plan: plan.map((item, i) => {
+          const subs = item.subs || [];
+          const ownKey = detailTask.id + ':' + i;
+          const doneSubs = subs.filter((_, j) => this.state.taskSteps[ownKey + ':' + j]).length;
+          // A parent with sub-tasks is done exactly when all of them are, so it is
+          // never ticked over open children. A parent without any is its own leaf.
+          const on = subs.length ? doneSubs === subs.length : !!this.state.taskSteps[ownKey];
           return {
-            key: detailTask.id + ':' + i,
-            label,
+            key: ownKey,
+            label: item.label,
             boxClass: on ? 'td-step-box is-on' : 'td-step-box',
             checkIcon: on ? taskIcon('check', 12) : '',
-            onToggle: this.toggleTaskStep(detailTask.id, i)
+            onToggle: subs.length
+              ? this.toggleTaskSubtree(detailTask.id, i, subs.length, !on)
+              : this.toggleTaskStep(detailTask.id, i),
+            hasSubs: subs.length > 0,
+            countLabel: doneSubs + '/' + subs.length,
+            subs: subs.map((label, j) => {
+              const subOn = !!this.state.taskSteps[ownKey + ':' + j];
+              return {
+                key: ownKey + ':' + j,
+                label,
+                boxClass: subOn ? 'td-step-box is-on' : 'td-step-box',
+                checkIcon: subOn ? taskIcon('check', 12) : '',
+                onToggle: this.toggleTaskStep(detailTask.id, i + ':' + j)
+              };
+            })
           };
         }),
         onOpenCanvas: this.openTopicInCanvas(detailTask.topicId)
@@ -8038,8 +8575,8 @@ class Component extends DCLogic {
 
     const boardColumns = BOARD_COLUMNS.map(c => {
       const inColumn = boardTasks.filter(t => this.boardColumnOf(t) === c.id);
-      // A ranked task is told once, in the rail. Whichever column it belongs to
-      // stands in a stub naming its own ranked items rather than repeating a card.
+      // A ranked action is told once, in the rail, so its column does not repeat it
+      // as a card. Tracked only so the empty state can say why a column looks bare.
       const rankedHere = boardRankedIds.map(id => inColumn.find(t => t.id === id)).filter(Boolean);
       // Default order is priority then due date. Once the column has been
       // hand-sorted, that order leads and anything it has not seen — a card just
@@ -8056,17 +8593,14 @@ class Component extends DCLogic {
           return PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority] || a.dueDays - b.dueDays;
         })
         .map(t => {
-          const notes = taskPoints(t).length;
           return {
             key: t.id,
             title: t.short,
-            // Every card carries the same three tags — priority, related data
-            // points, estimate — so a column change never changes what you can read
-            // off a card. Anything column-specific hangs below the tag row.
+            // Every card carries the same tags — priority and estimate — so a column
+            // change never changes what you can read off a card. Anything
+            // column-specific hangs below the tag row.
             priority: t.priority,
             priorityClass: 'board-chip board-chip-' + t.priority.toLowerCase(),
-            noteCount: notes,
-            noteTitle: notes + ' related data point' + (notes === 1 ? '' : 's'),
             estimate: t.estimate,
             showInColumn: c.id === 'doing' && !!t.inColumn,
             inColumn: t.inColumn || '',
@@ -8108,11 +8642,13 @@ class Component extends DCLogic {
         count: String(inColumn.length),
         isTodo: c.id === 'todo',
         onAdd: this.newBoardTask,
-        showAiStub: rankedHere.length > 0,
-        aiStubHead: rankedHere.length + ' AI PRIORITIZED',
-        aiStubBody: rankedHere.map(t => t.short).join(' · '),
         cards,
-        isEmpty: cards.length === 0 && rankedHere.length === 0,
+        // Nothing left to draw. Say which of the two reasons it is: the filters left
+        // the column genuinely empty, or everything in it is up in the rail.
+        isEmpty: cards.length === 0,
+        emptyLabel: rankedHere.length
+          ? ('All ' + rankedHere.length + ' ranked in the shortlist.')
+          : 'Nothing here for this patch.',
         showDone: c.id === 'review'
       };
     });
@@ -8664,17 +9200,16 @@ class Component extends DCLogic {
       boardToggleColor: this.state.taskViewMode === 'board' ? 'var(--text-primary)' : 'var(--text-tertiary)',
       canvasToggleBg: this.state.taskViewMode === 'canvas' ? 'var(--bg-surface-2)' : 'transparent',
       canvasToggleColor: this.state.taskViewMode === 'canvas' ? 'var(--text-primary)' : 'var(--text-tertiary)',
-      // ---- Task Board (Figma 272:23170) ----
+      // ---- Action Board (Figma 272:23170) ----
       boardColumns, aiRanks,
       // With nothing ranked the summary would describe work the filters hide.
       aiRailEmpty: aiRanks.length === 0,
-      aiOrderBasis: 'BY SEVERITY, THEN DUE DATE',
+      aiOrderBasis: 'BY THEME SEVERITY',
       showAiSummary: aiRanks.length > 0,
       aiSummary: aiSummaryFor(boardTasks, this.boardColumnOf, bBar, bParkedCount),
       boardSparkIcon: taskSparkle(16),
       boardSparkSmIcon: taskSparkle(14),
       boardStatusIcon: taskIcon('columns', 12),
-      boardNoteIcon: taskIcon('note', 13),
       boardAlertIcon: taskIcon('alert', 14),
       boardDoneIcon: taskIcon('checkCircle', 16),
       boardGripIcon: taskIcon('grip', 16), boardTrashIcon: taskIcon('trash', 15),
@@ -8702,16 +9237,16 @@ class Component extends DCLogic {
         onClick: this.setBoardPatch(o.id)
       })),
       newBoardTask: this.newBoardTask,
-      // Task detail drawer
+      // Action detail drawer
       showTaskDetail: !!taskDetail,
       taskDetail: taskDetail || {},
       closeTaskDetail: this.closeTaskDetail,
-      tdCanvasIcon: taskIcon('externalLink', 16),
+      tdCanvasIcon: taskIcon('externalLink', 14),
       doneWeekOpen: this.state.doneWeekOpen,
       toggleDoneWeek: this.toggleDoneWeek,
-      doneWeekLabel: 'Done this week · ' + DONE_THIS_WEEK.length,
+      doneWeekLabel: 'Shipped this week · ' + this.state.shippedWeek.length,
       doneWeekChevron: taskIcon(this.state.doneWeekOpen ? 'chevronDown' : 'chevronRight', 16),
-      doneWeekItems: DONE_THIS_WEEK.map((label, i) => ({ key: 'dw' + i, label })),
+      doneWeekItems: this.state.shippedWeek.map((label, i) => ({ key: 'dw' + i, label })),
       // canvas zoom / range / grouping toolbar
       taskMinusIcon: taskIcon('minus', 14), taskPlusIcon: taskIcon('plus', 14), taskMaximizeIcon: taskIcon('maximize', 14),
       taskChevronDownIcon: taskIcon('chevronDown', 14), taskPencilIcon: taskIcon('pencil', 12),
@@ -8742,14 +9277,14 @@ class Component extends DCLogic {
       confidenceKeyDown: this.confidenceKeyDown,
       confidenceMatchLabel: TOPIC_GROUPS.filter(t => t.confidence >= this.state.groupConfidence).length +
         ' of ' + TOPIC_GROUPS.length,
-      // Side note: what the bar has added to or dropped from To do since it was opened.
+      // Side note: what the bar has added to or dropped from Suggested since it opened.
       showConfidenceDelta: this.state.confidenceMenuOpen && (bAdded.length > 0 || bRemoved.length > 0),
       confidenceDeltaFrom: bAnchor + '%',
       confidenceDeltaTo: bBar + '%',
       hasConfidenceAdded: bAdded.length > 0,
       hasConfidenceRemoved: bRemoved.length > 0,
-      confidenceAddedLabel: 'Added ' + bAdded.length + ' to To do',
-      confidenceRemovedLabel: 'Dropped ' + bRemoved.length + ' from To do',
+      confidenceAddedLabel: 'Added ' + bAdded.length + ' to Suggested',
+      confidenceRemovedLabel: 'Dropped ' + bRemoved.length + ' from Suggested',
       confidenceAdded: bAdded.map(t => ({ key: t.id, title: t.short, conf: taskConfidence(t) + '%' })),
       confidenceRemoved: bRemoved.map(t => ({ key: t.id, title: t.short, conf: taskConfidence(t) + '%' })),
       // One tick per topic, strongest first, so the run of lit ticks reads as a meter.
@@ -8782,7 +9317,8 @@ class Component extends DCLogic {
       panXpx: this.state.pan.x + 'px', panYpx: this.state.pan.y + 'px', scale: this.state.pan.scale,
       canvasW: CANVAS_W + 'px', canvasH: CANVAS_H + 'px',
       canvasTransition: this.state.smoothPan ? 'transform 550ms cubic-bezier(0.22,1,0.36,1)' : 'none',
-      bucketsView, notesView, groupPanels,
+      parentTopicsView, bucketsView, notesView, groupPanels,
+      hasParked: !!parkedLane, parkedLane: parkedLane || {},
       marqueeVisible: tMarqueeVisible, marqueeLeft: mLeft + 'px', marqueeTop: mTop + 'px', marqueeWidth: mW + 'px', marqueeHeight: mH + 'px',
       // context menu
       contextMenuVisible: !!this.state.contextMenu,
@@ -8797,13 +9333,13 @@ class Component extends DCLogic {
       menuUngroup: () => this.state.contextMenu && this.ungroupNote(this.state.contextMenu.noteId),
       menuAiGroup: this.aiGroup,
       menuAiGroupColor: tSelectedCount < 2 ? 'var(--text-tertiary)' : 'var(--accent)',
-      // task plan panel
+      // action board header
       taskHeaderBtnGroupDir: this.state.taskHeaderNarrow ? 'column' : 'row',
       taskHeaderBtnGroupAlign: this.state.taskHeaderNarrow ? 'flex-end' : 'center',
       headerTitle,
       showNavPlaceholder: false,
-      navPlaceholderTitle: 'My Tasks',
-      navPlaceholderBody: 'Task triage for League of Legends will live here. Switch back to Dashboard for analytics.',
+      navPlaceholderTitle: 'Feedback Analysis',
+      navPlaceholderBody: 'Player feedback for League of Legends will live here. Switch back to Dashboard for analytics.',
       messageThreadViews,
       activeThreadName: activeContact.name || '',
       activeThreadAvatarEl: contactAvatar(activeContact, 32),
