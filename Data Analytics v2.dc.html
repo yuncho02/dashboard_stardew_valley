@@ -593,11 +593,6 @@
     .ai-rail-spark { display: flex; flex-shrink: 0; color: var(--accent); }
     .ai-rail-title { font: 600 15px/1.35 var(--font-body); letter-spacing: -0.15px; color: var(--text-primary); }
     .ai-rail-summary { margin: 0; min-width: 0; overflow-wrap: break-word; font: 400 13px/19.5px var(--font-alt); color: var(--text-secondary); }
-    .ai-rail-list {
-      display: flex; flex-direction: row; align-items: stretch; gap: 12px; min-width: 0;
-      padding-top: 11px;
-    }
-    .ai-rail-list > * { flex: 1 1 0; min-width: 0; }
     /* One fill for all three ranks. Rank 1 is already unmistakable from its content
        — chips, reasoning callout, note read-out — so it does not need a raised
        surface as well. Light is pinned to the reference's #fafafa rather than
@@ -607,6 +602,9 @@
       border: 1px solid var(--border-default); border-radius: var(--radius-xl, 12px);
       background: var(--bg-surface);
     }
+    /* Ranked cards now sit inline atop their own column, so the accent border is
+       what still marks them out from the plain cards underneath. */
+    .ai-rank.is-board-ranked { border-color: var(--accent); }
     .ai-rank-head { display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
     .ai-rank-badge {
       flex-shrink: 0; width: 22px; height: 22px; border-radius: var(--radius-md);
@@ -795,12 +793,10 @@
       .ai-note-label { flex-basis: 66px; }
     }
     /* The row is held as far down as it stays legible — around 160px a column can
-       no longer carry an action title, so below this the board stacks: the AI
-       block's cards go vertical and the columns take a row each. */
+       no longer carry an action title, so below this the board stacks and the
+       columns take a row each. */
     @container (max-width: 760px) {
       .board-cols { flex-wrap: wrap; gap: 18px; }
-      .ai-rail-list { flex-direction: column; align-items: stretch; }
-      .ai-rail-list > * { flex: 0 0 auto; }
       .board-col { flex: 1 1 100%; }
       /* Search takes its own line; both selects and New Action share the next one. */
       .board-search { flex-basis: 100%; max-width: none; }
@@ -818,8 +814,6 @@
     @supports not (container-type: inline-size) {
       @media (max-width: 1120px) {
         .board-cols { flex-wrap: wrap; gap: 18px; }
-        .ai-rail-list { flex-direction: column; align-items: stretch; }
-      .ai-rail-list > * { flex: 0 0 auto; }
         .board-col { flex: 1 1 100%; }
         .board-search { flex-basis: 100%; max-width: none; }
       }
@@ -3254,43 +3248,6 @@
             <sc-if value="{{ showAiSummary }}" hint-placeholder-val="{{ true }}">
               <p class="ai-rail-summary">{{ aiSummary }}</p>
             </sc-if>
-            <div class="ai-rail-list">
-              <sc-for list="{{ aiRanks }}" as="a" hint-placeholder-count="3">
-                <div class="{{ a.cardClass }}" onClick="{{ a.onClick }}" draggable="true" onDragStart="{{ a.onDragStart }}" onDragOver="{{ a.onDragOver }}" onDragEnd="{{ a.onDragEnd }}" style="opacity:{{ a.dragOpacity }}">
-                  <div class="ai-rank-head">
-                    <span class="ai-rank-badge">{{ a.rank }}</span>
-                    <span class="ai-rank-title">{{ a.title }}</span>
-                    <span class="ai-rank-grip" title="Drag to re-rank" aria-label="Drag to re-rank">{{ boardGripIcon }}</span>
-                  </div>
-                  <sc-if value="{{ a.showChips }}" hint-placeholder-val="{{ true }}">
-                    <div class="ai-rank-chips">
-                      <span class="{{ a.priorityClass }}">{{ a.priority }}</span>
-                      <span class="board-chip">{{ a.estimate }}</span>
-                      <sc-if value="{{ a.hasScale }}" hint-placeholder-val="{{ false }}">
-                        <span class="chip-plain">{{ a.scale }}</span>
-                      </sc-if>
-                    </div>
-                  </sc-if>
-                  <sc-if value="{{ a.showWhy }}" hint-placeholder-val="{{ true }}">
-                    <div class="ai-rank-why"><span class="ai-rank-spark">{{ boardSparkSmIcon }}</span><span>{{ a.why }}</span></div>
-                  </sc-if>
-                  <sc-if value="{{ a.showNotes }}" hint-placeholder-val="{{ true }}">
-                    <div class="ai-rank-notes">
-                      <sc-for list="{{ a.notes }}" as="nt" hint-placeholder-count="3">
-                        <div class="ai-note-row">
-                          <span class="ai-note-label">{{ nt.label }}</span>
-                          <span class="ai-note-body">{{ nt.body }}</span>
-                        </div>
-                      </sc-for>
-                      <span onClick="{{ a.onOpenCanvas }}" class="ai-note-more">View canvas</span>
-                    </div>
-                  </sc-if>
-                </div>
-              </sc-for>
-              <sc-if value="{{ aiRailEmpty }}" hint-placeholder-val="{{ false }}">
-                <div class="board-col-empty">Nothing on the board to rank.</div>
-              </sc-if>
-            </div>
           </aside>
           <div class="board-cols">
             <sc-for list="{{ boardColumns }}" as="c" hint-placeholder-count="3">
@@ -3299,6 +3256,38 @@
                   <span class="board-col-name">{{ c.label }}</span>
                   <span class="board-col-count">{{ c.count }}</span>
                 </div>
+                <sc-for list="{{ c.rankedCards }}" as="a" hint-placeholder-count="0">
+                  <div class="{{ a.cardClass }}" onClick="{{ a.onClick }}" draggable="true" onDragStart="{{ a.onDragStart }}" onDragOver="{{ a.onDragOver }}" onDragEnd="{{ a.onDragEnd }}" style="opacity:{{ a.dragOpacity }}">
+                    <div class="ai-rank-head">
+                      <span class="ai-rank-badge">{{ a.rank }}</span>
+                      <span class="ai-rank-title">{{ a.title }}</span>
+                      <span class="ai-rank-grip" title="Drag to re-rank" aria-label="Drag to re-rank">{{ boardGripIcon }}</span>
+                    </div>
+                    <sc-if value="{{ a.showChips }}" hint-placeholder-val="{{ true }}">
+                      <div class="ai-rank-chips">
+                        <span class="{{ a.priorityClass }}">{{ a.priority }}</span>
+                        <span class="board-chip">{{ a.estimate }}</span>
+                        <sc-if value="{{ a.hasScale }}" hint-placeholder-val="{{ false }}">
+                          <span class="chip-plain">{{ a.scale }}</span>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ a.showWhy }}" hint-placeholder-val="{{ true }}">
+                      <div class="ai-rank-why"><span class="ai-rank-spark">{{ boardSparkSmIcon }}</span><span>{{ a.why }}</span></div>
+                    </sc-if>
+                    <sc-if value="{{ a.showNotes }}" hint-placeholder-val="{{ true }}">
+                      <div class="ai-rank-notes">
+                        <sc-for list="{{ a.notes }}" as="nt" hint-placeholder-count="3">
+                          <div class="ai-note-row">
+                            <span class="ai-note-label">{{ nt.label }}</span>
+                            <span class="ai-note-body">{{ nt.body }}</span>
+                          </div>
+                        </sc-for>
+                        <span onClick="{{ a.onOpenCanvas }}" class="ai-note-more">View canvas</span>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
                 <sc-for list="{{ c.cards }}" as="k" hint-placeholder-count="3">
                   <div onClick="{{ k.onClick }}" class="board-card" draggable="true" onDragStart="{{ k.onDragStart }}" onDragOver="{{ k.onDragOver }}" onDragEnd="{{ k.onDragEnd }}" style="opacity:{{ k.dragOpacity }}">
                     <span class="board-card-title">{{ k.title }}</span>
@@ -9160,6 +9149,10 @@ class Component extends DCLogic {
           onDragEnd: () => { this.aiDragId = null; this.setState({ dropColumn: null }); }
         };
       });
+    // Ranked cards render inline at the top of their own column now, so each one
+    // needs its highlighted variant class rather than the rail's plain one.
+    const aiRanksById = {};
+    aiRanks.forEach(a => { aiRanksById[a.key] = { ...a, cardClass: 'ai-rank is-board-ranked' }; });
 
     // ---- Action detail drawer ----
     const detailTask = this.state.taskDetailId
@@ -9262,8 +9255,8 @@ class Component extends DCLogic {
 
     const boardColumns = BOARD_COLUMNS.map(c => {
       const inColumn = boardTasks.filter(t => this.boardColumnOf(t) === c.id);
-      // A ranked action is told once, in the rail, so its column does not repeat it
-      // as a card. Tracked only so the empty state can say why a column looks bare.
+      // Ranked actions render as highlighted cards at the top of their own column
+      // instead of a plain card further down, so they are split out here.
       const rankedHere = boardRankedIds.map(id => inColumn.find(t => t.id === id)).filter(Boolean);
       // Default order is priority then due date. Once the column has been
       // hand-sorted, that order leads and anything it has not seen — a card just
@@ -9314,6 +9307,9 @@ class Component extends DCLogic {
       const dragTask = dragId ? this.state.tasks.find(t => t.id === dragId) : null;
       const isCandidate = !!dragTask && this.boardColumnOf(dragTask) !== c.id;
       const base = 'board-col tone-' + c.tone;
+      // Ranked cards lead the column they actually sit in, highlighted; everything
+      // else in the column follows in its normal, unranked order.
+      const rankedCards = rankedHere.map(t => aiRanksById[t.id]).filter(Boolean);
       return {
         key: c.id,
         label: c.label,
@@ -9324,13 +9320,10 @@ class Component extends DCLogic {
         onDragLeave: this.onColumnDragLeave(c.id),
         onDrop: this.onColumnDrop(c.id),
         count: String(inColumn.length),
+        rankedCards,
         cards,
-        // Nothing left to draw. Say which of the two reasons it is: the filters left
-        // the column genuinely empty, or everything in it is up in the rail.
-        isEmpty: cards.length === 0,
-        emptyLabel: rankedHere.length
-          ? ('All ' + rankedHere.length + ' ranked in the shortlist.')
-          : 'Nothing here for this patch.',
+        isEmpty: cards.length === 0 && rankedCards.length === 0,
+        emptyLabel: 'Nothing here for this patch.',
         showDone: c.id === 'review'
       };
     });
@@ -9897,9 +9890,8 @@ class Component extends DCLogic {
       boardToggleColor: this.state.taskViewMode === 'board' ? 'var(--text-primary)' : 'var(--toggle-inactive)',
       canvasToggleColor: this.state.taskViewMode === 'canvas' ? 'var(--text-primary)' : 'var(--toggle-inactive)',
       // ---- Action Board (Figma 272:23170) ----
-      boardColumns, aiRanks,
+      boardColumns,
       // With nothing ranked the summary would describe work the filters hide.
-      aiRailEmpty: aiRanks.length === 0,
       showAiSummary: aiRanks.length > 0,
       aiSummary: aiSummaryFor(boardTasks, this.boardColumnOf, bBar, bParkedCount),
       boardSparkIcon: taskSparkle(16),
