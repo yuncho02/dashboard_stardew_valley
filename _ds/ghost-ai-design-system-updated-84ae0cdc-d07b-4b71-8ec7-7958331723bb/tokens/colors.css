@@ -100,8 +100,9 @@
 
   /* ---- shadcn-mode semantic aliases (from Figma "mode" collection, 57 vars) ----
      Distinct from our own bg-*/text-*/accent-* naming above; kept for
-     interop with source-kit-derived specs and .prompt.md cross-references. */
-  --white: #000000;
+     interop with source-kit-derived specs and .prompt.md cross-references.
+     (--white intentionally omitted here — it shadowed the real white primitive
+     above with black; nothing referenced it, so removed rather than fixed in place.) */
   --background: var(--neutral-950);
   --foreground: #ffffff;
   --text-always-dark: var(--neutral-950);

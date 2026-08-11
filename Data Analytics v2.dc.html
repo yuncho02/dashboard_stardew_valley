@@ -23,6 +23,19 @@
     @keyframes dc-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     :root { --primary-foreground-btn: #1a2e05; }
     :root[data-theme="light"] { --primary-foreground-btn: #f7fee7; }
+    /* Priority-chip colors updated to match the board-view Figma rework exactly —
+       P0's fill to the true red-950 ramp value rather than the app's collapsed
+       approximation, P2 from amber to orange-400. Scoped to their own variables
+       rather than overwriting --danger-muted/--warning, which color unrelated
+       surfaces (Player Report, Dashboard, canvas themes) the Figma frame never
+       touched. Light mode keeps the original tokens — the rework is dark-mode only. */
+    :root { --priority-p0-bg: var(--red-950); --priority-p2: #fb923c; }
+    :root[data-theme="light"] { --priority-p0-bg: var(--danger-muted); --priority-p2: var(--warning); }
+    /* Board/Canvas toggle's inactive label, matching the Figma file's translucent
+       white exactly rather than a solid gray. Light mode falls back to the existing
+       tertiary-text token — the rework doesn't cover a light variant. */
+    :root { --toggle-inactive: rgba(255, 255, 255, 0.15); }
+    :root[data-theme="light"] { --toggle-inactive: var(--text-tertiary); }
     a { color: var(--accent); }
     a:hover { color: var(--accent-hover); }
     .sidebar-shell {
@@ -269,7 +282,7 @@
     /* Deliberately quieter than a theme chip — the parent names the area, the themes
        inside it are what carry the color. */
     .canvas-parent-name {
-      font: 600 13px/16px var(--font-body); letter-spacing: 0.02em; color: var(--text-secondary);
+      font: 600 18px/28px var(--font-body); letter-spacing: 0.02em; color: var(--text-secondary);
     }
     .canvas-parent-count { font: 400 11px/1.4 var(--font-mono); color: var(--text-tertiary); }
     .canvas-bucket-box:hover > .bucket-handle,
@@ -338,6 +351,64 @@
         linear-gradient(90deg, rgba(9,9,11,0.05) 1px, transparent 1px) 0 0 / 24px 24px,
         var(--bg-canvas);
     }
+    /* Ghost agent card pops out of the toolbar's Ghost button like a genie out of a
+       lamp — squashed and skewed at the bottom edge, overshooting past full size
+       before settling, rather than a plain fade/scale-in. */
+    @keyframes canvas-ghost-genie-in {
+      0%   { opacity: 0; transform: scale(0.22, 0.06) skewX(10deg); }
+      50%  { opacity: 1; transform: scale(1.04, 1.08) skewX(-3deg); }
+      75%  { transform: scale(0.98, 0.97) skewX(1deg); }
+      100% { opacity: 1; transform: scale(1, 1) skewX(0deg); }
+    }
+    .canvas-ghost-card {
+      transform-origin: 50% 100%;
+      animation: canvas-ghost-genie-in 420ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    /* Connections drawer — always mounted so the slide transform can animate
+       both in and out, rather than popping via sc-if. */
+    .connections-drawer {
+      position: absolute; top: 0; right: 0; height: 100%; width: min(300px, 100%);
+      background: var(--bg-surface); border-left: 1px solid var(--border-default);
+      box-shadow: -12px 0 30px rgba(0,0,0,0.35);
+      transform: translateX(100%);
+      transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 18; display: flex; flex-direction: column; box-sizing: border-box;
+    }
+    .connections-drawer.is-open { transform: translateX(0); }
+    .connections-drawer-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px; border-bottom: 1px solid var(--border-default); flex-shrink: 0;
+    }
+    .connections-drawer-title { font: 600 15px/20px var(--font-body); color: var(--text-primary); }
+    .connections-drawer-close {
+      display: flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px; border-radius: var(--radius-sm); color: var(--text-tertiary); cursor: pointer;
+    }
+    .connections-drawer-close:hover { background: var(--bg-surface-2); color: var(--text-primary); }
+    .connections-drawer-body { flex: 1; min-height: 0; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 14px; }
+    .connections-drawer-label {
+      padding: 0 6px; font: 500 11px/1.4 var(--font-mono); letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--text-tertiary);
+    }
+    .connections-source-row {
+      display: flex; align-items: center; gap: 10px; padding: 8px 6px; border-radius: var(--radius-sm);
+    }
+    .connections-source-row:hover { background: var(--bg-surface-2); }
+    .connections-source-icon { display: flex; flex-shrink: 0; color: var(--text-tertiary); }
+    .connections-source-name { flex: 1; min-width: 0; font: 400 13.5px/1.4 var(--font-body); color: var(--text-primary); overflow-wrap: break-word; }
+    .connections-connect-btn {
+      flex-shrink: 0; height: 26px; padding: 0 10px; border: 1px solid var(--border-default);
+      border-radius: var(--radius-full); background: transparent; color: var(--text-secondary);
+      font: 500 12px/1 var(--font-body); cursor: pointer; transition: border-color 140ms ease, color 140ms ease;
+    }
+    .connections-connect-btn:hover { border-color: var(--accent-border); color: var(--accent); }
+    .connections-upload-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      height: 40px; border: 1px dashed var(--border-strong); border-radius: var(--radius-md);
+      background: transparent; color: var(--text-secondary); font: 500 13px/1 var(--font-body);
+      cursor: pointer; transition: border-color 140ms ease, color 140ms ease, background 140ms ease;
+    }
+    .connections-upload-btn:hover { border-color: var(--accent-border); color: var(--accent); background: var(--accent-muted); }
     /* ===== Feedback Analysis — Action Board (Figma 272:23170) =====
        Cards sit flush with the panel and are drawn by their border, the way the
        reference does it; only the raised states (hover, AI rank 1) lift a step. */
@@ -415,28 +486,13 @@
     .board-col.is-drop-target { border-color: var(--border-strong); background: var(--bg-surface-2); }
     .board-col.tone-warning.is-drop-target { border-color: var(--warning); background: var(--warning-muted); }
     .board-col.tone-success.is-drop-target { border-color: var(--success); background: var(--success-muted); }
-    /* Column identity color, on the header dot and the count. */
-    .board-col-dot {
-      width: 7px; height: 7px; flex-shrink: 0; border-radius: 50%;
-      background: var(--text-tertiary);
-    }
-    .board-col.tone-warning .board-col-dot { background: var(--warning); }
-    .board-col.tone-success .board-col-dot { background: var(--success); }
-    .board-col.tone-warning .board-col-count { color: var(--warning); }
-    .board-col.tone-success .board-col-count { color: var(--success); }
     .board-col-head { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; min-width: 0; padding: 0 2px; }
     .board-col-name { font: 600 14px/20px var(--font-body); color: var(--text-primary); }
     .board-col-count { font: var(--text-mono-sm); color: var(--text-tertiary); }
-    .board-col-add {
-      margin-left: auto; display: flex; align-items: center; justify-content: center;
-      width: 20px; height: 20px; border-radius: var(--radius-sm);
-      color: var(--text-tertiary); cursor: pointer;
-    }
-    .board-col-add:hover { background: var(--bg-surface-2); color: var(--text-primary); }
     .board-card {
       display: flex; flex-direction: column; gap: 9px; min-width: 0; padding: 13px 14px 14px;
       border: 1px solid var(--border-default); border-radius: var(--radius-xl, 12px);
-      background: transparent; cursor: pointer;
+      background: var(--bg-surface); cursor: pointer;
       transition: background 140ms ease, border-color 140ms ease;
     }
     .board-card:hover { background: var(--bg-surface-raised); border-color: var(--border-strong); }
@@ -451,10 +507,19 @@
       font: 400 11px/1.4 var(--font-mono); color: var(--text-secondary); white-space: nowrap;
     }
     /* Priority reads by color: P0 filled, then danger → warning → muted. */
-    .board-chip-p0 { border-color: transparent; background: var(--danger-muted); color: var(--danger); }
+    .board-chip-p0 { border-color: transparent; background: var(--priority-p0-bg); color: var(--danger); }
     .board-chip-p1 { color: var(--danger); }
-    .board-chip-p2 { color: var(--warning); }
+    .board-chip-p2 { color: var(--priority-p2); }
     .board-chip-p3 { color: var(--text-tertiary); }
+    /* A stat, not a tag: same padding as a chip so it sits on the same baseline,
+       but no border or fill — it isn't a category the way priority and estimate are. */
+    .chip-plain {
+      display: inline-flex; align-items: center; padding: 3px 9px;
+      font: 400 11px/1.4 var(--font-mono); color: var(--text-secondary); white-space: nowrap;
+    }
+    /* Unboxed variant: the icon and text carry the warning on their own color,
+       so a stalled or conflicting card doesn't also need a filled banner. */
+    .board-alert.is-plain { border: none; background: transparent; padding: 0; }
     .board-alert {
       display: flex; align-items: flex-start; gap: 8px; min-width: 0; padding: 9px 11px;
       border: 1px solid var(--danger); border-radius: var(--radius-md);
@@ -476,32 +541,31 @@
     .board-done-chev { margin-left: auto; display: flex; }
     .board-done-item { font: 400 12px/18px var(--font-alt); color: var(--text-tertiary); text-decoration: line-through; }
     /* ---- AI Assistant block (a full-width banner above the columns) ---- */
+    /* Plain content block, not a card: no fill, no border, no horizontal inset —
+       it now shares the same left/right edge as the toolbar and columns around it.
+       Vertical padding is the only spacing left, to separate it from both. */
     .ai-rail {
       width: 100%; min-width: 0; box-sizing: border-box;
-      display: flex; flex-direction: column; gap: 10px; padding: 15px;
-      border: 1px solid var(--accent-border); border-radius: var(--radius-xl, 12px);
-      background: var(--accent-muted);
+      display: flex; flex-direction: column; gap: 10px; padding: 16px 0;
     }
     .ai-rail-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
     .ai-rail-spark { display: flex; flex-shrink: 0; color: var(--accent); }
     .ai-rail-title { font: 600 15px/1.35 var(--font-body); letter-spacing: -0.15px; color: var(--text-primary); }
     .ai-rail-summary { margin: 0; min-width: 0; overflow-wrap: break-word; font: 400 13px/19.5px var(--font-alt); color: var(--text-secondary); }
     .ai-rail-list {
-      display: flex; flex-direction: row; align-items: flex-start; gap: 12px; min-width: 0;
-      padding-top: 11px; border-top: 1px solid var(--accent-border);
+      display: flex; flex-direction: row; align-items: stretch; gap: 12px; min-width: 0;
+      padding-top: 11px;
     }
     .ai-rail-list > * { flex: 1 1 0; min-width: 0; }
     /* One fill for all three ranks. Rank 1 is already unmistakable from its content
-       — chips, reasoning callout, note read-out, action buttons — so it does not
-       need a raised surface as well. Light is pinned to the reference's #fafafa
-       rather than --bg-surface-2, which sits a stop darker at #f4f4f5. */
+       — chips, reasoning callout, note read-out — so it does not need a raised
+       surface as well. Light is pinned to the reference's #fafafa rather than
+       --bg-surface-2, which sits a stop darker at #f4f4f5. */
     .ai-rank {
       display: flex; flex-direction: column; gap: 11px; min-width: 0; padding: 15px;
       border: 1px solid var(--border-default); border-radius: var(--radius-xl, 12px);
-      background: var(--bg-surface-2);
+      background: var(--bg-surface);
     }
-    .ai-rank-brief, .ai-rank-compact { gap: 10px; }
-    :root[data-theme="light"] .ai-rank { background: #fafafa; }
     .ai-rank-head { display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
     .ai-rank-badge {
       flex-shrink: 0; width: 22px; height: 22px; border-radius: var(--radius-md);
@@ -539,7 +603,7 @@
     .ai-rank-why { display: flex; align-items: flex-start; gap: 8px; min-width: 0; font: 400 12px/18px var(--font-alt); color: var(--text-secondary); }
     .ai-rank-notes {
       display: flex; flex-direction: column; gap: 8px; min-width: 0;
-      padding-top: 11px; border-top: 1px solid var(--accent-border);
+      padding-top: 11px;
     }
     .ai-note-row { display: flex; gap: 10px; min-width: 0; }
     .ai-note-label {
@@ -550,7 +614,6 @@
     .ai-note-body { flex: 1; min-width: 0; overflow-wrap: break-word; font: 400 12.5px/18.13px var(--font-alt); color: var(--text-primary); }
     .ai-note-more { align-self: flex-start; font: 500 12px/1.35 var(--font-body); color: var(--accent); cursor: pointer; }
     .ai-note-more:hover { color: var(--accent-hover); text-decoration: underline; }
-    .ai-rank-actions { display: flex; gap: 8px; padding-top: 2px; }
     .ai-btn-start {
       height: 35px; padding: 0 16px; border: none; border-radius: var(--radius-lg, 10px);
       background: var(--accent); color: var(--text-on-accent);
@@ -687,7 +750,7 @@
     /* Tighter gutters buy the columns back ~24px before anything has to give. */
     @container (max-width: 1150px) {
       .board-cols { gap: 16px; }
-      .ai-rank, .ai-rail { padding: 13px; }
+      .ai-rank { padding: 13px; }
       .ai-note-label { flex-basis: 66px; }
     }
     /* The row is held as far down as it stays legible — around 160px a column can
@@ -2742,9 +2805,10 @@
           </div>
           </sc-if>
           <sc-if value="{{ showTasksBody }}" hint-placeholder-val="{{ false }}">
-          <div style="display:flex;align-items:center;gap:2px;padding:2px;border-radius:var(--radius-full);border:1px solid var(--border-default);background:var(--bg-surface-2);flex-shrink:0">
-            <button type="button" onClick="{{ setBoardView }}" style="height:30px;padding:0 14px;border:none;border-radius:var(--radius-full);background:{{ boardToggleBg }};color:{{ boardToggleColor }};font:600 12px/1 var(--font-body);cursor:pointer;white-space:nowrap">Board</button>
-            <button type="button" onClick="{{ setCanvasView }}" style="height:30px;padding:0 14px;border:none;border-radius:var(--radius-full);background:{{ canvasToggleBg }};color:{{ canvasToggleColor }};font:600 12px/1 var(--font-body);cursor:pointer;white-space:nowrap">Canvas</button>
+          <div style="position:relative;display:flex;align-items:center;padding:2px;border-radius:var(--radius-full);border:1px solid var(--border-default);background:var(--bg-surface);flex-shrink:0">
+            <div style="position:absolute;top:2px;left:{{ taskToggleThumbLeft }};width:76px;height:30px;border-radius:var(--radius-full);background:var(--bg-surface-2);transition:left 260ms cubic-bezier(0.22,1,0.36,1);pointer-events:none"></div>
+            <button type="button" onClick="{{ setBoardView }}" style="position:relative;width:76px;height:30px;padding:0;border:none;border-radius:var(--radius-full);background:transparent;color:{{ boardToggleColor }};font:400 14px/20px var(--font-body);text-align:center;cursor:pointer;white-space:nowrap;transition:color 260ms ease">Board</button>
+            <button type="button" onClick="{{ setCanvasView }}" style="position:relative;width:76px;height:30px;padding:0;border:none;border-radius:var(--radius-full);background:transparent;color:{{ canvasToggleColor }};font:400 14px/20px var(--font-body);text-align:center;cursor:pointer;white-space:nowrap;transition:color 260ms ease">Canvas</button>
           </div>
           </sc-if>
           <div style="position:relative">
@@ -3147,7 +3211,7 @@
                       <span class="{{ a.priorityClass }}">{{ a.priority }}</span>
                       <span class="board-chip">{{ a.estimate }}</span>
                       <sc-if value="{{ a.hasScale }}" hint-placeholder-val="{{ false }}">
-                        <span class="board-chip">{{ a.scale }}</span>
+                        <span class="chip-plain">{{ a.scale }}</span>
                       </sc-if>
                     </div>
                   </sc-if>
@@ -3162,20 +3226,7 @@
                           <span class="ai-note-body">{{ nt.body }}</span>
                         </div>
                       </sc-for>
-                      <span onClick="{{ a.onOpenCanvas }}" class="ai-note-more">{{ a.moreLabel }}</span>
-                    </div>
-                  </sc-if>
-                  <sc-if value="{{ a.showActions }}" hint-placeholder-val="{{ true }}">
-                    <div class="ai-rank-actions">
-                      <sc-if value="{{ a.showCta }}" hint-placeholder-val="{{ true }}">
-                        <button type="button" onClick="{{ a.onCta }}" class="ai-btn-start">{{ a.ctaLabel }}</button>
-                      </sc-if>
-                      <sc-if value="{{ a.showBack }}" hint-placeholder-val="{{ false }}">
-                        <button type="button" onClick="{{ a.onBack }}" class="ai-btn-back">{{ a.backLabel }}</button>
-                      </sc-if>
-                      <sc-if value="{{ a.showDelete }}" hint-placeholder-val="{{ true }}">
-                        <button type="button" onClick="{{ a.onDelete }}" class="ai-btn-trash" title="Remove from the board" aria-label="Remove from the board">{{ boardTrashIcon }}</button>
-                      </sc-if>
+                      <span onClick="{{ a.onOpenCanvas }}" class="ai-note-more">View canvas</span>
                     </div>
                   </sc-if>
                 </div>
@@ -3189,12 +3240,8 @@
             <sc-for list="{{ boardColumns }}" as="c" hint-placeholder-count="3">
               <div class="{{ c.colClass }}" onDragOver="{{ c.onDragOver }}" onDragLeave="{{ c.onDragLeave }}" onDrop="{{ c.onDrop }}">
                 <div class="board-col-head">
-                  <span class="board-col-dot"></span>
                   <span class="board-col-name">{{ c.label }}</span>
                   <span class="board-col-count">{{ c.count }}</span>
-                  <sc-if value="{{ c.isTodo }}" hint-placeholder-val="{{ true }}">
-                    <span onClick="{{ c.onAdd }}" class="board-col-add" title="Add an action" aria-label="Add an action">{{ boardPlusSmIcon }}</span>
-                  </sc-if>
                 </div>
                 <sc-for list="{{ c.cards }}" as="k" hint-placeholder-count="3">
                   <div onClick="{{ k.onClick }}" class="board-card" draggable="true" onDragStart="{{ k.onDragStart }}" onDragOver="{{ k.onDragOver }}" onDragEnd="{{ k.onDragEnd }}" style="opacity:{{ k.dragOpacity }}">
@@ -3202,18 +3249,15 @@
                     <div class="board-card-meta">
                       <span class="{{ k.priorityClass }}">{{ k.priority }}</span>
                       <span class="board-chip">{{ k.estimate }}</span>
-                      <sc-if value="{{ k.showInColumn }}" hint-placeholder-val="{{ false }}">
-                        <span class="board-card-sub">{{ k.inColumn }}</span>
+                      <sc-if value="{{ k.hasScale }}" hint-placeholder-val="{{ false }}">
+                        <span class="chip-plain">{{ k.scale }}</span>
                       </sc-if>
                     </div>
-                    <sc-if value="{{ k.showWaiting }}" hint-placeholder-val="{{ false }}">
-                      <span class="board-card-sub">{{ k.waiting }}</span>
-                    </sc-if>
                     <sc-if value="{{ k.showStalled }}" hint-placeholder-val="{{ false }}">
-                      <div class="board-alert"><span class="board-alert-icon">{{ boardAlertIcon }}</span><span class="board-alert-text">{{ k.stalled }}</span></div>
+                      <div class="board-alert is-plain"><span class="board-alert-icon">{{ boardAlertIcon }}</span><span class="board-alert-text">{{ k.stalled }}</span></div>
                     </sc-if>
                     <sc-if value="{{ k.showConflict }}" hint-placeholder-val="{{ false }}">
-                      <div class="board-alert is-warn"><span class="board-alert-icon">{{ boardAlertIcon }}</span><span class="board-alert-text">{{ k.conflictText }}</span></div>
+                      <div class="board-alert is-warn is-plain"><span class="board-alert-icon">{{ boardAlertIcon }}</span><span class="board-alert-text">{{ k.conflictText }}</span></div>
                     </sc-if>
                   </div>
                 </sc-for>
@@ -3247,8 +3291,8 @@
 
             <div style="flex-shrink:0;display:flex;flex-direction:column;gap:10px;padding:16px 18px 14px">
               <sc-if value="{{ isCanvasView }}" hint-placeholder-val="{{ true }}">
-              <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap">
-                <div style="display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface-2);flex:1;min-width:180px;max-width:300px;margin-right:auto;box-sizing:border-box">
+              <div style="display:flex;align-items:center;justify-content:flex-start;gap:8px;flex-wrap:wrap">
+                <div style="display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface-2);flex:1;min-width:180px;max-width:338px;box-sizing:border-box">
                   <span style="color:var(--text-tertiary);display:flex;flex-shrink:0">{{ taskSearchIcon }}</span>
                   <input value="{{ taskSearch }}" onChange="{{ setTaskSearch }}" placeholder="Search..." style="flex:1;min-width:0;border:none;outline:none;background:transparent;color:var(--text-primary);font:var(--text-body-sm)">
                   <sc-if value="{{ taskSearching }}" hint-placeholder-val="{{ false }}">
@@ -3256,14 +3300,14 @@
                     <span onClick="{{ clearTaskSearch }}" title="Clear search" aria-label="Clear search" style="display:flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:999px;cursor:pointer;color:var(--text-tertiary);flex-shrink:0">{{ taskCloseIcon }}</span>
                   </sc-if>
                 </div>
-                <div style="display:flex;align-items:center;gap:2px;padding:2px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface-2)">
+                <div style="display:flex;align-items:center;gap:2px;padding:2px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface)">
                   <button type="button" onClick="{{ zoomOut }}" aria-label="Zoom out" style="width:28px;height:28px;border:none;border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer">{{ taskMinusIcon }}</button>
                   <span style="font:var(--text-mono-sm);color:var(--text-secondary);width:42px;text-align:center">{{ zoomLabel }}</span>
                   <button type="button" onClick="{{ zoomIn }}" aria-label="Zoom in" style="width:28px;height:28px;border:none;border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer">{{ taskPlusIcon }}</button>
                   <button type="button" onClick="{{ resetView }}" aria-label="Reset view" style="width:28px;height:28px;border:none;border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer">{{ taskMaximizeIcon }}</button>
                 </div>
                 <div style="position:relative;flex-shrink:0">
-                  <button type="button" onClick="{{ toggleRangeMenu }}" style="display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-surface-2);color:var(--text-primary);font:500 13px/1 var(--font-body);cursor:pointer;white-space:nowrap;flex-shrink:0;min-width:100px;justify-content:center">{{ rangeLabel }}{{ taskChevronDownIcon }}</button>
+                  <button type="button" onClick="{{ toggleRangeMenu }}" style="display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-surface);color:var(--text-primary);font:500 13px/1 var(--font-body);cursor:pointer;white-space:nowrap;flex-shrink:0;min-width:100px;justify-content:center">{{ rangeLabel }}{{ taskChevronDownIcon }}</button>
                   <sc-if value="{{ rangeMenuOpen }}" hint-placeholder-val="{{ false }}">
                     <div style="position:absolute;top:42px;right:0;z-index:25;min-width:170px;padding:6px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface);box-shadow:var(--shadow-lg,0 20px 40px rgba(0,0,0,0.4));display:flex;flex-direction:column;gap:1px">
                       <sc-for list="{{ rangeOptions }}" as="r" hint-placeholder-count="7">
@@ -3272,63 +3316,60 @@
                     </div>
                   </sc-if>
                 </div>
-                <div style="position:relative;flex-shrink:0">
-                  <button type="button" onClick="{{ toggleConfidenceMenu }}" title="Minimum confidence score to auto-group" aria-label="Confidence score" style="display:flex;align-items:center;gap:6px;height:36px;padding:0 11px;border:1px solid var(--accent-border);border-radius:var(--radius-md);background:var(--accent-muted);color:var(--accent);font:500 13px/1 var(--font-body);cursor:pointer;white-space:nowrap;flex-shrink:0;justify-content:center"><span style="display:flex;color:var(--accent)">{{ taskSparkleIcon }}</span>{{ confidenceLabel }}</button>
-                  <sc-if value="{{ confidenceMenuOpen }}" hint-placeholder-val="{{ false }}">
-                    <div onMouseDown="{{ stopProp }}" style="position:absolute;top:42px;right:0;z-index:25;width:250px;padding:12px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface);box-shadow:var(--shadow-lg,0 20px 40px rgba(0,0,0,0.4))">
-                      <div style="font:var(--text-body-sm);color:var(--text-secondary);margin-bottom:10px">Confidence score</div>
-                      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                        <input type="range" min="{{ confidenceMin }}" max="{{ confidenceMax }}" step="1" value="{{ confidenceValue }}" onChange="{{ setConfidence }}" aria-label="Confidence score" style="flex:1;min-width:0;accent-color:var(--accent);cursor:pointer">
-                        <span style="display:flex;align-items:center;gap:1px;flex-shrink:0">
-                          <input ref="{{ confInputRef }}" type="text" inputmode="numeric" maxlength="2" value="{{ confidenceText }}" onChange="{{ setConfidenceText }}" onKeyDown="{{ confidenceKeyDown }}" aria-label="Confidence score value" class="conf-input" style="width:28px;padding:2px 3px;border-radius:var(--radius-sm);background:transparent;color:var(--text-primary);font:500 14px/1 var(--font-body);font-variant-numeric:tabular-nums;text-align:right;outline:none">
-                          <span style="font:500 14px/1 var(--font-body);color:var(--text-primary)">%</span>
-                        </span>
-                      </div>
-                      <div style="display:flex;align-items:center;justify-content:space-between;padding-top:9px;border-top:1px solid var(--border-default)">
-                        <span style="font:var(--text-caption);color:var(--text-tertiary)">Would group</span>
-                        <span style="font:var(--text-caption);color:var(--accent)">{{ confidenceMatchLabel }}</span>
-                      </div>
-                      <div style="display:flex;gap:3px;margin-top:9px">
-                        <sc-for list="{{ confidenceTicks }}" as="t" hint-placeholder-count="8">
-                          <span title="{{ t.title }}" style="flex:1;height:4px;border-radius:2px;background:{{ t.bg }}"></span>
-                        </sc-for>
-                      </div>
-                    </div>
-                  </sc-if>
-                  <sc-if value="{{ showConfidenceDelta }}" hint-placeholder-val="{{ false }}">
-                    <div onMouseDown="{{ stopPropagation }}" class="conf-delta">
-                      <span class="conf-delta-head">{{ confidenceDeltaFrom }} → {{ confidenceDeltaTo }}</span>
-                      <sc-if value="{{ hasConfidenceAdded }}" hint-placeholder-val="{{ true }}">
-                        <span class="conf-delta-label is-add">{{ confidenceAddedLabel }}</span>
-                        <sc-for list="{{ confidenceAdded }}" as="d" hint-placeholder-count="2">
-                          <div class="conf-delta-row"><span class="conf-delta-sign is-add">+</span><span class="conf-delta-title">{{ d.title }}</span><span class="conf-delta-conf">{{ d.conf }}</span></div>
-                        </sc-for>
-                      </sc-if>
-                      <sc-if value="{{ hasConfidenceRemoved }}" hint-placeholder-val="{{ false }}">
-                        <span class="conf-delta-label is-drop">{{ confidenceRemovedLabel }}</span>
-                        <sc-for list="{{ confidenceRemoved }}" as="d" hint-placeholder-count="2">
-                          <div class="conf-delta-row"><span class="conf-delta-sign is-drop">−</span><span class="conf-delta-title">{{ d.title }}</span><span class="conf-delta-conf">{{ d.conf }}</span></div>
-                        </sc-for>
-                      </sc-if>
-                      <span class="conf-delta-foot">Work already under way is never dropped.</span>
-                    </div>
-                  </sc-if>
-                </div>
               </div>
               </sc-if>
             </div>
 
             <sc-if value="{{ isCanvasView }}" hint-placeholder-val="{{ true }}">
+            <div style="position:absolute;top:16px;right:18px;z-index:15">
+              <button type="button" onClick="{{ toggleConfidenceMenu }}" title="Minimum confidence score to auto-group" aria-label="Confidence score" style="display:flex;align-items:center;gap:6px;height:36px;padding:0 11px;border:1px solid var(--border-default);border-radius:var(--radius-full);background:var(--bg-surface);color:var(--text-primary);font:500 13px/1 var(--font-body);cursor:pointer;white-space:nowrap;justify-content:center"><span style="display:flex;color:var(--accent)">{{ taskSparkleIcon }}</span>{{ confidenceLabel }}</button>
+              <sc-if value="{{ confidenceMenuOpen }}" hint-placeholder-val="{{ false }}">
+                <div onMouseDown="{{ stopProp }}" style="position:absolute;top:42px;right:0;z-index:25;width:250px;padding:12px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface);box-shadow:var(--shadow-lg,0 20px 40px rgba(0,0,0,0.4))">
+                  <div style="font:var(--text-body-sm);color:var(--text-secondary);margin-bottom:10px">Confidence score</div>
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                    <input type="range" min="{{ confidenceMin }}" max="{{ confidenceMax }}" step="1" value="{{ confidenceValue }}" onChange="{{ setConfidence }}" aria-label="Confidence score" style="flex:1;min-width:0;accent-color:var(--accent);cursor:pointer">
+                    <span style="display:flex;align-items:center;gap:1px;flex-shrink:0">
+                      <input ref="{{ confInputRef }}" type="text" inputmode="numeric" maxlength="2" value="{{ confidenceText }}" onChange="{{ setConfidenceText }}" onKeyDown="{{ confidenceKeyDown }}" aria-label="Confidence score value" class="conf-input" style="width:28px;padding:2px 3px;border-radius:var(--radius-sm);background:transparent;color:var(--text-primary);font:500 14px/1 var(--font-body);font-variant-numeric:tabular-nums;text-align:right;outline:none">
+                      <span style="font:500 14px/1 var(--font-body);color:var(--text-primary)">%</span>
+                    </span>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding-top:9px;border-top:1px solid var(--border-default)">
+                    <span style="font:var(--text-caption);color:var(--text-tertiary)">Would group</span>
+                    <span style="font:var(--text-caption);color:var(--accent)">{{ confidenceMatchLabel }}</span>
+                  </div>
+                  <div style="display:flex;gap:3px;margin-top:9px">
+                    <sc-for list="{{ confidenceTicks }}" as="t" hint-placeholder-count="8">
+                      <span title="{{ t.title }}" style="flex:1;height:4px;border-radius:2px;background:{{ t.bg }}"></span>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ showConfidenceDelta }}" hint-placeholder-val="{{ false }}">
+                <div onMouseDown="{{ stopPropagation }}" class="conf-delta">
+                  <span class="conf-delta-head">{{ confidenceDeltaFrom }} → {{ confidenceDeltaTo }}</span>
+                  <sc-if value="{{ hasConfidenceAdded }}" hint-placeholder-val="{{ true }}">
+                    <span class="conf-delta-label is-add">{{ confidenceAddedLabel }}</span>
+                    <sc-for list="{{ confidenceAdded }}" as="d" hint-placeholder-count="2">
+                      <div class="conf-delta-row"><span class="conf-delta-sign is-add">+</span><span class="conf-delta-title">{{ d.title }}</span><span class="conf-delta-conf">{{ d.conf }}</span></div>
+                    </sc-for>
+                  </sc-if>
+                  <sc-if value="{{ hasConfidenceRemoved }}" hint-placeholder-val="{{ false }}">
+                    <span class="conf-delta-label is-drop">{{ confidenceRemovedLabel }}</span>
+                    <sc-for list="{{ confidenceRemoved }}" as="d" hint-placeholder-count="2">
+                      <div class="conf-delta-row"><span class="conf-delta-sign is-drop">−</span><span class="conf-delta-title">{{ d.title }}</span><span class="conf-delta-conf">{{ d.conf }}</span></div>
+                    </sc-for>
+                  </sc-if>
+                  <span class="conf-delta-foot">Work already under way is never dropped.</span>
+                </div>
+              </sc-if>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ isCanvasView }}" hint-placeholder-val="{{ true }}">
             <div ref="{{ viewportRef }}" onMouseDown="{{ startPan }}" onContextMenu="{{ onCanvasContextMenu }}" class="task-canvas-viewport" style="flex:1;min-height:0;position:relative;overflow:hidden;cursor:{{ viewportCursor }};background-size:{{ gridSize }};background-position:{{ gridPos }}">
               <div style="position:absolute;left:0;top:0;width:{{ canvasW }};height:{{ canvasH }};transform:translate({{ panXpx }}, {{ panYpx }}) scale({{ scale }});transform-origin:0 0;transition:{{ canvasTransition }}">
 
-                <sc-if value="{{ hasParked }}" hint-placeholder-val="{{ false }}">
-                  <div class="canvas-parent-box is-parked" style="left:{{ parkedLane.left }};top:{{ parkedLane.top }};width:{{ parkedLane.width }};height:{{ parkedLane.height }}"></div>
-                  <div class="canvas-parent-chip" style="left:{{ parkedLane.labelLeft }};top:{{ parkedLane.labelTop }}">
-                    <span class="canvas-parent-name">Below the confidence bar</span>
-                    <span class="canvas-parent-count">{{ parkedLane.countLabel }}</span>
-                  </div>
-                </sc-if>
+
 
                 <sc-for list="{{ parentTopicsView }}" as="pt" hint-placeholder-count="0">
                   <div onMouseDown="{{ pt.onDragStart }}" class="canvas-parent-box is-draggable" style="left:{{ pt.left }};top:{{ pt.top }};width:{{ pt.width }};height:{{ pt.height }}"></div>
@@ -3402,6 +3443,81 @@
               </div>
             </div>
             </sc-if>
+
+            <!-- ===== Canvas toolbar menu (Figma node 444:22742) ===== -->
+            <sc-if value="{{ isCanvasView }}" hint-placeholder-val="{{ true }}">
+            <div class="canvas-toolbar" style="position:absolute;left:50%;bottom:20px;transform:translateX(-50%);z-index:15;display:flex;align-items:center;gap:8px;padding:4.8px;border-radius:9.6px;border:1.2px solid var(--border-default);background:var(--bg-surface);box-shadow:var(--shadow-lg,0 20px 40px rgba(0,0,0,0.4))">
+              <button type="button" onClick="{{ setCanvasToolSelect }}" aria-label="Select tool" aria-pressed="{{ canvasToolIsSelect }}" title="Select" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border:none;border-radius:7.2px;background:{{ canvasToolSelectBg }};color:{{ canvasToolSelectColor }};cursor:pointer">{{ canvasNavIcon }}</button>
+              <button type="button" onClick="{{ setCanvasToolRoute }}" aria-label="Connector tool" aria-pressed="{{ canvasToolIsRoute }}" title="Connector" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border:none;border-radius:7.2px;background:{{ canvasToolRouteBg }};color:{{ canvasToolRouteColor }};cursor:pointer">{{ canvasRouteIcon }}</button>
+              <button type="button" onClick="{{ setCanvasToolGhost }}" aria-label="Ask Ghost AI" aria-pressed="{{ canvasToolIsGhost }}" title="Ask Ghost AI" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border:none;border-radius:7.2px;background:{{ canvasToolGhostBg }};color:var(--accent);cursor:pointer">{{ canvasGhostIcon }}</button>
+            </div>
+            </sc-if>
+
+            <!-- ===== Canvas ghost agent card (Figma node 444:22947) — an on-canvas
+                 assistant, not the Ask Ghost AI side panel. Offers a data-driven
+                 suggestion and takes free-text input to steer the grouping. ===== -->
+            <sc-if value="{{ canvasGhostOpen }}" hint-placeholder-val="{{ false }}">
+              <div class="canvas-ghost-card" style="position:absolute;right:24px;top:64px;z-index:16;display:flex;gap:16px;align-items:flex-start;width:min(400px,calc(100% - 40px));padding:18px 16px;border-radius:var(--radius-lg,10px);border:1px solid var(--border-default);background:var(--bg-surface);box-shadow:0 0 0 1px var(--border-default),0 0 16px 1px var(--accent-border),var(--shadow-lg,0 20px 40px rgba(0,0,0,0.4));box-sizing:border-box">
+                <span style="display:flex;flex-shrink:0">{{ canvasGhostIconLg }}</span>
+                <div style="display:flex;flex-direction:column;gap:16px;min-width:0;flex:1">
+                  <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+                    <p style="margin:0;font:500 14px/20px var(--font-body);color:var(--text-primary)">{{ canvasGhostSuggestion }}</p>
+                    <p style="margin:0;font:500 14px/20px var(--font-body);color:var(--text-primary)">But is there anything you're curious about?</p>
+                    <sc-if value="{{ canvasGhostHasThread }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;flex-direction:column;gap:8px;padding-top:6px;border-top:1px solid var(--border-default)">
+                        <sc-for list="{{ canvasGhostThread }}" as="m" hint-placeholder-count="2">
+                          <p style="margin:0;font:400 13px/19px var(--font-alt);color:{{ m.color }}">{{ m.text }}</p>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                  </div>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <div style="display:flex;align-items:center;flex:1;min-width:0;height:36px;padding:0 12px;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-surface)">
+                      <input value="{{ canvasGhostDraft }}" onChange="{{ setCanvasGhostDraft }}" onKeyDown="{{ canvasGhostInputKeyDown }}" placeholder="I'm wondering..." style="flex:1;min-width:0;border:none;outline:none;background:transparent;color:var(--text-primary);font:400 14px/20px var(--font-body)">
+                    </div>
+                    <button type="button" onClick="{{ submitCanvasGhost }}" aria-label="Send" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;flex-shrink:0;border:1px solid var(--border-default);border-radius:var(--radius-lg);background:var(--bg-surface);color:var(--text-primary);cursor:pointer">{{ canvasGhostSendIcon }}</button>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- ===== Connections drawer (connector tool) — pick which feedback
+                 sources feed the canvas, or connect/upload a new one. ===== -->
+            <div class="{{ connectionsDrawerClass }}">
+              <div class="connections-drawer-head">
+                <span class="connections-drawer-title">Data sources</span>
+                <span onClick="{{ closeConnectionsPanel }}" class="connections-drawer-close" role="button" aria-label="Close">{{ taskCloseIcon }}</span>
+              </div>
+              <div class="connections-drawer-body">
+                <div style="display:flex;flex-direction:column;gap:2px">
+                  <span class="connections-drawer-label">{{ canvasSourcesCountLabel }}</span>
+                  <sc-for list="{{ canvasSourcesConnected }}" as="src" hint-placeholder-count="8">
+                    <div onClick="{{ src.onToggle }}" class="connections-source-row" style="cursor:pointer">
+                      <span class="{{ src.boxClass }}">{{ src.checkIcon }}</span>
+                      <span class="connections-source-icon">{{ src.icon }}</span>
+                      <span class="connections-source-name">{{ src.name }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ hasAvailableSources }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-direction:column;gap:2px;padding-top:8px;border-top:1px solid var(--border-default)">
+                    <span class="connections-drawer-label">Connect a source</span>
+                    <sc-for list="{{ canvasSourcesAvailable }}" as="src" hint-placeholder-count="2">
+                      <div class="connections-source-row">
+                        <span class="connections-source-icon">{{ src.icon }}</span>
+                        <span class="connections-source-name">{{ src.name }}</span>
+                        <button type="button" onClick="{{ src.onConnect }}" class="connections-connect-btn">Connect</button>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <div style="display:flex;flex-direction:column;gap:8px;padding-top:8px;border-top:1px solid var(--border-default)">
+                  <span class="connections-drawer-label">Your own data</span>
+                  <input ref="{{ canvasUploadInputRef }}" type="file" onChange="{{ uploadCanvasFile }}" style="display:none">
+                  <button type="button" onClick="{{ triggerCanvasUpload }}" class="connections-upload-btn">{{ canvasUploadIcon }}Upload a data file</button>
+                </div>
+              </div>
+            </div>
 
             <sc-if value="{{ contextMenuVisible }}" hint-placeholder-val="{{ false }}">
               <div style="position:absolute;left:{{ contextMenuLeft }};top:{{ contextMenuTop }};z-index:20;min-width:190px;padding:6px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-surface);box-shadow:var(--shadow-lg,0 20px 40px rgba(0,0,0,0.4));display:flex;flex-direction:column;gap:1px">
@@ -3953,7 +4069,7 @@
           </div>
 
           <span onClick="{{ taskDetail.onOpenCanvas }}" class="td-canvas-link" role="button" tabindex="0">
-            <span class="td-canvas-icon">{{ tdCanvasIcon }}</span>Open in canvas
+            <span class="td-canvas-icon">{{ tdCanvasIcon }}</span>View canvas
           </span>
 
           <sc-if value="{{ taskDetail.hasApproach }}" hint-placeholder-val="{{ true }}">
@@ -4076,6 +4192,7 @@ const TASK_ICON_PATHS = {
   chevronDown: '<polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
   grip: '<circle cx="9" cy="6" r="1.3" fill="currentColor"/><circle cx="15" cy="6" r="1.3" fill="currentColor"/><circle cx="9" cy="12" r="1.3" fill="currentColor"/><circle cx="15" cy="12" r="1.3" fill="currentColor"/><circle cx="9" cy="18" r="1.3" fill="currentColor"/><circle cx="15" cy="18" r="1.3" fill="currentColor"/>',
   close: '<line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  arrowUp: '<path d="M12 19V5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M6 11l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
   group: '<rect x="3" y="3" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>',
   // Action Board glyphs
   columns: '<rect x="3" y="4" width="18" height="16" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><line x1="9.5" y1="4" x2="9.5" y2="20" stroke="currentColor" stroke-width="2"/>',
@@ -4143,6 +4260,43 @@ const TOPIC_GROUPS = [
     relation: 'A small, well-evidenced theme — three separate channels report the same mix change, and none of them disagree about what it is.' },
   { id: 'social', label: 'Party and voice chat', color: 'info', significant: false, confidence: 63,
     relation: 'Social feedback is thin and mostly regional. Enough to log against the patch, not yet enough to attribute to it.' }
+];
+// The canvas ghost agent's opening line names whichever theme is scoring
+// highest right now, so the suggestion tracks the data instead of being a
+// fixed line (Figma node 444:22947 hardcodes "ability responsiveness" because
+// that theme happens to be the highest-confidence one in the sample data).
+const topCanvasTheme = TOPIC_GROUPS.reduce((a, b) => (b.confidence > a.confidence ? b : a));
+const canvasGhostSuggestion = 'You might want to check out the data on ' +
+  topCanvasTheme.label.split(' — ')[0].toLowerCase() + ' first...';
+function findCanvasGhostTheme(text) {
+  const q = text.toLowerCase();
+  return TOPIC_GROUPS.find(t => q.indexOf(t.label.split(' — ')[0].toLowerCase()) !== -1) || null;
+}
+function canvasGhostReply(hit) {
+  if (hit) {
+    const tone = hit.color === 'danger' ? 'trending negative' : hit.color === 'success' ? 'trending positive' : 'mixed';
+    return '"' + hit.label + '" is ' + tone + ' right now — want me to pull those notes into their own group?';
+  }
+  return "I'll fold that into how I'm grouping these themes — keep going and I'll adjust the clusters as you go.";
+}
+// Canvas "Connections" drawer (connector tool). Every id but the last two
+// matches a real n.source value in NOTES, so the checklist actually filters
+// the board; twitter/twitch aren't connected yet because there's no data
+// tagged with them to reveal.
+const CANVAS_SOURCE_DEFS = [
+  { id: 'reddit', name: 'Reddit', kind: 'social', connected: true },
+  { id: 'discord', name: 'Discord', kind: 'social', connected: true },
+  { id: 'forums', name: 'Official Forums', kind: 'social', connected: true },
+  { id: 'youtube', name: 'YouTube', kind: 'social', connected: true },
+  { id: 'in-game survey', name: 'In-Game Survey', kind: 'internal', connected: true },
+  { id: 'community poll', name: 'Community Poll', kind: 'internal', connected: true },
+  { id: 'support', name: 'Support Tickets', kind: 'internal', connected: true },
+  { id: 'telemetry', name: 'Telemetry', kind: 'internal', connected: true },
+  { id: 'sentiment model', name: 'Sentiment Model', kind: 'internal', connected: true },
+  { id: 'app store', name: 'App Store Reviews', kind: 'internal', connected: true },
+  { id: 'playtest', name: 'Playtest Panel', kind: 'internal', connected: true },
+  { id: 'twitter', name: 'X (Twitter)', kind: 'social', connected: false },
+  { id: 'twitch', name: 'Twitch', kind: 'social', connected: false }
 ];
 const NOTE_W = 190, NOTE_H = 110, PAD = 46, GRID = 24;
 // Signals sit on a two-column grid within their theme rather than at authored
@@ -4407,9 +4561,6 @@ const AI_RANKING = [
   { taskId: 'a3', why: 'Second-loudest theme, and the one players forgive least: item feel decides whether they stay on this patch.' },
   { taskId: 'a9', why: 'The only theme where sentiment and spend move together — pass completion is already down 22%.' }
 ];
-// Rank 1 gets the signal read-out and the action buttons; the rest are the same card
-// without them. The reason itself is on every rank, styled identically.
-const AI_DETAIL_BY_RANK = ['full', 'brief'];
 // The rail is an act-on-this-first shortlist, not a list of everything above the bar —
 // past this many, actions stay as ordinary cards in their columns.
 const AI_RAIL_LIMIT = 3;
@@ -5680,8 +5831,12 @@ const FIG_ICON_PATHS = {
   cookingPot: "<path d=\"M 0 9 C -0.552 9 -1 9.448 -1 10 C -1 10.553 -0.552 11 0 11 L 0 10 L 0 9 Z M 20 11 C 20.552 11 21 10.553 21 10 C 21 9.448 20.552 9 20 9 L 20 10 L 20 11 Z M 19 10 C 19 9.448 18.552 9 18 9 C 17.448 9 17 9.448 17 10 L 18 10 L 19 10 Z M 2 18 L 1 18 L 2 18 Z M 3 10 C 3 9.448 2.552 9 2 9 C 1.448 9 1 9.448 1 10 L 2 10 L 3 10 Z M 1.757 5.03 C 1.222 5.164 0.896 5.707 1.03 6.243 C 1.164 6.779 1.707 7.105 2.243 6.971 L 2 6 L 1.757 5.03 Z M 18.243 2.971 C 18.778 2.837 19.104 2.294 18.97 1.758 C 18.836 1.222 18.293 0.896 17.757 1.03 L 18 2 L 18.243 2.971 Z M 5.89 5.022 C 6.023 5.558 6.565 5.884 7.101 5.751 C 7.637 5.618 7.964 5.075 7.83 4.539 L 6.86 4.781 L 5.89 5.022 Z M 6.41 2.971 L 7.38 2.729 L 7.379 2.725 L 6.41 2.971 Z M 7.86 0.541 L 7.62 -0.43 L 7.616 -0.429 L 7.86 0.541 Z M 9.8 0.061 L 10.04 1.031 L 10.044 1.03 L 9.8 0.061 Z M 12.23 1.521 L 11.259 1.76 L 11.26 1.763 L 12.23 1.521 Z M 11.71 3.563 C 11.844 4.099 12.387 4.425 12.923 4.291 C 13.458 4.157 13.784 3.614 13.65 3.078 L 12.68 3.321 L 11.71 3.563 Z M 0 10 L 0 11 L 20 11 L 20 10 L 20 9 L 0 9 L 0 10 Z M 18 10 L 17 10 L 17 18 L 18 18 L 19 18 L 19 10 L 18 10 Z M 18 18 L 17 18 C 17 18.266 16.895 18.52 16.707 18.708 L 17.414 19.415 L 18.121 20.122 C 18.684 19.559 19 18.796 19 18 L 18 18 Z M 17.414 19.415 L 16.707 18.708 C 16.52 18.895 16.265 19 16 19 L 16 20 L 16 21 C 16.796 21 17.559 20.684 18.121 20.122 L 17.414 19.415 Z M 16 20 L 16 19 L 4 19 L 4 20 L 4 21 L 16 21 L 16 20 Z M 4 20 L 4 19 C 3.735 19 3.48 18.895 3.293 18.708 L 2.586 19.415 L 1.879 20.122 C 2.441 20.684 3.204 21 4 21 L 4 20 Z M 2.586 19.415 L 3.293 18.708 C 3.105 18.52 3 18.266 3 18 L 2 18 L 1 18 C 1 18.796 1.316 19.559 1.879 20.122 L 2.586 19.415 Z M 2 18 L 3 18 L 3 10 L 2 10 L 1 10 L 1 18 L 2 18 Z M 2 6 L 2.243 6.971 L 18.243 2.971 L 18 2 L 17.757 1.03 L 1.757 5.03 L 2 6 Z M 6.86 4.781 L 7.83 4.539 L 7.38 2.729 L 6.41 2.971 L 5.44 3.212 L 5.89 5.022 L 6.86 4.781 Z M 6.41 2.971 L 7.379 2.725 C 7.347 2.598 7.34 2.465 7.359 2.335 L 6.37 2.191 L 5.38 2.046 C 5.323 2.436 5.344 2.834 5.441 3.216 L 6.41 2.971 Z M 6.37 2.191 L 7.359 2.335 C 7.378 2.205 7.423 2.08 7.49 1.967 L 6.631 1.455 L 5.773 0.943 C 5.571 1.281 5.437 1.656 5.38 2.046 L 6.37 2.191 Z M 6.631 1.455 L 7.49 1.967 C 7.557 1.855 7.646 1.756 7.752 1.678 L 7.155 0.876 L 6.558 0.073 C 6.241 0.309 5.975 0.604 5.773 0.943 L 6.631 1.455 Z M 7.155 0.876 L 7.752 1.678 C 7.857 1.599 7.977 1.542 8.104 1.51 L 7.86 0.541 L 7.616 -0.429 C 7.233 -0.333 6.874 -0.162 6.558 0.073 L 7.155 0.876 Z M 7.86 0.541 L 8.1 1.511 L 10.04 1.031 L 9.8 0.061 L 9.56 -0.91 L 7.62 -0.43 L 7.86 0.541 Z M 9.8 0.061 L 10.044 1.03 C 10.172 0.998 10.305 0.991 10.435 1.011 L 10.582 0.022 L 10.728 -0.968 C 10.337 -1.026 9.939 -1.006 9.556 -0.909 L 9.8 0.061 Z M 10.582 0.022 L 10.435 1.011 C 10.565 1.03 10.69 1.075 10.803 1.143 L 11.318 0.286 L 11.833 -0.572 C 11.495 -0.775 11.119 -0.91 10.728 -0.968 L 10.582 0.022 Z M 11.318 0.286 L 10.803 1.143 C 10.916 1.211 11.015 1.3 11.093 1.406 L 11.897 0.812 L 12.702 0.218 C 12.467 -0.1 12.172 -0.368 11.833 -0.572 L 11.318 0.286 Z M 11.897 0.812 L 11.093 1.406 C 11.171 1.512 11.228 1.632 11.259 1.76 L 12.23 1.521 L 13.201 1.281 C 13.106 0.897 12.937 0.536 12.702 0.218 L 11.897 0.812 Z M 12.23 1.521 L 11.26 1.763 L 11.71 3.563 L 12.68 3.321 L 13.65 3.078 L 13.2 1.278 L 12.23 1.521 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 2 2.000)\"/>",
   messageDots: "<path d=\"M 1 0 C 1 -0.552 0.552 -1 0 -1 C -0.552 -1 -1 -0.552 -1 0 L 0 0 L 1 0 Z M -1 0.01 C -1 0.562 -0.552 1.01 0 1.01 C 0.552 1.01 1 0.562 1 0.01 L 0 0.01 L -1 0.01 Z M 0 0 L -1 0 L -1 0.01 L 0 0.01 L 1 0.01 L 1 0 L 0 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 12 11)\"/><path d=\"M 1 0 C 1 -0.552 0.552 -1 0 -1 C -0.552 -1 -1 -0.552 -1 0 L 0 0 L 1 0 Z M -1 0.01 C -1 0.562 -0.552 1.01 0 1.01 C 0.552 1.01 1 0.562 1 0.01 L 0 0.01 L -1 0.01 Z M 0 0 L -1 0 L -1 0.01 L 0 0.01 L 1 0.01 L 1 0 L 0 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 8 11)\"/><path d=\"M 1 0 C 1 -0.552 0.552 -1 0 -1 C -0.552 -1 -1 -0.552 -1 0 L 0 0 L 1 0 Z M -1 0.01 C -1 0.562 -0.552 1.01 0 1.01 C 0.552 1.01 1 0.562 1 0.01 L 0 0.01 L -1 0.01 Z M 0 0 L -1 0 L -1 0.01 L 0 0.01 L 1 0.01 L 1 0 L 0 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 16 11)\"/><path d=\"M 18 3 L 19 3 L 18 3 Z M 18 11 L 19 11 L 18 11 Z M 15 14 L 15 15 L 15 14 Z M 10 14 L 10 13 C 9.819 13 9.641 13.049 9.486 13.143 L 10 14 Z M 5 17 L 4 17 C 4 17.36 4.194 17.693 4.507 17.87 C 4.821 18.048 5.206 18.043 5.514 17.857 L 5 17 Z M 5 14 L 6 14 C 6 13.448 5.552 13 5 13 L 5 14 Z M 3 14 L 3 15 L 3 14 Z M 0 11 L -1 11 L 0 11 Z M 0 3 L -1 3 L 0 3 Z M 15 0 L 15 1 C 15.53 1 16.039 1.211 16.414 1.586 L 17.121 0.879 L 17.828 0.172 C 17.078 -0.579 16.061 -1 15 -1 L 15 0 Z M 17.121 0.879 L 16.414 1.586 C 16.789 1.961 17 2.47 17 3 L 18 3 L 19 3 C 19 1.939 18.579 0.922 17.828 0.172 L 17.121 0.879 Z M 18 3 L 17 3 L 17 11 L 18 11 L 19 11 L 19 3 L 18 3 Z M 18 11 L 17 11 C 17 11.53 16.789 12.039 16.414 12.414 L 17.121 13.121 L 17.828 13.828 C 18.579 13.078 19 12.061 19 11 L 18 11 Z M 17.121 13.121 L 16.414 12.414 C 16.039 12.789 15.53 13 15 13 L 15 14 L 15 15 C 16.061 15 17.078 14.579 17.828 13.828 L 17.121 13.121 Z M 15 14 L 15 13 L 10 13 L 10 14 L 10 15 L 15 15 L 15 14 Z M 10 14 L 9.486 13.143 L 4.486 16.143 L 5 17 L 5.514 17.857 L 10.514 14.857 L 10 14 Z M 5 17 L 6 17 L 6 14 L 5 14 L 4 14 L 4 17 L 5 17 Z M 5 14 L 5 13 L 3 13 L 3 14 L 3 15 L 5 15 L 5 14 Z M 3 14 L 3 13 C 2.47 13 1.961 12.789 1.586 12.414 L 0.879 13.121 L 0.172 13.828 C 0.922 14.579 1.939 15 3 15 L 3 14 Z M 0.879 13.121 L 1.586 12.414 C 1.211 12.039 1 11.53 1 11 L 0 11 L -1 11 C -1 12.061 -0.579 13.078 0.172 13.828 L 0.879 13.121 Z M 0 11 L 1 11 L 1 3 L 0 3 L -1 3 L -1 11 L 0 11 Z M 0 3 L 1 3 C 1 2.47 1.211 1.961 1.586 1.586 L 0.879 0.879 L 0.172 0.172 C -0.579 0.922 -1 1.939 -1 3 L 0 3 Z M 0.879 0.879 L 1.586 1.586 C 1.961 1.211 2.47 1 3 1 L 3 0 L 3 -1 C 1.939 -1 0.922 -0.579 0.172 0.172 L 0.879 0.879 Z M 3 0 L 3 1 L 15 1 L 15 0 L 15 -1 L 3 -1 L 3 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 3 4)\"/>",
   ellipsisVertical: "<path d=\"M 1.524 3.048 C 2.365 3.048 3.048 2.365 3.048 1.524 C 3.048 0.682 2.365 0 1.524 0 C 0.682 0 0 0.682 0 1.524 C 0 2.365 0.682 3.048 1.524 3.048 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 14.952 2) matrix(0 1 -1 0 3.048 6.476)\"/><path d=\"M 1.524 3.048 C 2.365 3.048 3.048 2.365 3.048 1.524 C 3.048 0.682 2.365 0 1.524 0 C 0.682 0 0 0.682 0 1.524 C 0 2.365 0.682 3.048 1.524 3.048 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 14.952 2) matrix(0 1 -1 0 3.048 12.952)\"/><path d=\"M 1.524 3.048 C 2.365 3.048 3.048 2.365 3.048 1.524 C 3.048 0.682 2.365 0 1.524 0 C 0.682 0 0 0.682 0 1.524 C 0 2.365 0.682 3.048 1.524 3.048 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 14.952 2) matrix(0 1 -1 0 3.048 0)\"/>",
-  ghost: "<path d=\"M 0 -1 C -0.552 -1 -1 -0.552 -1 0 C -1 0.552 -0.552 1 0 1 L 0 0 L 0 -1 Z M 0.01 1 C 0.562 1 1.01 0.552 1.01 0 C 1.01 -0.552 0.562 -1 0.01 -1 L 0.01 0 L 0.01 1 Z M 0 0 L 0 1 L 0.01 1 L 0.01 0 L 0.01 -1 L 0 -1 L 0 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 10 9)\"/><path d=\"M 0 -1 C -0.552 -1 -1 -0.552 -1 0 C -1 0.552 -0.552 1 0 1 L 0 0 L 0 -1 Z M 0.01 1 C 0.562 1 1.01 0.552 1.01 0 C 1.01 -0.552 0.562 -1 0.01 -1 L 0.01 0 L 0.01 1 Z M 0 0 L 0 1 L 0.01 1 L 0.01 0 L 0.01 -1 L 0 -1 L 0 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 14 9)\"/><path d=\"M 10 0.001 L 10 -0.999 L 10 0.001 Z M 17 7.001 L 18 7.001 L 17 7.001 Z M 17 8.001 L 16 8.001 C 16 8.553 16.448 9.001 17 9.001 L 17 8.001 Z M 17 12.001 L 17 11.001 C 16.448 11.001 16 11.449 16 12.001 L 17 12.001 Z M 17 15.001 L 16 15.001 C 16 15.198 16.058 15.391 16.168 15.556 L 17 15.001 Z M 19 18.001 L 19 19.001 C 19.369 19.001 19.708 18.798 19.882 18.473 C 20.056 18.148 20.037 17.753 19.832 17.446 L 19 18.001 Z M 9 18.001 L 9 17.001 L 8.999 17.001 L 9 18.001 Z M 3 12.226 L 2 12.226 C 2 12.239 2 12.251 2.001 12.263 L 3 12.226 Z M 3 12 L 4 12 C 4 11.448 3.552 11 3 11 L 3 12 Z M 0 10 L -1 10 L 0 10 Z M 2 8 L 2 9 L 2 8 Z M 3 8 L 3 9 C 3.552 9 4 8.552 4 8 L 3 8 Z M 10 0.001 L 10 1.001 C 11.591 1.001 13.117 1.633 14.243 2.758 L 14.95 2.051 L 15.657 1.344 C 14.157 -0.156 12.122 -0.999 10 -0.999 L 10 0.001 Z M 14.95 2.051 L 14.243 2.758 C 15.368 3.884 16 5.41 16 7.001 L 17 7.001 L 18 7.001 C 18 4.879 17.157 2.844 15.657 1.344 L 14.95 2.051 Z M 17 7.001 L 16 7.001 L 16 8.001 L 17 8.001 L 18 8.001 L 18 7.001 L 17 7.001 Z M 17 8.001 L 17 9.001 L 18 9.001 L 18 8.001 L 18 7.001 L 17 7.001 L 17 8.001 Z M 18 8.001 L 18 9.001 C 18.265 9.001 18.52 9.106 18.707 9.294 L 19.414 8.587 L 20.121 7.88 C 19.559 7.317 18.796 7.001 18 7.001 L 18 8.001 Z M 19.414 8.587 L 18.707 9.294 C 18.895 9.481 19 9.736 19 10.001 L 20 10.001 L 21 10.001 C 21 9.205 20.684 8.442 20.121 7.88 L 19.414 8.587 Z M 20 10.001 L 19 10.001 C 19 10.266 18.895 10.521 18.707 10.708 L 19.414 11.415 L 20.121 12.122 C 20.684 11.56 21 10.797 21 10.001 L 20 10.001 Z M 19.414 11.415 L 18.707 10.708 C 18.52 10.896 18.265 11.001 18 11.001 L 18 12.001 L 18 13.001 C 18.796 13.001 19.559 12.685 20.121 12.122 L 19.414 11.415 Z M 18 12.001 L 18 11.001 L 17 11.001 L 17 12.001 L 17 13.001 L 18 13.001 L 18 12.001 Z M 17 12.001 L 16 12.001 L 16 15.001 L 17 15.001 L 18 15.001 L 18 12.001 L 17 12.001 Z M 17 15.001 L 16.168 15.556 L 18.168 18.556 L 19 18.001 L 19.832 17.446 L 17.832 14.446 L 17 15.001 Z M 19 18.001 L 19 17.001 L 9 17.001 L 9 18.001 L 9 19.001 L 19 19.001 L 19 18.001 Z M 9 18.001 L 8.999 17.001 C 7.705 17.002 6.461 16.501 5.528 15.603 L 4.835 16.324 L 4.141 17.044 C 5.447 18.301 7.189 19.002 9.001 19.001 L 9 18.001 Z M 4.835 16.324 L 5.528 15.603 C 4.596 14.706 4.048 13.482 3.999 12.189 L 3 12.226 L 2.001 12.263 C 2.069 14.074 2.836 15.788 4.141 17.044 L 4.835 16.324 Z M 3 12.226 L 4 12.226 L 4 12 L 3 12 L 2 12 L 2 12.226 L 3 12.226 Z M 3 12 L 3 11 L 2 11 L 2 12 L 2 13 L 3 13 L 3 12 Z M 2 12 L 2 11 C 1.735 11 1.48 10.895 1.293 10.707 L 0.586 11.414 L -0.121 12.121 C 0.441 12.684 1.204 13 2 13 L 2 12 Z M 0.586 11.414 L 1.293 10.707 C 1.105 10.52 1 10.265 1 10 L 0 10 L -1 10 C -1 10.796 -0.684 11.559 -0.121 12.121 L 0.586 11.414 Z M 0 10 L 1 10 C 1 9.735 1.105 9.48 1.293 9.293 L 0.586 8.586 L -0.121 7.879 C -0.684 8.441 -1 9.204 -1 10 L 0 10 Z M 0.586 8.586 L 1.293 9.293 C 1.48 9.105 1.735 9 2 9 L 2 8 L 2 7 C 1.204 7 0.441 7.316 -0.121 7.879 L 0.586 8.586 Z M 2 8 L 2 9 L 3 9 L 3 8 L 3 7 L 2 7 L 2 8 Z M 3 8 L 4 8 L 4 7 L 3 7 L 2 7 L 2 8 L 3 8 Z M 3 7 L 4 7 C 4 5.409 4.632 3.883 5.757 2.757 L 5.05 2.05 L 4.343 1.343 C 2.843 2.843 2 4.878 2 7 L 3 7 Z M 5.05 2.05 L 5.757 2.757 C 6.882 1.632 8.408 1.001 10 1.001 L 10 0.001 L 10 -0.999 C 7.879 -0.999 5.844 -0.157 4.343 1.343 L 5.05 2.05 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 2 2.999)\"/><path d=\"M 0 1 L -1 1 C -1 1.552 -0.552 2 0 2 L 0 1 Z M 2 1 L 2 2 C 2.552 2 3 1.552 3 1 L 2 1 Z M 0 1 L 0 2 L 2 2 L 2 1 L 2 0 L 0 0 L 0 1 Z M 2 1 L 3 1 C 3 0.47 2.789 -0.039 2.414 -0.414 L 1.707 0.293 L 1 1 L 1 1 L 2 1 Z M 1.707 0.293 L 2.414 -0.414 C 2.039 -0.789 1.53 -1 1 -1 L 1 0 L 1 1 L 1 1 L 1.707 0.293 Z M 1 0 L 1 -1 C 0.47 -1 -0.039 -0.789 -0.414 -0.414 L 0.293 0.293 L 1 1 L 1 1 L 1 0 Z M 0.293 0.293 L -0.414 -0.414 C -0.789 -0.039 -1 0.47 -1 1 L 0 1 L 1 1 L 1 1 L 0.293 0.293 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 11 13)\"/>",
+  ghost: "<path d=\"M9.99984 2.49986C11.5469 2.49986 13.0307 3.11444 14.1246 4.2084C15.2186 5.30236 15.8332 6.78609 15.8332 8.33319V14.9999L17.4998 17.4999H9.1665C7.87228 17.5008 6.62812 16.9998 5.69564 16.1023C4.76317 15.2048 4.21504 13.9807 4.1665 12.6874V8.33236C4.1665 6.78526 4.78109 5.30153 5.87505 4.20757C6.96901 3.1136 8.45274 2.49986 9.99984 2.49986Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M11.6753 7C12.0893 7.00025 12.4253 7.33594 12.4253 7.75C12.4253 8.16406 12.0893 8.49975 11.6753 8.5H11.6665C11.2523 8.5 10.9165 8.16421 10.9165 7.75C10.9165 7.33579 11.2523 7 11.6665 7H11.6753Z\" fill=\"currentColor\"/><rect x=\"7\" y=\"7\" width=\"1.5\" height=\"1.5\" fill=\"currentColor\"/>",
   home: "<path d=\"M 1 0 L 1 1 L 1 0 Z M 1 0 L 1 1 L 5 1 L 5 0 L 5 -1 L 1 -1 L 1 0 Z M 5 0 L 5 1 L 5 1 L 5.707 0.293 L 6.414 -0.414 C 6.039 -0.789 5.53 -1 5 -1 L 5 0 Z M 5.707 0.293 L 5 1 L 5 1 L 6 1 L 7 1 C 7 0.47 6.789 -0.039 6.414 -0.414 L 5.707 0.293 Z M 6 1 L 5 1 L 5 7 L 6 7 L 7 7 L 7 1 L 6 1 Z M 6 7 L 5 7 L 5 7 L 5.707 7.707 L 6.414 8.414 C 6.789 8.039 7 7.53 7 7 L 6 7 Z M 5.707 7.707 L 5 7 L 5 7 L 5 8 L 5 9 C 5.53 9 6.039 8.789 6.414 8.414 L 5.707 7.707 Z M 5 8 L 5 7 L 1 7 L 1 8 L 1 9 L 5 9 L 5 8 Z M 1 8 L 1 7 L 1 7 L 0.293 7.707 L -0.414 8.414 C -0.039 8.789 0.47 9 1 9 L 1 8 Z M 0.293 7.707 L 1 7 L 1 7 L 0 7 L -1 7 C -1 7.53 -0.789 8.039 -0.414 8.414 L 0.293 7.707 Z M 0 7 L 1 7 L 1 1 L 0 1 L -1 1 L -1 7 L 0 7 Z M 0 1 L 1 1 L 1 1 L 0.293 0.293 L -0.414 -0.414 C -0.789 -0.039 -1 0.47 -1 1 L 0 1 Z M 0.293 0.293 L 1 1 L 1 1 L 1 0 L 1 -1 C 0.47 -1 -0.039 -0.789 -0.414 -0.414 L 0.293 0.293 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 4 4)\"/><path d=\"M 1 0 L 1 1 L 5 1 L 5 0 L 5 -1 L 1 -1 L 1 0 Z M 5 0 L 5 1 L 5 1 L 5.707 0.293 L 6.414 -0.414 C 6.039 -0.789 5.53 -1 5 -1 L 5 0 Z M 5.707 0.293 L 5 1 L 5 1 L 6 1 L 7 1 C 7 0.47 6.789 -0.039 6.414 -0.414 L 5.707 0.293 Z M 6 1 L 5 1 L 5 3 L 6 3 L 7 3 L 7 1 L 6 1 Z M 6 3 L 5 3 L 5 3 L 5.707 3.707 L 6.414 4.414 C 6.789 4.039 7 3.53 7 3 L 6 3 Z M 5.707 3.707 L 5 3 L 5 3 L 5 4 L 5 5 C 5.53 5 6.039 4.789 6.414 4.414 L 5.707 3.707 Z M 5 4 L 5 3 L 1 3 L 1 4 L 1 5 L 5 5 L 5 4 Z M 1 4 L 1 3 L 1 3 L 0.293 3.707 L -0.414 4.414 C -0.039 4.789 0.47 5 1 5 L 1 4 Z M 0.293 3.707 L 1 3 L 1 3 L 0 3 L -1 3 C -1 3.53 -0.789 4.039 -0.414 4.414 L 0.293 3.707 Z M 0 3 L 1 3 L 1 1 L 0 1 L -1 1 L -1 3 L 0 3 Z M 0 1 L 1 1 L 1 1 L 0.293 0.293 L -0.414 -0.414 C -0.789 -0.039 -1 0.47 -1 1 L 0 1 Z M 0.293 0.293 L 1 1 L 1 1 L 1 0 L 1 -1 C 0.47 -1 -0.039 -0.789 -0.414 -0.414 L 0.293 0.293 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 4 16)\"/><path d=\"M 1 0 L 1 1 L 5 1 L 5 0 L 5 -1 L 1 -1 L 1 0 Z M 5 0 L 5 1 L 5 1 L 5.707 0.293 L 6.414 -0.414 C 6.039 -0.789 5.53 -1 5 -1 L 5 0 Z M 5.707 0.293 L 5 1 L 5 1 L 6 1 L 7 1 C 7 0.47 6.789 -0.039 6.414 -0.414 L 5.707 0.293 Z M 6 1 L 5 1 L 5 7 L 6 7 L 7 7 L 7 1 L 6 1 Z M 6 7 L 5 7 L 5 7 L 5.707 7.707 L 6.414 8.414 C 6.789 8.039 7 7.53 7 7 L 6 7 Z M 5.707 7.707 L 5 7 L 5 7 L 5 8 L 5 9 C 5.53 9 6.039 8.789 6.414 8.414 L 5.707 7.707 Z M 5 8 L 5 7 L 1 7 L 1 8 L 1 9 L 5 9 L 5 8 Z M 1 8 L 1 7 L 1 7 L 0.293 7.707 L -0.414 8.414 C -0.039 8.789 0.47 9 1 9 L 1 8 Z M 0.293 7.707 L 1 7 L 1 7 L 0 7 L -1 7 C -1 7.53 -0.789 8.039 -0.414 8.414 L 0.293 7.707 Z M 0 7 L 1 7 L 1 1 L 0 1 L -1 1 L -1 7 L 0 7 Z M 0 1 L 1 1 L 1 1 L 0.293 0.293 L -0.414 -0.414 C -0.789 -0.039 -1 0.47 -1 1 L 0 1 Z M 0.293 0.293 L 1 1 L 1 1 L 1 0 L 1 -1 C 0.47 -1 -0.039 -0.789 -0.414 -0.414 L 0.293 0.293 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 14 12)\"/><path d=\"M 1 0 L 1 1 L 1 0 Z M 1 0 L 1 1 L 5 1 L 5 0 L 5 -1 L 1 -1 L 1 0 Z M 5 0 L 5 1 L 5 1 L 5.707 0.293 L 6.414 -0.414 C 6.039 -0.789 5.53 -1 5 -1 L 5 0 Z M 5.707 0.293 L 5 1 L 5 1 L 6 1 L 7 1 C 7 0.47 6.789 -0.039 6.414 -0.414 L 5.707 0.293 Z M 6 1 L 5 1 L 5 3 L 6 3 L 7 3 L 7 1 L 6 1 Z M 6 3 L 5 3 L 5 3 L 5.707 3.707 L 6.414 4.414 C 6.789 4.039 7 3.53 7 3 L 6 3 Z M 5.707 3.707 L 5 3 L 5 3 L 5 4 L 5 5 C 5.53 5 6.039 4.789 6.414 4.414 L 5.707 3.707 Z M 5 4 L 5 3 L 1 3 L 1 4 L 1 5 L 5 5 L 5 4 Z M 1 4 L 1 3 L 1 3 L 0.293 3.707 L -0.414 4.414 C -0.039 4.789 0.47 5 1 5 L 1 4 Z M 0.293 3.707 L 1 3 L 1 3 L 0 3 L -1 3 C -1 3.53 -0.789 4.039 -0.414 4.414 L 0.293 3.707 Z M 0 3 L 1 3 L 1 1 L 0 1 L -1 1 L -1 3 L 0 3 Z M 0 1 L 1 1 L 1 1 L 0.293 0.293 L -0.414 -0.414 C -0.789 -0.039 -1 0.47 -1 1 L 0 1 Z M 0.293 0.293 L 1 1 L 1 1 L 1 0 L 1 -1 C 0.47 -1 -0.039 -0.789 -0.414 -0.414 L 0.293 0.293 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 14 4)\"/>",
+  // Canvas toolbar (Figma node 444:22742) — exact geometry from the exported
+  // tabler/navigation and tabler/route assets, not redrawn from a generic set.
+  canvasNav: "<path d=\"M18.3961 17.1954L26.1346 13.3754C26.3518 13.2807 26.4942 13.0667 26.4958 12.8297C26.497 12.7127 26.4649 12.5977 26.4032 12.4982C26.3415 12.3988 26.2527 12.3189 26.1473 12.2681L6.0659 4.8652L13.468 24.9474C13.5714 25.1622 13.7917 25.2983 14.0304 25.2951C14.2674 25.2935 14.4814 25.1511 14.5761 24.9339L18.3961 17.1954Z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.25\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+  canvasRoute: "<circle cx=\"6\" cy=\"19\" r=\"2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><circle cx=\"18\" cy=\"5\" r=\"2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"M12 19h5.5a2.5 2.5 0 0 0 0 -5h-11a2.5 2.5 0 0 1 0 -5h5.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
   tasks: "<path d=\"M 0.707 0.293 C 0.317 -0.098 -0.317 -0.098 -0.707 0.293 C -1.098 0.683 -1.098 1.317 -0.707 1.707 L 0 1 L 0.707 0.293 Z M 1.5 2.5 L 0.793 3.207 C 1.183 3.598 1.817 3.598 2.207 3.207 L 1.5 2.5 Z M 4.707 0.707 C 5.098 0.317 5.098 -0.317 4.707 -0.707 C 4.317 -1.098 3.683 -1.098 3.293 -0.707 L 4 0 L 4.707 0.707 Z M 0 1 L -0.707 1.707 L 0.793 3.207 L 1.5 2.5 L 2.207 1.793 L 0.707 0.293 L 0 1 Z M 1.5 2.5 L 2.207 3.207 L 4.707 0.707 L 4 0 L 3.293 -0.707 L 0.793 1.793 L 1.5 2.5 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 3.500 4.500)\"/><path d=\"M 0.707 0.293 C 0.317 -0.098 -0.317 -0.098 -0.707 0.293 C -1.098 0.683 -1.098 1.317 -0.707 1.707 L 0 1 L 0.707 0.293 Z M 1.5 2.5 L 0.793 3.207 C 1.183 3.598 1.817 3.598 2.207 3.207 L 1.5 2.5 Z M 4.707 0.707 C 5.098 0.317 5.098 -0.317 4.707 -0.707 C 4.317 -1.098 3.683 -1.098 3.293 -0.707 L 4 0 L 4.707 0.707 Z M 0 1 L -0.707 1.707 L 0.793 3.207 L 1.5 2.5 L 2.207 1.793 L 0.707 0.293 L 0 1 Z M 1.5 2.5 L 2.207 3.207 L 4.707 0.707 L 4 0 L 3.293 -0.707 L 0.793 1.793 L 1.5 2.5 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 3.500 10.500)\"/><path d=\"M 0.707 0.293 C 0.317 -0.098 -0.317 -0.098 -0.707 0.293 C -1.098 0.683 -1.098 1.317 -0.707 1.707 L 0 1 L 0.707 0.293 Z M 1.5 2.5 L 0.793 3.207 C 1.183 3.598 1.817 3.598 2.207 3.207 L 1.5 2.5 Z M 4.707 0.707 C 5.098 0.317 5.098 -0.317 4.707 -0.707 C 4.317 -1.098 3.683 -1.098 3.293 -0.707 L 4 0 L 4.707 0.707 Z M 0 1 L -0.707 1.707 L 0.793 3.207 L 1.5 2.5 L 2.207 1.793 L 0.707 0.293 L 0 1 Z M 1.5 2.5 L 2.207 3.207 L 4.707 0.707 L 4 0 L 3.293 -0.707 L 0.793 1.793 L 1.5 2.5 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 3.500 16.500)\"/><path d=\"M 0 -1 C -0.552 -1 -1 -0.552 -1 0 C -1 0.552 -0.552 1 0 1 L 0 0 L 0 -1 Z M 9 1 C 9.552 1 10 0.552 10 0 C 10 -0.552 9.552 -1 9 -1 L 9 0 L 9 1 Z M 0 0 L 0 1 L 9 1 L 9 0 L 9 -1 L 0 -1 L 0 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 11 6)\"/><path d=\"M 0 -1 C -0.552 -1 -1 -0.552 -1 0 C -1 0.552 -0.552 1 0 1 L 0 0 L 0 -1 Z M 9 1 C 9.552 1 10 0.552 10 0 C 10 -0.552 9.552 -1 9 -1 L 9 0 L 9 1 Z M 0 0 L 0 1 L 9 1 L 9 0 L 9 -1 L 0 -1 L 0 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 11 12)\"/><path d=\"M 0 -1 C -0.552 -1 -1 -0.552 -1 0 C -1 0.552 -0.552 1 0 1 L 0 0 L 0 -1 Z M 9 1 C 9.552 1 10 0.552 10 0 C 10 -0.552 9.552 -1 9 -1 L 9 0 L 9 1 Z M 0 0 L 0 1 L 9 1 L 9 0 L 9 -1 L 0 -1 L 0 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 11 18)\"/>",
   messages: "<path d=\"M 0 -1 C -0.552 -1 -1 -0.552 -1 0 C -1 0.552 -0.552 1 0 1 L 0 0 L 0 -1 Z M 8 1 C 8.552 1 9 0.552 9 0 C 9 -0.552 8.552 -1 8 -1 L 8 0 L 8 1 Z M 0 0 L 0 1 L 8 1 L 8 0 L 8 -1 L 0 -1 L 0 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 8 9)\"/><path d=\"M 0 -1 C -0.552 -1 -1 -0.552 -1 0 C -1 0.552 -0.552 1 0 1 L 0 0 L 0 -1 Z M 6 1 C 6.552 1 7 0.552 7 0 C 7 -0.552 6.552 -1 6 -1 L 6 0 L 6 1 Z M 0 0 L 0 1 L 6 1 L 6 0 L 6 -1 L 0 -1 L 0 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 8 13)\"/><path d=\"M 18 3 L 19 3 L 18 3 Z M 18 11 L 19 11 L 18 11 Z M 15 14 L 15 15 L 15 14 Z M 10 14 L 10 13 C 9.819 13 9.641 13.049 9.486 13.143 L 10 14 Z M 5 17 L 4 17 C 4 17.36 4.194 17.693 4.507 17.87 C 4.821 18.048 5.206 18.043 5.514 17.857 L 5 17 Z M 5 14 L 6 14 C 6 13.448 5.552 13 5 13 L 5 14 Z M 3 14 L 3 15 L 3 14 Z M 0 11 L -1 11 L 0 11 Z M 0 3 L -1 3 L 0 3 Z M 15 0 L 15 1 C 15.53 1 16.039 1.211 16.414 1.586 L 17.121 0.879 L 17.828 0.172 C 17.078 -0.579 16.061 -1 15 -1 L 15 0 Z M 17.121 0.879 L 16.414 1.586 C 16.789 1.961 17 2.47 17 3 L 18 3 L 19 3 C 19 1.939 18.579 0.922 17.828 0.172 L 17.121 0.879 Z M 18 3 L 17 3 L 17 11 L 18 11 L 19 11 L 19 3 L 18 3 Z M 18 11 L 17 11 C 17 11.53 16.789 12.039 16.414 12.414 L 17.121 13.121 L 17.828 13.828 C 18.579 13.078 19 12.061 19 11 L 18 11 Z M 17.121 13.121 L 16.414 12.414 C 16.039 12.789 15.53 13 15 13 L 15 14 L 15 15 C 16.061 15 17.078 14.579 17.828 13.828 L 17.121 13.121 Z M 15 14 L 15 13 L 10 13 L 10 14 L 10 15 L 15 15 L 15 14 Z M 10 14 L 9.486 13.143 L 4.486 16.143 L 5 17 L 5.514 17.857 L 10.514 14.857 L 10 14 Z M 5 17 L 6 17 L 6 14 L 5 14 L 4 14 L 4 17 L 5 17 Z M 5 14 L 5 13 L 3 13 L 3 14 L 3 15 L 5 15 L 5 14 Z M 3 14 L 3 13 C 2.47 13 1.961 12.789 1.586 12.414 L 0.879 13.121 L 0.172 13.828 C 0.922 14.579 1.939 15 3 15 L 3 14 Z M 0.879 13.121 L 1.586 12.414 C 1.211 12.039 1 11.53 1 11 L 0 11 L -1 11 C -1 12.061 -0.579 13.078 0.172 13.828 L 0.879 13.121 Z M 0 11 L 1 11 L 1 3 L 0 3 L -1 3 L -1 11 L 0 11 Z M 0 3 L 1 3 C 1 2.47 1.211 1.961 1.586 1.586 L 0.879 0.879 L 0.172 0.172 C -0.579 0.922 -1 1.939 -1 3 L 0 3 Z M 0.879 0.879 L 1.586 1.586 C 1.961 1.211 2.47 1 3 1 L 3 0 L 3 -1 C 1.939 -1 0.922 -0.579 0.172 0.172 L 0.879 0.879 Z M 3 0 L 3 1 L 15 1 L 15 0 L 15 -1 L 3 -1 L 3 0 Z\" fill=\"currentColor\" fill-rule=\"nonzero\" transform=\"matrix(1 0 0 1 3 4)\"/>",
   analytics: "<line x1=\"18\" y1=\"20\" x2=\"18\" y2=\"10\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/><line x1=\"12\" y1=\"20\" x2=\"12\" y2=\"4\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/><line x1=\"6\" y1=\"20\" x2=\"6\" y2=\"14\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/>",
@@ -5725,10 +5880,21 @@ function sparkline(color) {
   );
 }
 
-const ICON_VIEWBOX = { ellipsisVertical: '0 0 20 20' };
+const ICON_VIEWBOX = { ellipsisVertical: '0 0 20 20', canvasNav: '0 0 29.8278 28.3062', ghost: '2.585 1.75 16.5 16.5' };
 function navIcon(value, size, centered) {
   const svg = React.createElement('svg', { width: size, height: size, viewBox: ICON_VIEWBOX[value] || '0 0 24 24', fill: 'none', style: { flexShrink: 0 }, dangerouslySetInnerHTML: { __html: FIG_ICON_PATHS[value] || '' } });
   return centered ? React.createElement('div', { style: { display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center' } }, svg) : svg;
+}
+// The canvas toolbar's Ghost button is the one place the mark keeps its source
+// gradient (lime -> cyan) instead of following currentColor like every other
+// ghost icon in the app.
+function ghostGradientIcon(size) {
+  return React.createElement('svg', { width: size, height: size, viewBox: '2.585 1.75 16.5 16.5', fill: 'none', style: { flexShrink: 0 }, dangerouslySetInnerHTML: { __html:
+    '<defs><linearGradient id="ghostToolbarGradient" x1="10" y1="2.5" x2="10" y2="17.5" gradientUnits="userSpaceOnUse"><stop stop-color="#84CC16"/><stop offset="1" stop-color="#35E3E6"/></linearGradient></defs>' +
+    '<path d="M9.99984 2.49986C11.5469 2.49986 13.0307 3.11444 14.1246 4.2084C15.2186 5.30236 15.8332 6.78609 15.8332 8.33319V14.9999L17.4998 17.4999H9.1665C7.87228 17.5008 6.62812 16.9998 5.69564 16.1023C4.76317 15.2048 4.21504 13.9807 4.1665 12.6874V8.33236C4.1665 6.78526 4.78109 5.30153 5.87505 4.20757C6.96901 3.1136 8.45274 2.49986 9.99984 2.49986Z" fill="none" stroke="url(#ghostToolbarGradient)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<path d="M11.6753 7C12.0893 7.00025 12.4253 7.33594 12.4253 7.75C12.4253 8.16406 12.0893 8.49975 11.6753 8.5H11.6665C11.2523 8.5 10.9165 8.16421 10.9165 7.75C10.9165 7.33579 11.2523 7 11.6665 7H11.6753Z" fill="#6DD354"/>' +
+    '<rect x="7" y="7" width="1.5" height="1.5" fill="#6DD354"/>'
+  } });
 }
 
 // ===== Feedback Report (Player Report) =====
@@ -6376,13 +6542,26 @@ class Component extends DCLogic {
     pan: { ...CANVAS_HOME },
     smoothPan: false,
     highlightedGroup: null,
-    taskSearch: ''
+    taskSearch: '',
+    // Canvas toolbar's pointer/connector mode — cosmetic for now, mirrors the
+    // Figma canvasMenu's pressed state (Figma node 444:22742).
+    canvasTool: 'select',
+    // Ghost agent card that floats on the canvas itself (Figma node 444:22947) —
+    // separate from the Ask Ghost AI side panel, which the canvas Ghost button
+    // no longer opens.
+    canvasGhostDraft: '',
+    canvasGhostThread: [],
+    // Connections drawer — which sources are wired up and which of those are
+    // actively included in what the canvas shows.
+    connectionsPanelOpen: false,
+    canvasSources: CANVAS_SOURCE_DEFS.map(s => ({ ...s, active: s.connected }))
   };
 
   viewportRef = React.createRef();
   canvasContainerRef = React.createRef();
   confInputRef = React.createRef();
   photoInputRef = React.createRef();
+  canvasUploadInputRef = React.createRef();
   aiDragId = null;
   boardDragId = null;
   _drag = null;
@@ -7335,6 +7514,77 @@ class Component extends DCLogic {
   zoomIn = () => this.zoomButton(0.1);
   zoomOut = () => this.zoomButton(-0.1);
   resetView = () => this.setState({ pan: { ...CANVAS_HOME }, smoothPan: true }, () => setTimeout(() => this.setState({ smoothPan: false }), 550));
+  setCanvasTool = tool => () => this.setState({ canvasTool: tool });
+  setCanvasToolGhost = () => {
+    this.setState(s => ({ canvasTool: s.canvasTool === 'ghost' ? 'select' : 'ghost' }), () => {
+      // Opening the agent auto-zooms into whatever it's bringing up first, the
+      // same way picking a theme from its reply does.
+      if (this.state.canvasTool === 'ghost') this.ghostFocusTopic(topCanvasTheme.id);
+    });
+  };
+  setCanvasGhostDraft = e => this.setState({ canvasGhostDraft: e.target.value });
+  submitCanvasGhost = () => {
+    const text = this.state.canvasGhostDraft.trim();
+    if (!text) return;
+    const hit = findCanvasGhostTheme(text);
+    this.setState(s => ({
+      canvasGhostThread: [...s.canvasGhostThread, { from: 'user', text }, { from: 'ghost', text: canvasGhostReply(hit) }],
+      canvasGhostDraft: ''
+    }));
+    if (hit) this.ghostFocusTopic(hit.id);
+  };
+  canvasGhostInputKeyDown = e => {
+    if (e.key === 'Enter') { e.preventDefault(); this.submitCanvasGhost(); }
+  };
+  // Unlike highlightTopic (used by the board's "View canvas" links, which only
+  // pans so it doesn't yank the user's current zoom), the ghost agent should
+  // read as zooming in on the thing it's pointing at.
+  ghostFocusTopic = topicId => {
+    const notesInTopic = this.state.taskNotes.filter(n => n.topicId === topicId);
+    if (!notesInTopic.length) return;
+    const cx = notesInTopic.reduce((sum, n) => sum + n.x + NOTE_W / 2, 0) / notesInTopic.length;
+    const cy = notesInTopic.reduce((sum, n) => sum + n.y + NOTE_H / 2, 0) / notesInTopic.length;
+    const vp = this.viewportRef.current;
+    const vw = vp ? vp.clientWidth : 1000, vh = vp ? vp.clientHeight : 700;
+    const scale = 0.9;
+    const groupIds = new Set(notesInTopic.map(n => n.groupId).filter(Boolean));
+    this.setState({
+      highlightedGroup: groupIds.size === 1 ? [...groupIds][0] : null,
+      smoothPan: true,
+      // The ghost card sits over the right side of the canvas now, so the
+      // zoomed-in group is centered in the left portion instead of dead
+      // center, so the card never covers what it's pointing at.
+      pan: { x: vw * 0.34 - cx * scale, y: vh / 2 - cy * scale, scale }
+    }, () => setTimeout(() => this.setState({ smoothPan: false }), 600));
+  };
+
+  // ---- Connections drawer (connector tool) ----
+  setCanvasToolRoute = () => {
+    this.setState(s => ({
+      canvasTool: s.canvasTool === 'route' ? 'select' : 'route',
+      connectionsPanelOpen: s.canvasTool !== 'route'
+    }));
+  };
+  closeConnectionsPanel = () => this.setState({ connectionsPanelOpen: false, canvasTool: 'select' });
+  toggleCanvasSourceActive = id => () => this.setState(s => ({
+    canvasSources: s.canvasSources.map(src => src.id === id ? { ...src, active: !src.active } : src)
+  }));
+  connectCanvasSource = id => () => this.setState(s => ({
+    canvasSources: s.canvasSources.map(src => src.id === id ? { ...src, connected: true, active: true } : src)
+  }));
+  triggerCanvasUpload = () => { if (this.canvasUploadInputRef.current) this.canvasUploadInputRef.current.click(); };
+  uploadCanvasFile = e => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    this.setState(s => ({
+      canvasSources: [...s.canvasSources, {
+        id: 'upload-' + s.canvasSources.length + '-' + file.name,
+        name: file.name, kind: 'upload', connected: true, active: true
+      }]
+    }));
+    this.showToast('Connected ' + file.name);
+  };
 
   highlightTopic = topicId => {
     const notesInTopic = this.state.taskNotes.filter(n => n.topicId === topicId);
@@ -8333,22 +8583,6 @@ class Component extends DCLogic {
       };
     }).filter(Boolean);
 
-    // The holding lane, drawn round whatever is actually parked. Like a parent it is
-    // derived and inert — the signals inside it are ungrouped, and this only says why.
-    const tParked = tNotes.filter(n => !n.groupId && !n.pinned);
-    const parkedLane = tParked.length ? (() => {
-      const minX = Math.min(...tParked.map(n => n.x)) - PAD;
-      const minY = Math.min(...tParked.map(n => n.y)) - PAD;
-      const maxX = Math.max(...tParked.map(n => n.x + NOTE_W)) + PAD;
-      const maxY = Math.max(...tParked.map(n => n.y + NOTE_H)) + PAD;
-      return {
-        left: minX + 'px', top: minY + 'px',
-        width: (maxX - minX) + 'px', height: (maxY - minY) + 'px',
-        labelLeft: (minX + 20) + 'px', labelTop: (minY - 18) + 'px',
-        countLabel: tParked.length + (tParked.length === 1 ? ' signal' : ' signals')
-      };
-    })() : null;
-
     const bucketsView = this.state.taskGroups.map(g => {
       const box = resolveGroupBox(tBucketNotes, g.id, this.state.groupBoxes);
       if (!box) return null;
@@ -8427,16 +8661,18 @@ class Component extends DCLogic {
       return (n.title + ' ' + n.body + ' ' + (g ? g.label : '') + ' ' + (topic ? topic.label : '')).toLowerCase();
     };
     let tMatchCount = 0;
+    const tActiveSources = new Set(this.state.canvasSources.filter(s => s.connected && s.active).map(s => s.id));
 
     const notesView = tNotes.map(n => {
       const selected = !!this.state.selectedIds[n.id];
       const inRange = this.state.rangeDays === null || n.daysAgo <= this.state.rangeDays;
       const hit = !tQuery || noteHaystack(n).indexOf(tQuery) !== -1;
-      const shown = inRange && hit;
+      const fromActiveSource = !n.source || tActiveSources.has(n.source);
+      const shown = inRange && hit && fromActiveSource;
       if (shown) tMatchCount++;
       return {
         left: n.x + 'px', top: n.y + 'px',
-        bg: 'var(--bg-surface-raised)',
+        bg: 'var(--bg-surface)',
         shadow: selected ? '0 0 0 2px var(--accent), var(--shadow-md)'
           : (tQuery && shown) ? '0 0 0 2px var(--accent-border), var(--shadow-md)'
           : 'var(--shadow-md)',
@@ -8522,15 +8758,10 @@ class Component extends DCLogic {
     const aiRanks = boardRankedIds
       .map(id => ({ r: AI_RANKING.find(x => x.taskId === id) || {}, t: boardTasks.find(t => t.id === id) }))
       .map(({ r, t }, idx) => {
-        const column = this.boardColumnOf(t);
-        const railCta = stageCta(column);
-        const railBack = stageBack(column);
-        // Position, not the task, decides how much of the card is drawn.
-        const detail = AI_DETAIL_BY_RANK[idx] || 'compact';
-        // Rank 1 reads out its topic's notes; the rest of the set stays in canvas.
+        // Every rank reads out its topic's notes now — position no longer thins the
+        // card down, the rail is a read-only preview and the drawer is where you act.
         const topicNotes = taskPoints(t);
         const shown = topicNotes.slice(0, 3);
-        const extra = topicNotes.length - shown.length;
         // Authored rationale where one exists; otherwise state the grounds it was
         // ranked on, so a task that entered via the slider still explains itself.
         const whyText = r.why || (
@@ -8545,35 +8776,14 @@ class Component extends DCLogic {
           // Same tags as a board card, ahead of the rail's own extras.
           estimate: t.estimate,
           scale: t.scale || '', hasScale: !!t.scale,
-          cardClass: detail === 'full' ? 'ai-rank'
-            : detail === 'brief' ? 'ai-rank ai-rank-brief'
-            : 'ai-rank ai-rank-compact',
-          // Every rank carries the tag row and its reason, compact included, and both
-          // read the same on all three. What position still controls is the extras —
-          // the signal read-out and the action buttons on the top card.
+          cardClass: 'ai-rank',
           showChips: true,
           showWhy: !!whyText,
           why: whyText,
-          showNotes: detail === 'full' && shown.length > 0,
+          showNotes: shown.length > 0,
           notes: shown.map(n => ({ key: n.id, label: n.title.toUpperCase(), body: n.body })),
-          moreLabel: extra > 0
-            ? (extra + ' more note' + (extra === 1 ? '' : 's') + ' in canvas')
-            : ('See all ' + topicNotes.length + ' notes in canvas'),
-          showActions: detail === 'full',
           onClick: this.openTaskDetail(t.id),
           onOpenCanvas: this.openTopicInCanvas(t.topicId),
-          // Follows the card's own stage, so the button a Start click produced reads
-          // as Complete on the very next render rather than still offering Start.
-          showCta: !!railCta,
-          ctaLabel: railCta ? railCta.label : '',
-          onCta: !railCta ? null
-            : railCta.sign ? this.completeTask(t.id)
-            : this.moveTaskTo(t.id, railCta.nextId),
-          showBack: !!railBack,
-          backLabel: railBack ? railBack.label : '',
-          onBack: railBack ? this.moveTaskTo(t.id, railBack.toId) : null,
-          showDelete: stageCanRemove(column),
-          onDelete: this.deleteTask(t.id),
           // Drag to re-rank within the rail, or out onto a column to change stage.
           // The whole card is the drag source, the grip is the affordance.
           dragOpacity: this.aiDragId === t.id ? 0.55 : 1,
@@ -8718,10 +8928,7 @@ class Component extends DCLogic {
             priority: t.priority,
             priorityClass: 'board-chip board-chip-' + t.priority.toLowerCase(),
             estimate: t.estimate,
-            showInColumn: c.id === 'doing' && !!t.inColumn,
-            inColumn: t.inColumn || '',
-            showWaiting: c.id === 'review' && !!t.waiting,
-            waiting: t.waiting || '',
+            scale: t.scale || '', hasScale: !!t.scale,
             showStalled: c.id === 'doing' && !!t.stalled,
             stalled: t.stalled || '',
             // Raised by a canvas regroup while an overlapping task was already
@@ -8756,8 +8963,6 @@ class Component extends DCLogic {
         onDragLeave: this.onColumnDragLeave(c.id),
         onDrop: this.onColumnDrop(c.id),
         count: String(inColumn.length),
-        isTodo: c.id === 'todo',
-        onAdd: this.newBoardTask,
         cards,
         // Nothing left to draw. Say which of the two reasons it is: the filters left
         // the column genuinely empty, or everything in it is up in the rail.
@@ -9312,10 +9517,11 @@ class Component extends DCLogic {
       isCanvasView: this.state.taskViewMode === 'canvas',
       setBoardView: this.setTaskViewMode('board'),
       setCanvasView: this.setTaskViewMode('canvas'),
-      boardToggleBg: this.state.taskViewMode === 'board' ? 'var(--bg-surface-2)' : 'transparent',
-      boardToggleColor: this.state.taskViewMode === 'board' ? 'var(--text-primary)' : 'var(--text-tertiary)',
-      canvasToggleBg: this.state.taskViewMode === 'canvas' ? 'var(--bg-surface-2)' : 'transparent',
-      canvasToggleColor: this.state.taskViewMode === 'canvas' ? 'var(--text-primary)' : 'var(--text-tertiary)',
+      // Board/Canvas toggle slides a single pill behind the labels instead of
+      // swapping each button's own background, so switching reads as one motion.
+      taskToggleThumbLeft: this.state.taskViewMode === 'board' ? '2px' : '78px',
+      boardToggleColor: this.state.taskViewMode === 'board' ? 'var(--text-primary)' : 'var(--toggle-inactive)',
+      canvasToggleColor: this.state.taskViewMode === 'canvas' ? 'var(--text-primary)' : 'var(--toggle-inactive)',
       // ---- Action Board (Figma 272:23170) ----
       boardColumns, aiRanks,
       // With nothing ranked the summary would describe work the filters hide.
@@ -9329,7 +9535,6 @@ class Component extends DCLogic {
       boardDoneIcon: taskIcon('checkCircle', 16),
       boardGripIcon: taskIcon('grip', 16), boardTrashIcon: taskIcon('trash', 15),
       boardPlusIcon: taskIcon('plus', 16),
-      boardPlusSmIcon: taskIcon('plus', 14),
       boardSearchIcon: navIcon('search', 16, false),
       boardSearch: this.state.boardSearch,
       setBoardSearch: this.setBoardSearch,
@@ -9408,6 +9613,62 @@ class Component extends DCLogic {
       taskSearching: tQuery !== '',
       taskSearchCount: tQuery ? (tMatchCount + ' of ' + tNotes.length) : '',
       zoomIn: this.zoomIn, zoomOut: this.zoomOut, resetView: this.resetView,
+      // canvas toolbar menu (Figma node 444:22742) — floating pointer/route/Ghost dock
+      canvasNavIcon: navIcon('canvasNav', 16, false),
+      canvasRouteIcon: navIcon('canvasRoute', 18, false),
+      canvasGhostIcon: ghostGradientIcon(18),
+      setCanvasToolSelect: this.setCanvasTool('select'),
+      setCanvasToolRoute: this.setCanvasToolRoute,
+      canvasToolIsSelect: this.state.canvasTool === 'select',
+      canvasToolIsRoute: this.state.canvasTool === 'route',
+      canvasToolSelectBg: this.state.canvasTool === 'select' ? 'var(--accent-btn)' : 'transparent',
+      canvasToolSelectColor: this.state.canvasTool === 'select' ? 'var(--text-primary)' : 'var(--text-secondary)',
+      canvasToolRouteBg: this.state.canvasTool === 'route' ? 'var(--accent-btn)' : 'transparent',
+      setCanvasToolGhost: this.setCanvasToolGhost,
+      canvasToolIsGhost: this.state.canvasTool === 'ghost',
+      canvasToolGhostBg: this.state.canvasTool === 'ghost' ? 'var(--accent-btn)' : 'transparent',
+      // Canvas ghost agent card (Figma node 444:22947)
+      canvasGhostOpen: this.state.canvasTool === 'ghost',
+      canvasGhostIconLg: ghostGradientIcon(48),
+      canvasGhostSuggestion,
+      canvasGhostDraft: this.state.canvasGhostDraft,
+      setCanvasGhostDraft: this.setCanvasGhostDraft,
+      canvasGhostInputKeyDown: this.canvasGhostInputKeyDown,
+      submitCanvasGhost: this.submitCanvasGhost,
+      canvasGhostSendIcon: taskIcon('arrowUp', 16),
+      canvasGhostHasThread: this.state.canvasGhostThread.length > 0,
+      canvasGhostThread: this.state.canvasGhostThread.map((m, i) => ({
+        key: 'cg' + i,
+        text: m.text,
+        color: m.from === 'user' ? 'var(--text-secondary)' : 'var(--accent)'
+      })),
+      canvasToolRouteColor: this.state.canvasTool === 'route' ? 'var(--text-primary)' : 'var(--text-secondary)',
+      // Connections drawer (Figma-adjacent — connector tool opens this instead
+      // of drawing edges, so the canvas can be pointed at more feedback sources)
+      connectionsPanelOpen: this.state.connectionsPanelOpen,
+      connectionsDrawerClass: this.state.connectionsPanelOpen ? 'connections-drawer is-open' : 'connections-drawer',
+      closeConnectionsPanel: this.closeConnectionsPanel,
+      canvasSourcesConnected: this.state.canvasSources.filter(s => s.connected).map(s => ({
+        key: s.id,
+        name: s.name,
+        icon: s.kind === 'social' ? navIcon('messageDots', 16, false) : taskIcon('checkCircle', 16),
+        boxClass: s.active ? 'td-step-box is-on' : 'td-step-box',
+        checkIcon: s.active ? taskIcon('check', 12) : '',
+        onToggle: this.toggleCanvasSourceActive(s.id)
+      })),
+      canvasSourcesAvailable: this.state.canvasSources.filter(s => !s.connected).map(s => ({
+        key: s.id,
+        name: s.name,
+        icon: navIcon('messageDots', 16, false),
+        onConnect: this.connectCanvasSource(s.id)
+      })),
+      hasAvailableSources: this.state.canvasSources.some(s => !s.connected),
+      canvasUploadInputRef: this.canvasUploadInputRef,
+      triggerCanvasUpload: this.triggerCanvasUpload,
+      uploadCanvasFile: this.uploadCanvasFile,
+      canvasUploadIcon: taskIcon('arrowUp', 16),
+      canvasSourcesCountLabel: this.state.canvasSources.filter(s => s.connected && s.active).length +
+        ' of ' + this.state.canvasSources.filter(s => s.connected).length + ' sources shown',
       // auto-group confidence threshold
       confidenceLabel: this.state.groupConfidence + '%',
       confidenceValue: this.state.groupConfidence,
@@ -9465,7 +9726,6 @@ class Component extends DCLogic {
       canvasW: CANVAS_W + 'px', canvasH: CANVAS_H + 'px',
       canvasTransition: this.state.smoothPan ? 'transform 550ms cubic-bezier(0.22,1,0.36,1)' : 'none',
       parentTopicsView, bucketsView, notesView, groupPanels,
-      hasParked: !!parkedLane, parkedLane: parkedLane || {},
       marqueeVisible: tMarqueeVisible, marqueeLeft: mLeft + 'px', marqueeTop: mTop + 'px', marqueeWidth: mW + 'px', marqueeHeight: mH + 'px',
       // context menu
       contextMenuVisible: !!this.state.contextMenu,
