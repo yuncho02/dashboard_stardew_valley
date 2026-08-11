@@ -155,7 +155,7 @@
       order: -1;
     }
     /* Collapsed, the name/role label is zero-width but the row's gap survives it and
-       pushes the avatar off the rail's centreline. Drop the gap with the label. The
+       pushes the avatar off the rail's centerline. Drop the gap with the label. The
        gap lives here rather than inline so this override can actually win. */
     .sidebar-profile-id {
       gap: 12px;
@@ -267,7 +267,7 @@
       white-space: nowrap;
     }
     /* Deliberately quieter than a theme chip — the parent names the area, the themes
-       inside it are what carry the colour. */
+       inside it are what carry the color. */
     .canvas-parent-name {
       font: 600 13px/16px var(--font-body); letter-spacing: 0.02em; color: var(--text-secondary);
     }
@@ -410,12 +410,12 @@
       transition: border-color 140ms ease, background 140ms ease;
     }
     /* While a card is in flight: candidate columns outline faintly, and the one
-       under the cursor commits in its own colour. */
+       under the cursor commits in its own color. */
     .board-col.is-drop-candidate { border-color: var(--border-default); }
     .board-col.is-drop-target { border-color: var(--border-strong); background: var(--bg-surface-2); }
     .board-col.tone-warning.is-drop-target { border-color: var(--warning); background: var(--warning-muted); }
     .board-col.tone-success.is-drop-target { border-color: var(--success); background: var(--success-muted); }
-    /* Column identity colour, on the header dot and the count. */
+    /* Column identity color, on the header dot and the count. */
     .board-col-dot {
       width: 7px; height: 7px; flex-shrink: 0; border-radius: 50%;
       background: var(--text-tertiary);
@@ -450,7 +450,7 @@
       border: 1px solid var(--border-default); background: transparent;
       font: 400 11px/1.4 var(--font-mono); color: var(--text-secondary); white-space: nowrap;
     }
-    /* Priority reads by colour: P0 filled, then danger → warning → muted. */
+    /* Priority reads by color: P0 filled, then danger → warning → muted. */
     .board-chip-p0 { border-color: transparent; background: var(--danger-muted); color: var(--danger); }
     .board-chip-p1 { color: var(--danger); }
     .board-chip-p2 { color: var(--warning); }
@@ -485,7 +485,6 @@
     .ai-rail-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
     .ai-rail-spark { display: flex; flex-shrink: 0; color: var(--accent); }
     .ai-rail-title { font: 600 15px/1.35 var(--font-body); letter-spacing: -0.15px; color: var(--text-primary); }
-    .ai-rail-stamp { margin-left: auto; font: 400 11px/1.4 var(--font-mono); color: var(--text-tertiary); }
     .ai-rail-summary { margin: 0; min-width: 0; overflow-wrap: break-word; font: 400 13px/19.5px var(--font-alt); color: var(--text-secondary); }
     .ai-rail-list {
       display: flex; flex-direction: row; align-items: flex-start; gap: 12px; min-width: 0;
@@ -559,7 +558,7 @@
     }
     .ai-btn-start:hover { background: var(--accent-hover); }
     /* Outlined counterpart to .ai-btn-start: same size and weight, accent border and
-       label in place of the accent fill, so it reads as secondary without going grey. */
+       label in place of the accent fill, so it reads as secondary without going gray. */
     .ai-btn-back {
       height: 35px; padding: 0 15px;
       border: 1px solid var(--accent-border); border-radius: var(--radius-lg, 10px);
@@ -617,7 +616,7 @@
       flex: 1; min-height: 0; min-width: 0; overflow-y: auto;
       display: flex; flex-direction: column; gap: 10px; padding: 22px 26px 32px;
     }
-    .td-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .td-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
     .td-stat {
       display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 14px 16px;
       border: 1px solid var(--border-default); border-radius: var(--radius-xl, 12px);
@@ -638,7 +637,7 @@
       font: 400 10px/1.4 var(--font-mono); letter-spacing: 0.08em;
       text-transform: uppercase; color: var(--text-tertiary);
     }
-    /* The drawer summarises; the signals themselves live on the canvas, so this is the
+    /* The drawer summarizes; the signals themselves live on the canvas, so this is the
        way back to them. Kept as a quiet link — it is an aside from reading the plan,
        not a step in it. align-self stops the column stretching it to full width. */
     .td-canvas-link {
@@ -702,7 +701,7 @@
       /* Search takes its own line; both selects and New Action share the next one. */
       .board-search { flex-basis: 100%; max-width: none; }
     }
-    /* Too narrow for the two selects plus a labelled button. Dropping the label and
+    /* Too narrow for the two selects plus a labeled button. Dropping the label and
        tightening the gutters keeps all three on one line down to ~265px. */
     @container (max-width: 400px) {
       .board-toolbar { gap: 8px; }
@@ -1061,7 +1060,7 @@
       background: var(--neutral-100, #f5f5f5);
       color: var(--neutral-900, #171717);
     }
-    /* Workflow state, coloured by whether the ticket is actionable now, already
+    /* Workflow state, colored by whether the ticket is actionable now, already
        moving, or parked waiting on someone else. */
     .fb-status {
       font: 500 13px/18px var(--font-body);
@@ -1788,7 +1787,7 @@
     .ghost-refresh-btn.is-primary:hover {
       background: var(--lime-300, #bef264);
     }
-    /* Empty state sits centred between the header and the composer. */
+    /* Empty state sits centered between the header and the composer. */
     .ghost-empty {
       display: flex;
       flex-direction: column;
@@ -2253,6 +2252,20 @@
     .profile-hint.is-error {
       color: var(--danger);
     }
+    /* Priority and patch have few enough options to show them all rather than hide
+       them behind a select — the choice is the point, not the space it takes. */
+    .na-seg-row { display: flex; gap: 6px; flex-wrap: wrap; min-width: 0; }
+    .na-seg {
+      flex: 1 1 auto; height: 36px; padding: 0 14px;
+      border: 1px solid var(--border-default); border-radius: var(--radius-md);
+      background: var(--bg-surface-2); color: var(--text-secondary);
+      font: var(--text-body-sm); cursor: pointer; white-space: nowrap;
+      transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
+    }
+    .na-seg:hover { color: var(--text-primary); border-color: var(--border-strong); }
+    .na-seg.is-on {
+      border-color: var(--accent); background: var(--accent-muted); color: var(--accent);
+    }
     .profile-actions {
       display: flex;
       align-items: center;
@@ -2275,7 +2288,7 @@
     }
     /* --primary-btn stays lime in both themes, so the label has to stay dark in both.
        (--primary-foreground-btn flips to near-white on light and is unreadable here;
-       it reads as a surface tint elsewhere, not as a label colour.) */
+       it reads as a surface tint elsewhere, not as a label color.) */
     .profile-btn.is-primary {
       background: var(--primary-btn, #bef264);
       border-color: transparent;
@@ -2802,7 +2815,7 @@
               <div class="td-card-head is-split">
                 <div class="td-card-head" style="width:auto">
                   <span class="td-h">Analyzed Problem</span>
-                  <sc-if value="{{ tdAnalysed }}" hint-placeholder-val="{{ true }}">
+                  <sc-if value="{{ tdAnalyzed }}" hint-placeholder-val="{{ true }}">
                     <span class="td-agent"><img src="assets/bug-report/cursor-agent.png" alt="">Cursor Agent</span>
                   </sc-if>
                 </div>
@@ -2810,11 +2823,11 @@
                   <button type="button" onClick="{{ openCursorIde }}" class="td-goto">Go to Code</button>
                 </sc-if>
               </div>
-              <sc-if value="{{ tdAnalysed }}" hint-placeholder-val="{{ true }}">
+              <sc-if value="{{ tdAnalyzed }}" hint-placeholder-val="{{ true }}">
                 <span class="td-analysis">{{ tdAnalysisEl }}</span>
               </sc-if>
-              <sc-if value="{{ tdNotAnalysed }}" hint-placeholder-val="{{ false }}">
-                <span class="td-empty">Not analysed yet — this report is queued behind the P0 tickets.</span>
+              <sc-if value="{{ tdNotAnalyzed }}" hint-placeholder-val="{{ false }}">
+                <span class="td-empty">Not analyzed yet — this report is queued behind the P0 tickets.</span>
               </sc-if>
             </div>
 
@@ -3117,7 +3130,6 @@
             <div class="ai-rail-head">
               <span class="ai-rail-spark">{{ boardSparkIcon }}</span>
               <span class="ai-rail-title">AI Assistant</span>
-              <span class="ai-rail-stamp">{{ aiOrderBasis }}</span>
             </div>
             <sc-if value="{{ showAiSummary }}" hint-placeholder-val="{{ true }}">
               <p class="ai-rail-summary">{{ aiSummary }}</p>
@@ -3830,6 +3842,64 @@
     </div>
   </sc-if>
 
+  <!-- ===== New action dialog — the fields Ghost AI fills in when it proposes one ===== -->
+  <sc-if value="{{ showNewAction }}" hint-placeholder-val="{{ false }}">
+    <div class="profile-backdrop" onClick="{{ closeNewAction }}" role="dialog" aria-modal="true" aria-labelledby="new-action-title">
+      <div class="profile-card" onClick="{{ stopPropagation }}">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+          <span id="new-action-title" style="font:var(--text-h4);color:var(--text-primary)">New action</span>
+          <button type="button" onClick="{{ closeNewAction }}" aria-label="Close" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;border-radius:var(--radius-md);color:var(--text-secondary);cursor:pointer;padding:0;flex-shrink:0">{{ profileCloseIcon }}</button>
+        </div>
+
+        <div class="profile-field">
+          <span class="profile-label">Title</span>
+          <input value="{{ naTitle }}" onChange="{{ setNaTitle }}" placeholder="e.g. Raise health-bar contrast in the new HUD" class="profile-input {{ naTitleClass }}" aria-label="Title" autofocus>
+          <sc-if value="{{ naTitleError }}" hint-placeholder-val="{{ false }}">
+            <span class="profile-hint is-error">Give the action a title.</span>
+          </sc-if>
+        </div>
+
+        <div class="profile-field">
+          <span class="profile-label">Theme</span>
+          <select value="{{ naTopicId }}" onChange="{{ setNaTopic }}" class="profile-input" aria-label="Theme">
+            <sc-for list="{{ naTopicOptions }}" as="o" hint-placeholder-count="14">
+              <option value="{{ o.value }}">{{ o.label }}</option>
+            </sc-for>
+          </select>
+          <span class="profile-hint">{{ naTopicHint }}</span>
+        </div>
+
+        <div class="profile-field">
+          <span class="profile-label">Priority</span>
+          <div class="na-seg-row">
+            <sc-for list="{{ naPriorityOptions }}" as="o" hint-placeholder-count="4">
+              <button type="button" onClick="{{ o.onClick }}" class="{{ o.className }}">{{ o.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div class="profile-field">
+          <span class="profile-label">Estimate</span>
+          <input value="{{ naEstimate }}" onChange="{{ setNaEstimate }}" placeholder="e.g. 6 hrs, 2 days" class="profile-input" aria-label="Estimate">
+        </div>
+
+        <div class="profile-field">
+          <span class="profile-label">Patch</span>
+          <div class="na-seg-row">
+            <sc-for list="{{ naPatchOptions }}" as="o" hint-placeholder-count="2">
+              <button type="button" onClick="{{ o.onClick }}" class="{{ o.className }}">{{ o.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          <button type="button" onClick="{{ closeNewAction }}" class="profile-btn">Cancel</button>
+          <button type="button" onClick="{{ createNewAction }}" class="profile-btn is-primary">Add action</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
   <!-- ===== Action detail drawer — opened by clicking any action card ===== -->
   <sc-if value="{{ showTaskDetail }}" hint-placeholder-val="{{ false }}">
     <div class="td-scrim" onClick="{{ closeTaskDetail }}">
@@ -3869,11 +3939,6 @@
               <span class="td-stat-label">Estimate</span>
               <span class="td-stat-value">{{ taskDetail.estimate }}</span>
               <span class="td-stat-note">{{ taskDetail.estimateNote }}</span>
-            </div>
-            <div class="td-stat">
-              <span class="td-stat-label">Due</span>
-              <span class="td-stat-value">{{ taskDetail.dueLabel }}</span>
-              <span class="td-stat-note">{{ taskDetail.dueNote }}</span>
             </div>
             <div class="td-stat">
               <span class="td-stat-label">Impact</span>
@@ -4214,7 +4279,7 @@ const NOTES = [
   { id: 'f9', source: 'in-game survey', topicId: 'hud', title: 'Sentiment', body: '54% negative on the new HUD, 71% positive on the menus' },
   { id: 'f10', source: 'discord', topicId: 'hud', title: 'Top quote', body: '“Looks great in a screenshot, unreadable in a teamfight”' },
   { id: 'f11', source: 'reddit', topicId: 'hud', title: 'Named element', body: 'Health bar contrast is the single most-named element' },
-  { id: 'f12', source: 'support', topicId: 'hud', title: 'Accessibility', body: '90 tickets from colourblind players since the rollout' },
+  { id: 'f12', source: 'support', topicId: 'hud', title: 'Accessibility', body: '90 tickets from colorblind players since the rollout' },
   { id: 'f13', source: 'reddit', topicId: 'balance', title: 'Loudest name', body: 'Smolder appears in 38% of all balance posts this patch' },
   { id: 'f14', source: 'telemetry', topicId: 'balance', title: 'Data check', body: 'Smolder win rate is 18% above band — the feedback is right' },
   { id: 'f15', source: 'discord', topicId: 'balance', title: 'Counterpoint', body: 'Viego complaints describe a bug, not his numbers' },
@@ -4222,14 +4287,14 @@ const NOTES = [
   { id: 'f17', source: 'reddit', topicId: 'store', title: 'Volume', body: '3,410 posts on the 26.03 pass grind rate' },
   { id: 'f18', source: 'in-game survey', topicId: 'store', title: 'Sentiment', body: '73% of pass owners call the new tier pace worse' },
   { id: 'f19', source: 'discord', topicId: 'store', title: 'Top quote', body: '“I bought the pass and now it feels like a second job”' },
-  { id: 'f20', source: 'telemetry', topicId: 'store', title: 'Behaviour', body: 'Pass completion down 22% against the 26.02 pass' },
+  { id: 'f20', source: 'telemetry', topicId: 'store', title: 'Behavior', body: 'Pass completion down 22% against the 26.02 pass' },
   { id: 'f21', source: 'app store', topicId: 'perf', title: 'Volume', body: '1,340 one-star reviews cite stutter since 26.03' },
   { id: 'f22', source: 'telemetry', topicId: 'perf', title: 'Who is hit', body: '45% of reports come from below-min-spec machines' },
   { id: 'f23', source: 'reddit', topicId: 'perf', title: 'Top quote', body: '“My game stutters on every recall since the patch”' },
   { id: 'f24', source: 'support', topicId: 'perf', title: 'Regions', body: 'BR and TR account for over half the reports' },
   { id: 'f25', source: 'forums', topicId: 'ranked', title: 'Theme', body: 'LP losses feel heavier than gains after the 26.03 reset' },
   { id: 'f26', source: 'reddit', topicId: 'ranked', title: 'Top quote', body: '“Two bad games erase a week of climbing”' },
-  { id: 'f27', source: 'telemetry', topicId: 'ranked', title: 'Behaviour', body: 'Ranked session length down 9% since the patch' },
+  { id: 'f27', source: 'telemetry', topicId: 'ranked', title: 'Behavior', body: 'Ranked session length down 9% since the patch' },
   { id: 'f28', source: 'playtest', topicId: 'shop', title: 'Task time', body: 'Buying an item takes 4.8s, up from 2.9s on 26.02' },
   { id: 'f29', source: 'reddit', topicId: 'shop', title: 'Top complaint', body: 'Recommended items sit below the fold at 1080p' },
   { id: 'f30', source: 'support', topicId: 'shop', title: 'Still broken', body: 'Partial champion names in shop search return nothing' },
@@ -4245,7 +4310,7 @@ const NOTES = [
   { id: 'f40', source: 'community poll', topicId: 'praise', title: 'Carry-over', body: '3 of the top 5 asks from 26.02 shipped in this patch' },
   { id: 'f41', source: 'app store', topicId: 'onboard', title: 'Volume', body: '410 reviews from accounts under 20 games played' },
   { id: 'f42', source: 'in-game survey', topicId: 'onboard', title: 'Confusion', body: 'The item shop tutorial is the most-named sticking point' },
-  { id: 'f43', source: 'telemetry', topicId: 'onboard', title: 'Behaviour', body: 'Day-7 retention on new accounts down 4 points' },
+  { id: 'f43', source: 'telemetry', topicId: 'onboard', title: 'Behavior', body: 'Day-7 retention on new accounts down 4 points' },
   { id: 'f44', source: 'reddit', topicId: 'audio', title: 'Theme', body: 'Ability SFX now sit under the new music bed' },
   { id: 'f45', source: 'discord', topicId: 'audio', title: 'Top quote', body: '“I cannot hear Baron spawn over the new theme”' },
   { id: 'f46', source: 'forums', topicId: 'audio', title: 'Top ask', body: 'Players want separate music and SFX sliders back' },
@@ -4254,40 +4319,38 @@ const NOTES = [
 ];
 // Suggested actions, not a hand-written backlog: each one is what Ghost AI proposes a
 // developer do about a theme on the canvas, scoped against the signals inside it.
-// Patch 26.03 shipped nine days ago and the 26.04 hotfix window closes in six, so
-// dueDays is measured from there — negative means it has already missed the cutoff.
 // `short` is the title everywhere it appears, `board` is the column, and `patch` is
 // what the Patch filter narrows on: 26.03 is what answers this patch's feedback, 26.04
-// is what the slower themes get deferred into. Actions carry no ticket id — they are
-// responses to a theme, not entries in the defect tracker.
+// is what the slower themes get deferred into. Actions carry no ticket id and no due
+// date — they are responses to a theme, not entries in a tracker or a schedule.
 const ACTIONS = [
-  { id: 'a1', short: 'Tune the cast-queue window back toward 26.02', priority: 'P0', board: 'todo', patch: '26.03', topicId: 'combat', dueDays: 0, estimate: '1 day', scale: '4,120 posts' },
-  { id: 'a2', short: 'Add an input-latency readout to the practice tool', priority: 'P1', board: 'review', patch: '26.03', topicId: 'combat', dueDays: 2, estimate: '4 hrs', waiting: 'Waiting on QA · 1 day' },
-  { id: 'a3', short: 'Restore a readable power spike in the new mythics', priority: 'P0', board: 'todo', patch: '26.03', topicId: 'items', dueDays: 1, estimate: '2 days', scale: '2,860 threads' },
-  { id: 'a4', short: 'Rewrite the item tooltips to state the spike', priority: 'P1', board: 'doing', patch: '26.03', topicId: 'items', dueDays: 3, estimate: '1 day', inColumn: '2 days in column' },
-  { id: 'a5', short: 'Raise health-bar contrast in the new HUD', priority: 'P1', board: 'todo', patch: '26.03', topicId: 'hud', dueDays: 2, estimate: '6 hrs' },
-  { id: 'a6', short: 'Ship a colourblind-safe HUD palette', priority: 'P1', board: 'todo', patch: '26.03', topicId: 'hud', dueDays: 5, estimate: '3 days' },
-  { id: 'a7', short: 'Bring Smolder back inside the win-rate band', priority: 'P1', board: 'todo', patch: '26.03', topicId: 'balance', dueDays: 2, estimate: '1 day' },
-  { id: 'a8', short: 'Publish a balance note naming the three champions', priority: 'P2', board: 'todo', patch: '26.03', topicId: 'balance', dueDays: 4, estimate: '3 hrs' },
-  { id: 'a9', short: 'Cut the 26.03 pass tier pace by 20%', priority: 'P0', board: 'todo', patch: '26.03', topicId: 'store', dueDays: 2, estimate: '1 day', scale: '3,410 posts' },
-  { id: 'a10', short: 'Grant retroactive tiers to current pass owners', priority: 'P1', board: 'todo', patch: '26.03', topicId: 'store', dueDays: 4, estimate: '2 days' },
-  { id: 'a11', short: 'Pool the recall VFX allocation on min-spec', priority: 'P0', board: 'doing', patch: '26.03', topicId: 'perf', dueDays: 3, estimate: '2 days', scale: '1,340 reviews', stalled: 'Stalled 5 days — no commits since 26.02' },
-  { id: 'a12', short: 'Ship the low-spec graphics preset to PBE', priority: 'P1', board: 'review', patch: '26.03', topicId: 'perf', dueDays: -1, estimate: '2 hrs', waiting: 'Waiting on QA · 1 day' },
-  { id: 'a13', short: 'Rebalance LP gain and loss after the reset', priority: 'P1', board: 'todo', patch: '26.03', topicId: 'ranked', dueDays: 4, estimate: '2 days' },
-  { id: 'a14', short: 'Show LP change reasons on the post-game screen', priority: 'P2', board: 'doing', patch: '26.03', topicId: 'ranked', dueDays: 6, estimate: '1 day', inColumn: '3 days in column' },
-  { id: 'a15', short: 'Move recommended items above the fold at 1080p', priority: 'P2', board: 'doing', patch: '26.03', topicId: 'shop', dueDays: 3, estimate: '4 hrs', inColumn: '1 day in column' },
-  { id: 'a16', short: 'Fix partial-name matching in shop search', priority: 'P3', board: 'review', patch: '26.03', topicId: 'shop', dueDays: 5, estimate: '4 hrs', waiting: 'Waiting on QA · 2 days' },
-  { id: 'a17', short: 'Add an enemy-only VFX intensity slider', priority: 'P2', board: 'todo', patch: '26.03', topicId: 'vfx', dueDays: 5, estimate: '3 days' },
-  { id: 'a18', short: 'Recolour ally casts toward the team palette', priority: 'P2', board: 'todo', patch: '26.03', topicId: 'vfx', dueDays: 6, estimate: '1 day' },
-  { id: 'a19', short: 'Raise brush-edge contrast at low settings', priority: 'P3', board: 'todo', patch: '26.03', topicId: 'map', dueDays: 7, estimate: '4 hrs' },
-  { id: 'a20', short: 'Publish a 26.03 feedback response post', priority: 'P2', board: 'todo', patch: '26.03', topicId: 'praise', dueDays: 2, estimate: '3 hrs' },
-  { id: 'a21', short: 'Re-survey the three loudest themes after the hotfix', priority: 'P3', board: 'todo', patch: '26.04', topicId: 'praise', dueDays: 11, estimate: '1 day' },
-  { id: 'a22', short: 'Rebuild the item shop tutorial for new accounts', priority: 'P2', board: 'todo', patch: '26.04', topicId: 'onboard', dueDays: 9, estimate: '3 days' },
-  { id: 'a23', short: 'Split music and SFX volume sliders', priority: 'P2', board: 'review', patch: '26.03', topicId: 'audio', dueDays: 3, estimate: '6 hrs', waiting: 'Waiting on QA · 1 day' },
-  { id: 'a24', short: 'Duck the music bed under objective SFX', priority: 'P3', board: 'todo', patch: '26.03', topicId: 'audio', dueDays: 6, estimate: '4 hrs' },
-  { id: 'a25', short: 'Add a voice relay reconnect retry in EU West', priority: 'P2', board: 'doing', patch: '26.03', topicId: 'social', dueDays: 5, estimate: '1 day', stalled: 'Stalled 4 days — blocked on infra review' }
+  { id: 'a1', short: 'Tune the cast-queue window back toward 26.02', priority: 'P0', board: 'todo', patch: '26.03', topicId: 'combat', estimate: '1 day', scale: '4,120 posts' },
+  { id: 'a2', short: 'Add an input-latency readout to the practice tool', priority: 'P1', board: 'review', patch: '26.03', topicId: 'combat', estimate: '4 hrs', waiting: 'Waiting on QA · 1 day' },
+  { id: 'a3', short: 'Restore a readable power spike in the new mythics', priority: 'P0', board: 'todo', patch: '26.03', topicId: 'items', estimate: '2 days', scale: '2,860 threads' },
+  { id: 'a4', short: 'Rewrite the item tooltips to state the spike', priority: 'P1', board: 'doing', patch: '26.03', topicId: 'items', estimate: '1 day', inColumn: '2 days in column' },
+  { id: 'a5', short: 'Raise health-bar contrast in the new HUD', priority: 'P1', board: 'todo', patch: '26.03', topicId: 'hud', estimate: '6 hrs' },
+  { id: 'a6', short: 'Ship a colorblind-safe HUD palette', priority: 'P1', board: 'todo', patch: '26.03', topicId: 'hud', estimate: '3 days' },
+  { id: 'a7', short: 'Bring Smolder back inside the win-rate band', priority: 'P1', board: 'todo', patch: '26.03', topicId: 'balance', estimate: '1 day' },
+  { id: 'a8', short: 'Publish a balance note naming the three champions', priority: 'P2', board: 'todo', patch: '26.03', topicId: 'balance', estimate: '3 hrs' },
+  { id: 'a9', short: 'Cut the 26.03 pass tier pace by 20%', priority: 'P0', board: 'todo', patch: '26.03', topicId: 'store', estimate: '1 day', scale: '3,410 posts' },
+  { id: 'a10', short: 'Grant retroactive tiers to current pass owners', priority: 'P1', board: 'todo', patch: '26.03', topicId: 'store', estimate: '2 days' },
+  { id: 'a11', short: 'Pool the recall VFX allocation on min-spec', priority: 'P0', board: 'doing', patch: '26.03', topicId: 'perf', estimate: '2 days', scale: '1,340 reviews', stalled: 'Stalled 5 days — no commits since 26.02' },
+  { id: 'a12', short: 'Ship the low-spec graphics preset to PBE', priority: 'P1', board: 'review', patch: '26.03', topicId: 'perf', estimate: '2 hrs', waiting: 'Waiting on QA · 1 day' },
+  { id: 'a13', short: 'Rebalance LP gain and loss after the reset', priority: 'P1', board: 'todo', patch: '26.03', topicId: 'ranked', estimate: '2 days' },
+  { id: 'a14', short: 'Show LP change reasons on the post-game screen', priority: 'P2', board: 'doing', patch: '26.03', topicId: 'ranked', estimate: '1 day', inColumn: '3 days in column' },
+  { id: 'a15', short: 'Move recommended items above the fold at 1080p', priority: 'P2', board: 'doing', patch: '26.03', topicId: 'shop', estimate: '4 hrs', inColumn: '1 day in column' },
+  { id: 'a16', short: 'Fix partial-name matching in shop search', priority: 'P3', board: 'review', patch: '26.03', topicId: 'shop', estimate: '4 hrs', waiting: 'Waiting on QA · 2 days' },
+  { id: 'a17', short: 'Add an enemy-only VFX intensity slider', priority: 'P2', board: 'todo', patch: '26.03', topicId: 'vfx', estimate: '3 days' },
+  { id: 'a18', short: 'Recolor ally casts toward the team palette', priority: 'P2', board: 'todo', patch: '26.03', topicId: 'vfx', estimate: '1 day' },
+  { id: 'a19', short: 'Raise brush-edge contrast at low settings', priority: 'P3', board: 'todo', patch: '26.03', topicId: 'map', estimate: '4 hrs' },
+  { id: 'a20', short: 'Publish a 26.03 feedback response post', priority: 'P2', board: 'todo', patch: '26.03', topicId: 'praise', estimate: '3 hrs' },
+  { id: 'a21', short: 'Re-survey the three loudest themes after the hotfix', priority: 'P3', board: 'todo', patch: '26.04', topicId: 'praise', estimate: '1 day' },
+  { id: 'a22', short: 'Rebuild the item shop tutorial for new accounts', priority: 'P2', board: 'todo', patch: '26.04', topicId: 'onboard', estimate: '3 days' },
+  { id: 'a23', short: 'Split music and SFX volume sliders', priority: 'P2', board: 'review', patch: '26.03', topicId: 'audio', estimate: '6 hrs', waiting: 'Waiting on QA · 1 day' },
+  { id: 'a24', short: 'Duck the music bed under objective SFX', priority: 'P3', board: 'todo', patch: '26.03', topicId: 'audio', estimate: '4 hrs' },
+  { id: 'a25', short: 'Add a voice relay reconnect retry in EU West', priority: 'P2', board: 'doing', patch: '26.03', topicId: 'social', estimate: '1 day', stalled: 'Stalled 4 days — blocked on infra review' }
 ];
-// `tone` is the column's identity colour: it tints the header dot, the count, and
+// `tone` is the column's identity color: it tints the header dot, the count, and
 // the highlight a card gets when dragged over the column.
 const BOARD_COLUMNS = [
   { id: 'todo', label: 'Suggested', tone: 'neutral' },
@@ -4313,13 +4376,18 @@ const stageBack = columnId => columnId === 'review' ? STAGE_BACK : null;
 // Removing an action is for ones that should never have been raised. By In review the
 // work is already done, so the way off the board there is Complete, not the bin.
 const stageCanRemove = columnId => columnId !== 'review';
-// How far an action sits from its patch cutoff, in words, for the drawer's Due tile.
-// Negative slack has already missed it.
-function dueLabel(days) {
-  if (days < 0) return 'Overdue by ' + (-days) + (days === -1 ? ' day' : ' days');
-  if (days === 0) return 'Due today';
-  return 'Due in ' + days + (days === 1 ? ' day' : ' days');
-}
+// How sure Ghost AI is that the theme behind an action is real. Hand-made groups have
+// no clustering score — a person grouped them on purpose, so they rank as certain.
+const themeConfidence = t => {
+  const topic = TOPIC_GROUPS.find(x => x.id === (t.groupId || t.topicId));
+  return topic ? topic.confidence : 100;
+};
+// The ranking, everywhere it is needed: loudest theme first, and where two are equally
+// severe, the one Ghost AI is surest about. Both terms are properties of the feedback
+// itself — this board ranks what players said, not what a calendar says.
+const rankActions = (a, b) =>
+  PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority] ||
+  themeConfidence(b) - themeConfidence(a);
 const PRIORITY_OPTIONS = [
   { id: 'all', label: 'Priority', menuLabel: 'Any priority' },
   { id: 'P0', label: 'P0 only', menuLabel: 'P0 only' },
@@ -4352,7 +4420,6 @@ function aiSummaryFor(tasks, columnOf, bar, parkedCount) {
   const p0 = tasks.filter(t => t.priority === 'P0');
   const stalled = tasks.filter(t => t.stalled);
   const doing = tasks.filter(t => columnOf(t) === 'doing');
-  const overdue = tasks.filter(t => t.dueDays < 0);
   const bits = [];
   if (p0.length) {
     const names = p0.slice(0, 2).map(t => t.short).join(', then ');
@@ -4361,7 +4428,6 @@ function aiSummaryFor(tasks, columnOf, bar, parkedCount) {
     bits.push('Nothing critical left in the feedback, so this is a polish pass.');
   }
   bits.push(`${doing.length} action${doing.length === 1 ? '' : 's'} under way${stalled.length ? `, ${stalled.length} of them stalled` : ''}.`);
-  if (overdue.length) bits.push(`${overdue.length} past the patch cutoff.`);
   if (parkedCount) bits.push(`${parkedCount} below your ${bar}% confidence bar and parked.`);
   return bits.join(' ');
 }
@@ -4446,7 +4512,7 @@ const TASK_DETAILS = {
         'Thicken the enemy bar outline during fights'
       ] },
       { label: 'Check it against every palette', subs: [
-        'Verify in all three colourblind modes',
+        'Verify in all three colorblind modes',
         'Screenshot-diff the HUD against 26.02 at 1080p'
       ] }
     ]
@@ -4605,7 +4671,7 @@ const TASK_DETAILS = {
       { label: 'Add an enemy-only VFX intensity slider', subs: [
         'Scale enemy effect opacity and particle count',
         'Leave ally and neutral effects untouched',
-        'Default to current behaviour'
+        'Default to current behavior'
       ] },
       { label: 'Verify it does not hide information', subs: [
         'Check telegraphs stay readable at the lowest setting'
@@ -4615,9 +4681,9 @@ const TASK_DETAILS = {
   a18: {
     approach: 'The other half of the clarity work: if enemy effects can be dimmed, ally effects should be identifiable without dimming anything at all.',
     plan: [
-      { label: 'Recolour ally casts to the team palette', subs: [
-        'Shift ally effect hues toward the team colour',
-        'Keep champion identity colours on the caster itself'
+      { label: 'Recolor ally casts to the team palette', subs: [
+        'Shift ally effect hues toward the team color',
+        'Keep champion identity colors on the caster itself'
       ] }
     ]
   },
@@ -4699,7 +4765,7 @@ const TASK_DETAIL_FALLBACK = {
 // the board so a theme that looks unaddressed can be checked against what went out.
 const DONE_THIS_WEEK = [
   'Restored the 26.02 minimap scale option',
-  'Re-enabled the classic health bar colours',
+  'Re-enabled the classic health bar colors',
   'Hotfixed shop tooltip truncation at 1080p',
   'Cut Smolder base damage by 8',
   'Shipped the pt-BR patch note translation',
@@ -5404,7 +5470,7 @@ const TAB_CONFIG = {
     ghostSummary: 'New-player retention runs <b>48% / 26% / 14%</b> at D1 / D7 / D30 — the mature-title shape. The live risk is not the headline curve but the <b>Diamond+ D7 drop from 22% to 16%</b>, which is a committed-core signal and is already an open investigation.',
     insights: [
       { title: 'Diamond+ D7 retention fell 22% to 16%', body: 'Blended retention looks stable, so this only shows up when the cohort is split by rank. Ranked players normally retain well above the 26% blended D7 line — this cohort dropped below it. Investigation is queued with the Data squad.', flag: false },
-      { title: 'Per-region churn cohorts — need more data', body: 'Retention is aggregated globally in this pass. A regional split would separate a global reaction from a localised one — a KR-only drop reads very differently to a flat global dip.', flag: true }
+      { title: 'Per-region churn cohorts — need more data', body: 'Retention is aggregated globally in this pass. A regional split would separate a global reaction from a localized one — a KR-only drop reads very differently to a flat global dip.', flag: true }
     ]
   },
   engagement: {
@@ -5694,7 +5760,7 @@ const FEEDBACK_TAGS = {
 };
 
 // Three-bar severity meter. Five levels onto three bars, so hue carries the class
-// (red / amber / grey) and fill carries the magnitude within it.
+// (red / amber / gray) and fill carries the magnitude within it.
 const FEEDBACK_URGENCY = {
   p0: ['var(--red-500)', 'var(--red-500)', 'var(--red-500)'],
   p1: ['var(--red-400)', 'var(--red-400)', 'var(--border-default)'],
@@ -5719,13 +5785,13 @@ const FEEDBACK_URGENCY_LABEL = {
 // from the queue length, so adding tickets is what moves it.
 const FB_PAGE_SIZE = 20;
 const FEEDBACK_ROWS = [
-  { id: 1, urgency: 'p0', type: 'bug', ticket: '#BUG-1284719', subject: 'Yuumi passive desync on cast interrupt', topic: 'Champion behaviour', squad: 'Champions', repro: '100%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'Vandiril', role: 'player', assignees: [1], date: 'Aug 7, 2026', dateSort: '2026-08-07' },
+  { id: 1, urgency: 'p0', type: 'bug', ticket: '#BUG-1284719', subject: 'Yuumi passive desync on cast interrupt', topic: 'Champion behavior', squad: 'Champions', repro: '100%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'Vandiril', role: 'player', assignees: [1], date: 'Aug 7, 2026', dateSort: '2026-08-07' },
   { id: 2, urgency: 'p0', type: 'bug', ticket: '#BUG-1283904', subject: 'Client crash on Wild Rift cross-region matchmaking', topic: 'Client & crashes', squad: 'Engine', repro: '78%', status: 'Ready', channel: 'support', clip: false, reporter: 'mossy_midlaner', role: null, assignees: [3, 1], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
-  { id: 3, urgency: 'p1', type: 'bug', ticket: '#BUG-1284561', subject: 'Viego passive breaks Trinity Force spellblade cooldown', topic: 'Champion behaviour', squad: 'Champions', repro: '100%', status: 'In Progress', channel: 'ingame', clip: true, reporter: 'euw_tessa', role: 'player', assignees: [1], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
+  { id: 3, urgency: 'p1', type: 'bug', ticket: '#BUG-1284561', subject: 'Viego passive breaks Trinity Force spellblade cooldown', topic: 'Champion behavior', squad: 'Champions', repro: '100%', status: 'In Progress', channel: 'ingame', clip: true, reporter: 'euw_tessa', role: 'player', assignees: [1], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
   { id: 4, urgency: 'p2', type: 'bug', ticket: '#BUG-1279842', subject: 'Champion select lock-in fails when a duo partner dodges', topic: 'Client & crashes', squad: 'Engine', repro: '62%', status: 'Ready', channel: 'discord', clip: false, reporter: 'duoq_calla', role: 'creator', assignees: [1, 0], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
   { id: 5, urgency: 'p2', type: 'bug', ticket: '#BUG-1278610', subject: 'Ranked win does not award LP during a shard failover', topic: 'Ranked & progression', squad: 'Engine', repro: '34%', status: 'In Progress', channel: 'support', clip: false, reporter: 'topgap_kt', role: null, assignees: [0], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
   { id: 6, urgency: 'p2', type: 'bug', ticket: '#BUG-1276403', subject: 'Anti-cheat blocks a signed GPU driver on Windows 11 24H2', topic: 'Client & crashes', squad: 'Engine', repro: '12%', status: 'In Progress', channel: 'support', clip: false, reporter: 'pentakilpete', role: null, assignees: [2], date: 'Aug 4, 2026', dateSort: '2026-08-04' },
-  { id: 7, urgency: 'p2', type: 'bug', ticket: '#BUG-1282198', subject: 'Aurelion Sol tornado hitbox mismatch', topic: 'Champion behaviour', squad: 'Champions', repro: '100%', status: 'Awaiting QA', channel: 'ingame', clip: true, reporter: 'jungle_jules', role: null, assignees: [1], date: 'Aug 4, 2026', dateSort: '2026-08-04' },
+  { id: 7, urgency: 'p2', type: 'bug', ticket: '#BUG-1282198', subject: 'Aurelion Sol tornado hitbox mismatch', topic: 'Champion behavior', squad: 'Champions', repro: '100%', status: 'Awaiting QA', channel: 'ingame', clip: true, reporter: 'jungle_jules', role: null, assignees: [1], date: 'Aug 4, 2026', dateSort: '2026-08-04' },
   { id: 8, urgency: 'p3', type: 'bug', ticket: '#BUG-1275104', subject: 'Recall animation stutters on low-end hardware', topic: 'Performance & hardware', squad: 'Engine', repro: '45%', status: 'Ready', channel: 'discord', clip: false, reporter: 'lowspec_lars', role: 'player', assignees: [2], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
   { id: 9, urgency: 'p3', type: 'bug', ticket: '#BUG-1273981', subject: 'Baron steal announcer line plays twice on the same objective', topic: 'Audio & VFX', squad: 'Engine', repro: '88%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'lulu_starfruit', role: null, assignees: [1], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
   { id: 10, urgency: 'p4', type: 'bug', ticket: '#BUG-1269840', subject: 'Item shop search misses partial champion names', topic: 'UI & accessibility', squad: 'UI/UX', repro: '100%', status: 'Ready', channel: 'reddit', clip: false, reporter: 'saltwater_sam', role: null, assignees: [0], date: 'Aug 2, 2026', dateSort: '2026-08-02' },
@@ -5733,19 +5799,19 @@ const FEEDBACK_ROWS = [
   { id: 12, urgency: 'p2', type: 'feedback', ticket: '#DATA-18402', subject: 'Smolder win rate 18% above target band since 26.03', topic: 'Balance & meta', squad: 'Data', repro: null, status: 'In Progress', channel: 'ingame', clip: false, reporter: 'liveops_telemetry', role: null, assignees: [3], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
   { id: 13, urgency: 'p2', type: 'feedback', ticket: '#DATA-18391', subject: 'Diamond+ D7 retention dropped 22% to 16%', topic: 'Retention & onboarding', squad: 'Data', repro: null, status: 'Ready', channel: 'ingame', clip: false, reporter: 'liveops_telemetry', role: null, assignees: [3, 0], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
   { id: 14, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-92104', subject: '6 junglers below 2% pick rate for 3 patches', topic: 'Balance & meta', squad: 'Design', repro: null, status: 'Fixed', channel: 'reddit', clip: false, reporter: 'tracker_wren', role: 'creator', assignees: [0], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
-  { id: 15, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-91847', subject: 'Turret range indicator is unreadable for red-green colourblind players', topic: 'UI & accessibility', squad: 'Design', repro: null, status: 'Fixed', channel: 'discord', clip: false, reporter: 'vision_score_diff', role: 'creator', assignees: [0, 2], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
+  { id: 15, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-91847', subject: 'Turret range indicator is unreadable for red-green colorblind players', topic: 'UI & accessibility', squad: 'Design', repro: null, status: 'Fixed', channel: 'discord', clip: false, reporter: 'vision_score_diff', role: 'creator', assignees: [0, 2], date: 'Aug 1, 2026', dateSort: '2026-08-01' },
   { id: 16, urgency: 'p3', type: 'feedback', ticket: '#DESIGN-91082', subject: 'Objective bounties make late-game comebacks feel unearned', topic: 'Balance & meta', squad: 'Design', repro: null, status: 'Ready', channel: 'support', clip: false, reporter: 'winterstar_gwen', role: null, assignees: [3], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
   { id: 17, urgency: 'p4', type: 'feedback', ticket: '#DESIGN-90715', subject: 'Rune page picker needs a search field — 60+ pages is unscannable', topic: 'UI & accessibility', squad: 'UI/UX', repro: null, status: 'Ready', channel: 'reddit', clip: false, reporter: 'arena_bee', role: 'player', assignees: [2], date: 'Jul 31, 2026', dateSort: '2026-07-31' },
   { id: 18, urgency: 'p4', type: 'feedback', ticket: '#DATA-18276', subject: 'New-player tutorial never covers wave management', topic: 'Retention & onboarding', squad: 'Data', repro: null, status: 'Ready', channel: 'support', clip: false, reporter: 'firstgame_fran', role: null, assignees: [2], date: 'Jul 30, 2026', dateSort: '2026-07-30' },
-  { id: 19, urgency: 'p1', type: 'bug', ticket: '#BUG-1284402', subject: 'Kayn form selection resets when the game reconnects', topic: 'Champion behaviour', squad: 'Champions', repro: '92%', status: 'In Progress', channel: 'ingame', clip: true, reporter: 'shadow_kaz', role: 'player', assignees: [1], date: 'Aug 7, 2026', dateSort: '2026-08-07' },
-  { id: 20, urgency: 'p1', type: 'bug', ticket: '#BUG-1284188', subject: 'Zilean ultimate revives the wrong ally when two die on the same tick', topic: 'Champion behaviour', squad: 'Champions', repro: '54%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'chronokeeper_bo', role: null, assignees: [1, 3], date: 'Aug 7, 2026', dateSort: '2026-08-07' },
+  { id: 19, urgency: 'p1', type: 'bug', ticket: '#BUG-1284402', subject: 'Kayn form selection resets when the game reconnects', topic: 'Champion behavior', squad: 'Champions', repro: '92%', status: 'In Progress', channel: 'ingame', clip: true, reporter: 'shadow_kaz', role: 'player', assignees: [1], date: 'Aug 7, 2026', dateSort: '2026-08-07' },
+  { id: 20, urgency: 'p1', type: 'bug', ticket: '#BUG-1284188', subject: 'Zilean ultimate revives the wrong ally when two die on the same tick', topic: 'Champion behavior', squad: 'Champions', repro: '54%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'chronokeeper_bo', role: null, assignees: [1, 3], date: 'Aug 7, 2026', dateSort: '2026-08-07' },
   { id: 21, urgency: 'p1', type: 'bug', ticket: '#BUG-1283755', subject: 'Client hangs on the loading screen after a patch rollback', topic: 'Client & crashes', squad: 'Engine', repro: '41%', status: 'In Progress', channel: 'support', clip: false, reporter: 'patchday_pim', role: null, assignees: [2], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
-  { id: 22, urgency: 'p2', type: 'bug', ticket: '#BUG-1283610', subject: 'Rengar leap cancels when the target flashes mid-air', topic: 'Champion behaviour', squad: 'Champions', repro: '73%', status: 'Awaiting QA', channel: 'ingame', clip: true, reporter: 'bushcamp_bri', role: 'creator', assignees: [1], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
+  { id: 22, urgency: 'p2', type: 'bug', ticket: '#BUG-1283610', subject: 'Rengar leap cancels when the target flashes mid-air', topic: 'Champion behavior', squad: 'Champions', repro: '73%', status: 'Awaiting QA', channel: 'ingame', clip: true, reporter: 'bushcamp_bri', role: 'creator', assignees: [1], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
   { id: 23, urgency: 'p2', type: 'bug', ticket: '#BUG-1283244', subject: 'Honor progress does not persist after a surrendered game', topic: 'Ranked & progression', squad: 'Engine', repro: '66%', status: 'Ready', channel: 'support', clip: false, reporter: 'honor5_hana', role: null, assignees: [0], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
   { id: 24, urgency: 'p2', type: 'bug', ticket: '#BUG-1282977', subject: 'Practice tool resets cooldowns when the target dummy respawns', topic: 'Client & crashes', squad: 'Engine', repro: '100%', status: 'Ready', channel: 'discord', clip: false, reporter: 'labrat_leo', role: 'creator', assignees: [2], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
   { id: 25, urgency: 'p2', type: 'bug', ticket: '#BUG-1282540', subject: 'Frame time spikes to 60ms when six ultimates overlap at Baron', topic: 'Performance & hardware', squad: 'Engine', repro: '58%', status: 'In Progress', channel: 'ingame', clip: true, reporter: 'fps_falcon', role: 'player', assignees: [2, 1], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
   { id: 26, urgency: 'p2', type: 'bug', ticket: '#BUG-1282301', subject: 'Ranked queue estimate stalls at 99% in OCE off-peak hours', topic: 'Ranked & progression', squad: 'Engine', repro: '37%', status: 'Awaiting QA', channel: 'reddit', clip: false, reporter: 'oce_orla', role: null, assignees: [0], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
-  { id: 27, urgency: 'p3', type: 'bug', ticket: '#BUG-1281903', subject: 'Pantheon spear VFX persists after the cast is cancelled', topic: 'Audio & VFX', squad: 'Champions', repro: '85%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'aegis_amir', role: null, assignees: [1], date: 'Aug 4, 2026', dateSort: '2026-08-04' },
+  { id: 27, urgency: 'p3', type: 'bug', ticket: '#BUG-1281903', subject: 'Pantheon spear VFX persists after the cast is canceled', topic: 'Audio & VFX', squad: 'Champions', repro: '85%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'aegis_amir', role: null, assignees: [1], date: 'Aug 4, 2026', dateSort: '2026-08-04' },
   { id: 28, urgency: 'p3', type: 'bug', ticket: '#BUG-1281655', subject: 'Chat scroll jumps to the bottom on every incoming message', topic: 'UI & accessibility', squad: 'UI/UX', repro: '100%', status: 'Ready', channel: 'discord', clip: false, reporter: 'allchat_ada', role: null, assignees: [0], date: 'Aug 4, 2026', dateSort: '2026-08-04' },
   { id: 29, urgency: 'p3', type: 'bug', ticket: '#BUG-1281340', subject: 'Dragon soul buff icon missing from the scoreboard after a rebuy', topic: 'UI & accessibility', squad: 'UI/UX', repro: '48%', status: 'In Progress', channel: 'ingame', clip: true, reporter: 'soulcount_sy', role: null, assignees: [0, 2], date: 'Aug 4, 2026', dateSort: '2026-08-04' },
   { id: 30, urgency: 'p3', type: 'bug', ticket: '#BUG-1280912', subject: 'Minion pathing snags on the new mid-lane bush geometry', topic: 'Terrain & collision', squad: 'Engine', repro: '71%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'wave_walter', role: 'creator', assignees: [1], date: 'Aug 3, 2026', dateSort: '2026-08-03' },
@@ -5800,7 +5866,7 @@ function urgencyMeterEl(u) {
 }
 
 // Authored triage detail. Only tickets Ghost AI has actually chewed on get an analysis
-// and a player log — the rest show an honest "not analysed yet" state rather than
+// and a player log — the rest show an honest "not analyzed yet" state rather than
 // inventing a root cause. The recording view needs a recorded session, so it follows `clip`.
 const TICKET_DETAILS = {
   '#BUG-1284719': {
@@ -5922,12 +5988,12 @@ const FB_TAG_ORDER = ['bug', 'feedback', 'ingame', 'discord', 'support', 'reddit
 
 // Narrative summaries shown in "Group by topic" headers (Figma 212:23149).
 const FEEDBACK_TOPIC_SUMMARIES = {
-  'Champion behaviour': 'Yuumi, Viego and Aurelion Sol are all mis-resolving ability state',
+  'Champion behavior': 'Yuumi, Viego and Aurelion Sol are all mis-resolving ability state',
   'Client & crashes': 'Cross-region matchmaking and champ select are crashing or hard-locking the client',
   'Ranked & progression': 'Ranked wins are not crediting LP when a shard fails over mid-write',
   'Performance & hardware': 'Recall animation stutters on low-end hardware',
   'Audio & VFX': 'The Baron steal announcer line plays twice on the same objective',
-  'UI & accessibility': 'Menus and indicators are hard to scan or unreadable for colourblind players',
+  'UI & accessibility': 'Menus and indicators are hard to scan or unreadable for colorblind players',
   'Terrain & collision': 'Wards placed on the Baron pit lip fall through terrain',
   'Balance & meta': 'Smolder is above its win-rate band while six junglers sit below 2% pick rate',
   'Retention & onboarding': 'Diamond+ D7 retention fell 22% to 16%, and the tutorial skips wave management'
@@ -5937,7 +6003,7 @@ const FEEDBACK_TOPIC_SUMMARIES = {
 const fbRowTags = r => [r.type, r.channel];
 
 // Ask Ghost AI panel. Answers are generated from FEEDBACK_ROWS so the panel can never
-// contradict the table it is summarising.
+// contradict the table it is summarizing.
 // Monogram fallback for a profile with no photo — first letter of the first and
 // last word, so "June Cho" reads as JC and a single name still yields one letter.
 function initialsOf(name) {
@@ -6030,7 +6096,7 @@ const GHOST_CONTEXTS = {
     detail: 'Ask anything about the threads on screen, or pick a starter below.',
     starters: [
       { id: 'm_waiting', label: 'Who is waiting on me?' },
-      { id: 'm_summary', label: 'Summarise the unread threads' }
+      { id: 'm_summary', label: 'Summarize the unread threads' }
     ]
   }
 };
@@ -6281,6 +6347,10 @@ class Component extends DCLogic {
     boardMoves: {},
     removedTasks: {},
     doneWeekOpen: false,
+    // Draft for a hand-written action. Null unless the dialog is open.
+    showNewAction: false,
+    newAction: null,
+    newActionTouched: false,
     // Seeded from the constant but written to by Reviewed, so signing an action off
     // lands it somewhere visible instead of just dropping it off the board.
     shippedWeek: DONE_THIS_WEEK.slice(),
@@ -6678,7 +6748,58 @@ class Component extends DCLogic {
   setBoardPriority = id => () => this.setState({ boardPriority: id, boardPriorityMenuOpen: false });
   setBoardPatch = id => () => this.setState({ boardPatch: id, boardPatchMenuOpen: false });
   toggleDoneWeek = () => this.setState(s => ({ doneWeekOpen: !s.doneWeekOpen }));
-  newBoardTask = () => this.showToast('New action drafted for patch ' + (this.state.boardPatch === 'all' ? '26.03' : this.state.boardPatch));
+  // The same fields Ghost AI fills in when it proposes one, so a hand-written action
+  // is indistinguishable from a generated one once it is on the board.
+  newBoardTask = () => this.setState(s => ({
+    showNewAction: true,
+    newActionTouched: false,
+    newAction: {
+      title: '',
+      topicId: TOPIC_GROUPS[0].id,
+      priority: 'P2',
+      estimate: '1 day',
+      patch: s.boardPatch === 'all' ? '26.03' : s.boardPatch
+    }
+  }));
+  closeNewAction = () => this.setState({ showNewAction: false, newAction: null, newActionTouched: false });
+  setNewActionField = key => e => {
+    const value = e.target.value;
+    this.setState(s => ({ newAction: { ...s.newAction, [key]: value } }));
+  };
+  pickNewActionField = (key, value) => () =>
+    this.setState(s => ({ newAction: { ...s.newAction, [key]: value } }));
+  createNewAction = () => {
+    const d = this.state.newAction;
+    const title = (d.title || '').trim();
+    // The title is the only thing with no sensible default — everything else has one.
+    if (!title) { this.setState({ newActionTouched: true }); return; }
+    this.setState(s => {
+      const seq = s.taskSeq + 1;
+      return {
+        tasks: s.tasks.concat({
+          id: 'na' + seq,
+          short: title,
+          priority: d.priority,
+          board: 'todo',
+          patch: d.patch,
+          topicId: d.topicId,
+          estimate: (d.estimate || '').trim() || 'TBD',
+          groupId: d.topicId,
+          scopeNoteIds: s.taskNotes.filter(n => n.topicId === d.topicId).map(n => n.id),
+          // Asked for by hand, so the confidence bar never parks it. That bar reports
+          // how sure Ghost AI is about a theme, and this action was not its idea.
+          manual: true
+        }),
+        taskSeq: seq,
+        showNewAction: false,
+        newAction: null,
+        newActionTouched: false,
+        // Filed under a patch the board is filtering out, it would land invisibly.
+        boardPatch: s.boardPatch === 'all' ? 'all' : d.patch
+      };
+    });
+    this.showToast('Added \u201c' + title + '\u201d to Suggested');
+  };
   // Complete an action. Nothing follows In review on the board, so this is where the
   // action ends: it joins the shipped list and comes off the columns. Removal is the
   // same filter deleteTask uses, so nothing is actually destroyed.
@@ -6801,7 +6922,7 @@ class Component extends DCLogic {
   };
   columnTaskIds = colId => this.state.tasks
     .filter(t => !this.state.removedTasks[t.id] && this.boardColumnOf(t) === colId)
-    .sort((a, b) => PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority] || a.dueDays - b.dueDays)
+    .sort(rankActions)
     .map(t => t.id);
   onColumnDragLeave = colId => e => {
     // Moving onto a child still counts as inside the column.
@@ -6999,7 +7120,6 @@ class Component extends DCLogic {
       board: 'todo',
       patch: '26.03',
       topicId: (s.taskNotes.find(n => memberIds.indexOf(n.id) !== -1) || {}).topicId || 'combat',
-      dueDays: 7,
       estimate: 'TBD',
       groupId: gid,
       scopeNoteIds: memberIds.slice(),
@@ -7206,7 +7326,7 @@ class Component extends DCLogic {
     }
   };
   // The pointer is on the button, not the canvas, so these anchor on the
-  // viewport centre — the closest thing to "where you're looking".
+  // viewport center — the closest thing to "where you're looking".
   zoomButton = delta => {
     const vp = this.viewportRef.current;
     const r = vp ? vp.getBoundingClientRect() : { width: 0, height: 0 };
@@ -7492,24 +7612,23 @@ class Component extends DCLogic {
       onBoard.forEach(t => cols[this.boardColumnOf(t)].push(t));
 
       if (starterId === 't_first') {
-        const order = onBoard.slice().sort((a, b) =>
-          PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority] || a.dueDays - b.dueDays);
+        const order = onBoard.slice().sort(rankActions);
         const top = order.slice(0, 3)
           .map((t, i) => `\u2022 ${i + 1}. ${t.short} \u2014 ${t.priority}, ${t.estimate}`).join('\n');
         const lead = order[0];
-        return `Ordered by how loud the theme is and how little slack is left, the next three are:\n\n${top}\n\nI\u2019d start with ${lead ? lead.short : 'the top item'}: it answers the loudest theme on the canvas and is closest to the patch cutoff, so everything else slips behind it.`;
+        return `Ordered by how loud the theme is, then how sure I am of it, the next three are:\n\n${top}\n\nI\u2019d start with ${lead ? lead.short : 'the top item'}: it answers the loudest theme on the canvas and the one I am surest about, so it is the least likely to be wasted work.`;
       }
       if (starterId === 't_risk') {
         const stalled = onBoard.filter(t => t.stalled);
-        const overdue = onBoard.filter(t => t.dueDays < 0);
+        const waiting = onBoard.filter(t => t.waiting);
         const conflicts = onBoard.filter(t => t.conflictWith);
         const lines = [
           `\u2022 ${cols.doing.length} in progress, ${cols.review.length} in review`,
           `\u2022 ${stalled.length} stalled: ${stalled.map(t => t.short).join(', ') || 'none'}`,
-          `\u2022 ${overdue.length} past the cutoff: ${overdue.map(t => t.short).join(', ') || 'none'}`
+          `\u2022 ${waiting.length} waiting on review: ${waiting.map(t => t.short).join(', ') || 'none'}`
         ];
         if (conflicts.length) lines.push(`\u2022 ${conflicts.length} raised by a regroup that may overlap started work`);
-        return `Here is what is actually slipping:\n\n${lines.join('\n')}\n\nThe stalled item is the one I would chase — it answers a theme that is still gaining posts while the hotfix window closes.`;
+        return `Here is what is actually slipping:\n\n${lines.join('\n')}\n\nThe stalled item is the one I would chase — it answers a theme that is still gaining posts while nobody is working on it.`;
       }
       if (starterId === 't_groups') {
         const weak = TOPIC_GROUPS
@@ -8362,12 +8481,8 @@ class Component extends DCLogic {
     // AI is not confident enough to ask for the work, so it comes off To do. Work
     // already under way is never pulled — only untouched To do items are parked, and
     // parking is derived, not destructive, so lowering the bar brings them straight back.
-    const taskConfidence = t => {
-      const topic = TOPIC_GROUPS.find(x => x.id === (t.groupId || t.topicId));
-      // Hand-made groups have no clustering score: a person grouped them on purpose.
-      return topic ? topic.confidence : 100;
-    };
-    const parkedAtBar = (t, bar) => this.boardColumnOf(t) === 'todo' && taskConfidence(t) < bar;
+    const parkedAtBar = (t, bar) =>
+      !t.manual && this.boardColumnOf(t) === 'todo' && themeConfidence(t) < bar;
     const bBar = this.state.groupConfidence;
     const liveTasks = this.state.tasks.filter(t => !this.state.removedTasks[t.id]);
     const boardTasks = liveTasks.filter(t =>
@@ -8387,9 +8502,7 @@ class Component extends DCLogic {
     // what to do first, and that answer should not depend on how the canvas is grouped.
     const rankEligible = boardTasks.slice();
     // Most urgent first: severity, then how soon it is due.
-    const autoRanked = rankEligible.slice().sort((a, b) =>
-      PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority] ||
-      a.dueDays - b.dueDays);
+    const autoRanked = rankEligible.slice().sort(rankActions);
     // A hand-dragged order wins for the tasks it names; newly eligible ones fall in
     // behind it in auto order, so lowering the bar never reshuffles your choices.
     const bSeat = {};
@@ -8517,11 +8630,9 @@ class Component extends DCLogic {
         showDelete: stageCanRemove(column),
         onDelete: this.deleteTask(detailTask.id),
         estimate: detailTask.estimate,
-        estimateNote: td.estimateNote,
-        // Everything gates on the patch, so the headline is the cutoff and the
-        // sub-line is this task's own slack against it.
-        dueLabel: 'Patch ' + detailTask.patch + ' cutoff',
-        dueNote: dueLabel(detailTask.dueDays),
+        // The fallback credits the estimate to Ghost AI, which is wrong for one the
+        // user typed in themselves.
+        estimateNote: detailTask.manual ? 'Set by hand when the action was added' : td.estimateNote,
         impact: td.impact || (detailTask.scale || '—'),
         impactNote: td.impactNote,
         confidence: (topic ? topic.confidence : 0) + '%',
@@ -8573,6 +8684,11 @@ class Component extends DCLogic {
       };
     }
 
+    // Falls back to a blank draft so the dialog's bindings stay defined between opens.
+    const naDraft = this.state.newAction ||
+      { title: '', topicId: '', priority: 'P2', estimate: '', patch: '26.03' };
+    const naTopic = TOPIC_GROUPS.find(t => t.id === naDraft.topicId) || null;
+
     const boardColumns = BOARD_COLUMNS.map(c => {
       const inColumn = boardTasks.filter(t => this.boardColumnOf(t) === c.id);
       // A ranked action is told once, in the rail, so its column does not repeat it
@@ -8590,7 +8706,7 @@ class Component extends DCLogic {
           const sa = seat[a.id] === undefined ? Infinity : seat[a.id];
           const sb = seat[b.id] === undefined ? Infinity : seat[b.id];
           if (sa !== sb) return sa - sb;
-          return PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority] || a.dueDays - b.dueDays;
+          return rankActions(a, b);
         })
         .map(t => {
           return {
@@ -8625,7 +8741,7 @@ class Component extends DCLogic {
           };
         });
       // A drag in flight marks every column it is not already in as a target, and
-      // the one under the cursor lights up in that column's own colour.
+      // the one under the cursor lights up in that column's own color.
       const dragId = this.draggedTaskId();
       const dragTask = dragId ? this.state.tasks.find(t => t.id === dragId) : null;
       const isCandidate = !!dragTask && this.boardColumnOf(dragTask) !== c.id;
@@ -8956,8 +9072,8 @@ class Component extends DCLogic {
       tdSummary: tdDetail && tdDetail.summary
         ? tdDetail.summary
         : (detailRow && FEEDBACK_TAGS[detailRow.channel] ? `Reported from ${FEEDBACK_TAGS[detailRow.channel].label} by @${detailRow.reporter}. No expanded write-up was attached to this report.` : ''),
-      tdAnalysed: !!(tdDetail && tdDetail.analysis),
-      tdNotAnalysed: !(tdDetail && tdDetail.analysis),
+      tdAnalyzed: !!(tdDetail && tdDetail.analysis),
+      tdNotAnalyzed: !(tdDetail && tdDetail.analysis),
       tdAnalysis: tdDetail && tdDetail.analysis ? tdDetail.analysis : '',
       tdAnalysisDetail: (tdDetail && tdDetail.analysisDetail ? tdDetail.analysisDetail : []).map(text => ({ text })),
       tdAnalysisEl: (() => {
@@ -9184,7 +9300,7 @@ class Component extends DCLogic {
         showNotif: false,
         showDateMenu: false
       })),
-      // Listed in pipeline order, each carrying the same colour the row uses.
+      // Listed in pipeline order, each carrying the same color the row uses.
       fbStatusFilterItems: FB_STATUS_ORDER.map(status => ({
         label: status,
         dotClass: 'fb-status ' + (FB_STATUS_CLASS[status] || 'is-waiting'),
@@ -9204,7 +9320,6 @@ class Component extends DCLogic {
       boardColumns, aiRanks,
       // With nothing ranked the summary would describe work the filters hide.
       aiRailEmpty: aiRanks.length === 0,
-      aiOrderBasis: 'BY THEME SEVERITY',
       showAiSummary: aiRanks.length > 0,
       aiSummary: aiSummaryFor(boardTasks, this.boardColumnOf, bBar, bParkedCount),
       boardSparkIcon: taskSparkle(16),
@@ -9237,6 +9352,38 @@ class Component extends DCLogic {
         onClick: this.setBoardPatch(o.id)
       })),
       newBoardTask: this.newBoardTask,
+      // ---- New action dialog ----
+      showNewAction: this.state.showNewAction,
+      closeNewAction: this.closeNewAction,
+      createNewAction: this.createNewAction,
+      naTitle: naDraft.title,
+      setNaTitle: this.setNewActionField('title'),
+      naTitleError: this.state.newActionTouched && !naDraft.title.trim(),
+      naTitleClass: this.state.newActionTouched && !naDraft.title.trim() ? 'is-invalid' : '',
+      naTopicId: naDraft.topicId,
+      setNaTopic: this.setNewActionField('topicId'),
+      naTopicOptions: TOPIC_GROUPS.map(t => ({ key: t.id, value: t.id, label: t.label })),
+      // The theme decides which signals the action is scoped against, and the
+      // confidence the drawer will report for it.
+      naTopicHint: naTopic
+        ? (naTopic.confidence + '% confidence · ' +
+           NOTES.filter(n => n.topicId === naTopic.id).length + ' signals')
+        : '',
+      naPriorityOptions: ['P0', 'P1', 'P2', 'P3'].map(v => ({
+        key: v,
+        label: v,
+        className: naDraft.priority === v ? 'na-seg is-on' : 'na-seg',
+        onClick: this.pickNewActionField('priority', v)
+      })),
+      naEstimate: naDraft.estimate,
+      setNaEstimate: this.setNewActionField('estimate'),
+      naPatchOptions: PATCH_OPTIONS.filter(o => o.id !== 'all').map(o => ({
+        key: o.id,
+        label: o.label,
+        className: naDraft.patch === o.id ? 'na-seg is-on' : 'na-seg',
+        onClick: this.pickNewActionField('patch', o.id)
+      })),
+
       // Action detail drawer
       showTaskDetail: !!taskDetail,
       taskDetail: taskDetail || {},
@@ -9285,8 +9432,8 @@ class Component extends DCLogic {
       hasConfidenceRemoved: bRemoved.length > 0,
       confidenceAddedLabel: 'Added ' + bAdded.length + ' to Suggested',
       confidenceRemovedLabel: 'Dropped ' + bRemoved.length + ' from Suggested',
-      confidenceAdded: bAdded.map(t => ({ key: t.id, title: t.short, conf: taskConfidence(t) + '%' })),
-      confidenceRemoved: bRemoved.map(t => ({ key: t.id, title: t.short, conf: taskConfidence(t) + '%' })),
+      confidenceAdded: bAdded.map(t => ({ key: t.id, title: t.short, conf: themeConfidence(t) + '%' })),
+      confidenceRemoved: bRemoved.map(t => ({ key: t.id, title: t.short, conf: themeConfidence(t) + '%' })),
       // One tick per topic, strongest first, so the run of lit ticks reads as a meter.
       confidenceTicks: TOPIC_GROUPS.slice()
         .sort((a, b) => b.confidence - a.confidence)
