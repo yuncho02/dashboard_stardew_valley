@@ -4416,8 +4416,7 @@ function findCanvasGhostTheme(text, notes) {
 }
 function canvasGhostReply(hit) {
   if (hit) {
-    const tone = hit.color === 'danger' ? 'trending negative' : hit.color === 'success' ? 'trending positive' : 'mixed';
-    return '"' + hit.label + '" is ' + tone + ' right now — want me to pull those notes into their own group?';
+    return hit.relation + ' Want me to pull those notes into their own group?';
   }
   return "I'll fold that into how I'm grouping these themes — keep going and I'll adjust the clusters as you go.";
 }
@@ -6951,6 +6950,11 @@ class Component extends DCLogic {
     // instead of having to name it again. { kind: 'topic', topic } or
     // { kind: 'field', field } or null.
     canvasGhostPendingGroup: null,
+    // Which topic/field the last exchange was actually about — compared
+    // against the live focused topic in render() to notice the user has
+    // panned away and it's time to surface fresh suggestions again, and to
+    // let a stale pending offer expire instead of firing on an unrelated "yes".
+    canvasGhostThreadTopicId: null,
     // True for the brief window after a ghost-directed group/ungroup, so notes
     // and their cluster box ease into place instead of teleporting — the
     // regroup needs to be seen happening, not just discovered afterward.
@@ -7993,7 +7997,12 @@ class Component extends DCLogic {
   askCanvasGhost = text => {
     if (!text) return;
     const trimmed = text.trim();
-    const pending = this.state.canvasGhostPendingGroup;
+    const focusedNow = (this.focusedCanvasTopic(this.state.taskNotes) || topCanvasTheme).id;
+    // A pending offer only stands while the user is still looking at the
+    // topic it was about — panned away, a bare "yes" shouldn't reach back and
+    // confirm something they're no longer looking at.
+    const pendingRaw = this.state.canvasGhostPendingGroup;
+    const pending = pendingRaw && this.state.canvasGhostThreadTopicId === focusedNow ? pendingRaw : null;
     let reply, kind, nextPending = null;
 
     if (pending && CANVAS_GHOST_AFFIRM_RE.test(trimmed)) {
@@ -8035,10 +8044,15 @@ class Component extends DCLogic {
 
     // Tagged by kind, not sniffed back out of the reply text, so render() can
     // pick the input's next placeholder off a fact instead of a string match.
+    // Anchored to the viewport's focused topic at send time — not whatever
+    // was actually asked about — so render() can tell, on the next pan or
+    // zoom, whether the user is still looking at the same cluster or has
+    // moved on to a different one.
     this.setState(s => ({
       canvasGhostThread: [...s.canvasGhostThread, { from: 'user', text }, { from: 'ghost', text: reply, kind }],
       canvasGhostDraft: '',
-      canvasGhostPendingGroup: nextPending
+      canvasGhostPendingGroup: nextPending,
+      canvasGhostThreadTopicId: focusedNow
     }));
   };
   submitCanvasGhost = () => this.askCanvasGhost(this.state.canvasGhostDraft.trim());
@@ -9244,8 +9258,14 @@ class Component extends DCLogic {
     // panned or zoomed to a different cluster, it switches to naming that one.
     const canvasFocusedTopic = this.focusedCanvasTopic(tNotes) || topCanvasTheme;
     const canvasGhostSuggestion = canvasFocusedTopic.id === topCanvasTheme.id
-      ? 'You might want to check out the data on ' + canvasFocusedTopic.label.split(' — ')[0].toLowerCase() + ' first...'
+      ? topCanvasTheme.relation + ' Want to start there?'
       : "You're looking at " + canvasFocusedTopic.label.split(' — ')[0] + ' — ' + canvasFocusedTopic.relation;
+    // The chips go quiet once a conversation starts, but only about the topic
+    // that conversation was actually about — pan or zoom to a different
+    // cluster and they come back, now offering fresh questions about
+    // wherever the user has actually moved on to.
+    const canvasGhostMovedOn = this.state.canvasGhostThread.length > 0 &&
+      this.state.canvasGhostThreadTopicId !== canvasFocusedTopic.id;
     // Ready-made questions so the free-text box never opens on a blank slate.
     // Highest-confidence themes other than the one already named above, so a
     // chip never just repeats the sentence sitting right next to it.
@@ -10402,7 +10422,7 @@ class Component extends DCLogic {
         text: m.text,
         color: m.from === 'user' ? 'var(--text-secondary)' : 'var(--accent)'
       })),
-      canvasGhostShowSuggestions: this.state.canvasGhostThread.length === 0,
+      canvasGhostShowSuggestions: this.state.canvasGhostThread.length === 0 || canvasGhostMovedOn,
       canvasGhostSuggestedAsks,
       canvasToolRouteColor: this.state.canvasTool === 'route' ? 'var(--text-primary)' : 'var(--text-secondary)',
       // Connections drawer (Figma-adjacent — connector tool opens this instead
