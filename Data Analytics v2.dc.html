@@ -677,6 +677,19 @@
       transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
     }
     .ai-btn-trash:hover { background: var(--danger-muted); border-color: var(--danger); color: var(--danger); }
+    /* ---- Canvas ghost agent card: ready-made questions above the free-text
+       box, so it never opens on a blank slate. Hidden once a thread exists —
+       by then the box has proven what it's for. ---- */
+    .canvas-ghost-suggestions { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .canvas-ghost-suggestion {
+      display: block; width: 100%; min-width: 0; box-sizing: border-box; padding: 6px 10px;
+      border: 1px solid var(--border-default); border-radius: var(--radius-md);
+      background: transparent; color: var(--text-secondary);
+      font: 400 12px/16px var(--font-alt); text-align: left; cursor: pointer;
+      overflow-wrap: break-word;
+      transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
+    }
+    .canvas-ghost-suggestion:hover { background: var(--accent-muted); border-color: var(--accent-border); color: var(--text-primary); }
     /* ---- Task detail drawer ---- */
     .td-scrim {
       position: fixed; inset: 0; z-index: 60;
@@ -3422,12 +3435,12 @@
                 </sc-for>
 
                 <sc-for list="{{ bucketsView }}" as="b" hint-placeholder-count="0">
-                  <div onMouseDown="{{ b.onDragStart }}" onClick="{{ b.onClick }}" class="{{ b.boxClass }}" style="position:absolute;left:{{ b.left }};top:{{ b.top }};width:{{ b.width }};height:{{ b.height }};border-radius:20px;border:{{ b.borderWidth }} dashed {{ b.borderColor }};background:{{ b.bg }};box-shadow:{{ b.glow }};transition:box-shadow 300ms ease">
+                  <div onMouseDown="{{ b.onDragStart }}" onClick="{{ b.onClick }}" class="{{ b.boxClass }}" style="position:absolute;left:{{ b.left }};top:{{ b.top }};width:{{ b.width }};height:{{ b.height }};border-radius:20px;border:{{ b.borderWidth }} dashed {{ b.borderColor }};background:{{ b.bg }};box-shadow:{{ b.glow }};transition:{{ b.moveTransition }}, box-shadow 300ms ease">
                     <sc-for list="{{ b.handles }}" as="hd" hint-placeholder-count="4">
                       <span onMouseDown="{{ hd.onMouseDown }}" onClick="{{ hd.onClick }}" class="{{ hd.cls }}" aria-hidden="true"></span>
                     </sc-for>
                   </div>
-                  <div onMouseDown="{{ b.onDragStart }}" onClick="{{ b.onClick }}" class="canvas-bucket {{ b.chipClass }}" style="position:absolute;left:{{ b.labelLeft }};top:{{ b.labelTop }};display:inline-flex;align-items:center;gap:6px;padding:6px 8px 6px 12px;border-radius:var(--radius-full);background:{{ b.chipBg }};border:1px solid {{ b.borderColor }};font:600 12px/16px var(--font-body);color:{{ b.chipColor }};white-space:nowrap">
+                  <div onMouseDown="{{ b.onDragStart }}" onClick="{{ b.onClick }}" class="canvas-bucket {{ b.chipClass }}" style="position:absolute;left:{{ b.labelLeft }};top:{{ b.labelTop }};display:inline-flex;align-items:center;gap:6px;padding:6px 8px 6px 12px;border-radius:var(--radius-full);background:{{ b.chipBg }};border:1px solid {{ b.borderColor }};font:600 12px/16px var(--font-body);color:{{ b.chipColor }};white-space:nowrap;transition:{{ b.moveTransition }}">
                     <sc-if value="{{ b.notEditing }}" hint-placeholder-val="{{ true }}">
                       {{ b.label }}
                     </sc-if>
@@ -3476,7 +3489,7 @@
                 </sc-if>
 
                 <sc-for list="{{ notesView }}" as="n" hint-placeholder-count="22">
-                  <div onMouseDown="{{ n.onMouseDown }}" onContextMenu="{{ n.onContextMenu }}" onClick="{{ n.onClick }}" class="canvas-note" style="position:absolute;left:{{ n.left }};top:{{ n.top }};width:190px;height:110px;padding:14px;border-radius:10px;background:{{ n.bg }};border:1px solid var(--border-default);box-shadow:{{ n.shadow }};opacity:{{ n.opacity }};pointer-events:{{ n.pointerEvents }};box-sizing:border-box;overflow:hidden">
+                  <div onMouseDown="{{ n.onMouseDown }}" onContextMenu="{{ n.onContextMenu }}" onClick="{{ n.onClick }}" class="canvas-note" style="position:absolute;left:{{ n.left }};top:{{ n.top }};width:190px;height:110px;padding:14px;border-radius:10px;background:{{ n.bg }};border:1px solid var(--border-default);box-shadow:{{ n.shadow }};opacity:{{ n.opacity }};pointer-events:{{ n.pointerEvents }};box-sizing:border-box;overflow:hidden;transition:{{ n.moveTransition }}">
                     <div style="font:600 12.5px/17px var(--font-body);color:var(--text-primary);margin-bottom:6px">{{ n.title }}</div>
                     <div style="font:400 12px/16px var(--font-body);color:var(--text-secondary)">{{ n.body }}</div>
                   </div>
@@ -3504,7 +3517,6 @@
                 <div style="display:flex;flex-direction:column;gap:16px;min-width:0;flex:1">
                   <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
                     <p style="margin:0;font:500 14px/20px var(--font-body);color:var(--text-primary)">{{ canvasGhostSuggestion }}</p>
-                    <p style="margin:0;font:500 14px/20px var(--font-body);color:var(--text-primary)">But is there anything you're curious about?</p>
                     <sc-if value="{{ canvasGhostHasThread }}" hint-placeholder-val="{{ false }}">
                       <div style="display:flex;flex-direction:column;gap:8px;padding-top:6px;border-top:1px solid var(--border-default)">
                         <sc-for list="{{ canvasGhostThread }}" as="m" hint-placeholder-count="2">
@@ -3512,10 +3524,17 @@
                         </sc-for>
                       </div>
                     </sc-if>
+                    <sc-if value="{{ canvasGhostShowSuggestions }}" hint-placeholder-val="{{ true }}">
+                      <div class="canvas-ghost-suggestions">
+                        <sc-for list="{{ canvasGhostSuggestedAsks }}" as="sg" hint-placeholder-count="3">
+                          <button type="button" onClick="{{ sg.onClick }}" class="canvas-ghost-suggestion">{{ sg.text }}</button>
+                        </sc-for>
+                      </div>
+                    </sc-if>
                   </div>
                   <div style="display:flex;gap:8px;align-items:center">
                     <div style="display:flex;align-items:center;flex:1;min-width:0;height:36px;padding:0 12px;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-surface)">
-                      <input value="{{ canvasGhostDraft }}" onChange="{{ setCanvasGhostDraft }}" onKeyDown="{{ canvasGhostInputKeyDown }}" placeholder="I'm wondering..." style="flex:1;min-width:0;border:none;outline:none;background:transparent;color:var(--text-primary);font:400 14px/20px var(--font-body)">
+                      <input value="{{ canvasGhostDraft }}" onChange="{{ setCanvasGhostDraft }}" onKeyDown="{{ canvasGhostInputKeyDown }}" placeholder="{{ canvasGhostPlaceholder }}" style="flex:1;min-width:0;border:none;outline:none;background:transparent;color:var(--text-primary);font:400 14px/20px var(--font-body);overflow:hidden;white-space:nowrap;text-overflow:ellipsis">
                     </div>
                     <button type="button" onClick="{{ submitCanvasGhost }}" aria-label="Send" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;flex-shrink:0;border:1px solid var(--border-default);border-radius:var(--radius-lg);background:var(--bg-surface);color:var(--text-primary);cursor:pointer">{{ canvasGhostSendIcon }}</button>
                   </div>
@@ -4354,16 +4373,46 @@ const TOPIC_GROUPS = [
   { id: 'social', label: 'Party and voice chat', color: 'info', significant: false, confidence: 63,
     relation: 'Social feedback is thin and mostly regional. Enough to log against the patch, not yet enough to attribute to it.' }
 ];
-// The canvas ghost agent's opening line names whichever theme is scoring
-// highest right now, so the suggestion tracks the data instead of being a
-// fixed line (Figma node 444:22947 hardcodes "ability responsiveness" because
-// that theme happens to be the highest-confidence one in the sample data).
+// The canvas ghost agent opens on whichever theme is scoring highest right
+// now, so its greeting tracks the data instead of being a fixed line (Figma
+// node 444:22947 hardcodes "ability responsiveness" because that theme
+// happens to be the highest-confidence one in the sample data). Once the
+// user pans elsewhere, render() swaps this greeting for a line about
+// whatever theme is actually centered in the viewport.
 const topCanvasTheme = TOPIC_GROUPS.reduce((a, b) => (b.confidence > a.confidence ? b : a));
-const canvasGhostSuggestion = 'You might want to check out the data on ' +
-  topCanvasTheme.label.split(' — ')[0].toLowerCase() + ' first...';
-function findCanvasGhostTheme(text) {
+// The command scaffolding itself, not a signal to search for — without this,
+// "I want to group things around retention" matches on "want" or "things"
+// before it ever gets to "retention".
+const CANVAS_GHOST_STOPWORDS = new Set([
+  'this', 'that', 'these', 'those', 'with', 'from', 'into', 'around', 'about',
+  'based', 'want', 'need', 'like', 'please', 'pull', 'push', 'split', 'group',
+  'groups', 'ungroup', 'grouped', 'together', 'apart', 'back', 'thing', 'things',
+  'stuff', 'note', 'notes', 'them', 'they', 'their', 'there', 'what', 'which',
+  'when', 'where', 'have', 'does', 'doing', 'make', 'made', 'show', 'tell',
+  'know', 'some', 'more', 'less', 'most', 'least', 'also', 'just', 'only',
+  'right', 'wrong', 'sure', 'okay', 'done', 'again', 'still', 'even', 'these'
+]);
+function findCanvasGhostThemeByLabel(text) {
   const q = text.toLowerCase();
   return TOPIC_GROUPS.find(t => q.indexOf(t.label.split(' — ')[0].toLowerCase()) !== -1) || null;
+}
+// Named after a signal that lives inside a theme rather than the theme's own
+// title ("retention rates" isn't a theme title, but it's what note f43 under
+// "New player experience" is actually about). Searches note bodies only, not
+// titles — titles are a closed set of recurring field names ("Top quote",
+// "Volume", "Sentiment"...) that findCanvasGhostNoteField already owns, so
+// matching them here would just re-fire that same collision one layer up.
+// Longest word first: a more distinctive term should win over an incidental
+// short one that happens to also appear somewhere.
+function findCanvasGhostThemeByContent(text, notes) {
+  const words = text.toLowerCase().split(/\W+/)
+    .filter(w => w.length > 3 && !CANVAS_GHOST_STOPWORDS.has(w))
+    .sort((a, b) => b.length - a.length);
+  const hitNote = notes.find(n => words.some(w => n.body.toLowerCase().indexOf(w) !== -1));
+  return hitNote ? (TOPIC_GROUPS.find(t => t.id === hitNote.topicId) || null) : null;
+}
+function findCanvasGhostTheme(text, notes) {
+  return findCanvasGhostThemeByLabel(text) || (notes ? findCanvasGhostThemeByContent(text, notes) : null);
 }
 function canvasGhostReply(hit) {
   if (hit) {
@@ -4372,6 +4421,35 @@ function canvasGhostReply(hit) {
   }
   return "I'll fold that into how I'm grouping these themes — keep going and I'll adjust the clusters as you go.";
 }
+// Some requests aren't naming a theme at all — they're asking for one kind of
+// data point pulled together from every theme it shows up in ("all the
+// quotes", "the volume numbers"). Keyed by the exact title NOTES stores that
+// field under. Word-boundary + optional plural, so "task volume" doesn't
+// fire on "ask" and "quote" doesn't fire inside "unquoted".
+const CANVAS_NOTE_FIELD_GROUPS = [
+  { title: 'Top quote', label: 'Top quotes', re: /\bquotes?\b/i },
+  { title: 'Volume', label: 'Volume', re: /\bvolumes?\b/i },
+  { title: 'Sentiment', label: 'Sentiment', re: /\bsentiments?\b/i },
+  { title: 'Top ask', label: 'Top asks', re: /\basks?\b/i },
+  { title: 'Behavior', label: 'Behavior', re: /\bbehaviou?rs?\b/i },
+  { title: 'Creator take', label: 'Creator takes', re: /\bcreator ?takes?\b/i }
+];
+function findCanvasGhostNoteField(text) {
+  return CANVAS_NOTE_FIELD_GROUPS.find(f => f.re.test(text)) || null;
+}
+function canvasFieldGroupId(field) {
+  return 'field_' + field.title.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+}
+function canvasGhostFieldReply(field, count) {
+  return '"' + field.label + '" shows up on ' + count + ' different themes right now — want me to pull them into their own group?';
+}
+// Replies to the ghost's own offer, not a fresh question — checked before
+// findCanvasGhostTheme so a bare "yes" is never mistaken for a topic name.
+const CANVAS_GHOST_AFFIRM_RE = /^(yes|yeah|yep|yup|sure|ok(ay)?|do it|please|go ahead|sounds good|let'?s do (it|that))\b/i;
+const CANVAS_GHOST_DECLINE_RE = /^(no|nah|nope|not (now|yet)|don'?t|leave (it|them))\b/i;
+// A request to undo grouping rather than propose it, wherever it lands in
+// the sentence — "ungroup those", "split it back up", "separate them".
+const CANVAS_GHOST_UNGROUP_RE = /ungroup|split.*(up|apart)|separate|pull.*apart|undo.*group/i;
 // Canvas "Connections" drawer (connector tool). Every id but the last two
 // matches a real n.source value in NOTES, so the checklist actually filters
 // the board; twitter/twitch aren't connected yet because there's no data
@@ -6868,6 +6946,15 @@ class Component extends DCLogic {
     // no longer opens.
     canvasGhostDraft: '',
     canvasGhostThread: [],
+    // What the ghost most recently offered to group — a topic or a
+    // cross-topic note field — so a plain "yes" knows what it's agreeing to
+    // instead of having to name it again. { kind: 'topic', topic } or
+    // { kind: 'field', field } or null.
+    canvasGhostPendingGroup: null,
+    // True for the brief window after a ghost-directed group/ungroup, so notes
+    // and their cluster box ease into place instead of teleporting — the
+    // regroup needs to be seen happening, not just discovered afterward.
+    canvasNotesAnimating: false,
     // Connections drawer — which sources are wired up and which of those are
     // actively included in what the canvas shows.
     connectionsPanelOpen: false,
@@ -7871,39 +7958,306 @@ class Component extends DCLogic {
     });
   };
   setCanvasGhostDraft = e => this.setState({ canvasGhostDraft: e.target.value });
-  submitCanvasGhost = () => {
-    const text = this.state.canvasGhostDraft.trim();
-    if (!text) return;
-    const hit = findCanvasGhostTheme(text);
-    this.setState(s => ({
-      canvasGhostThread: [...s.canvasGhostThread, { from: 'user', text }, { from: 'ghost', text: canvasGhostReply(hit) }],
-      canvasGhostDraft: ''
-    }));
-    if (hit) this.ghostFocusTopic(hit.id);
+  // A pending offer names either a theme or a cross-topic note field — this
+  // turns whichever one it is into the {id, label} shape the rest of
+  // askCanvasGhost can treat identically, so it never has to branch on kind
+  // more than once per request.
+  describeGhostTarget = target => target.kind === 'topic'
+    ? { id: target.topic.id, label: target.topic.label.split(' — ')[0], groupFn: () => this.groupTopicByGhost(target.topic.id) }
+    : { id: canvasFieldGroupId(target.field), label: target.field.label, groupFn: () => this.groupNoteFieldByGhost(target.field) };
+  // Named theme by its own title first, then named field, then — only once
+  // both specific checks have passed — a theme named indirectly by content.
+  // Field has to come before the content search: several of the field
+  // keywords ("quote", "volume"...) are themselves recurring note titles, so
+  // checking content first would just match a theme off its own field name.
+  // For ungroup only, falls further back to whatever's already pending or on
+  // screen.
+  resolveGhostTarget = (trimmed, forUngroup) => {
+    const labelHit = findCanvasGhostThemeByLabel(trimmed);
+    if (labelHit) return { kind: 'topic', topic: labelHit };
+    const fieldHit = findCanvasGhostNoteField(trimmed);
+    if (fieldHit) return { kind: 'field', field: fieldHit };
+    const contentHit = findCanvasGhostThemeByContent(trimmed, this.state.taskNotes);
+    if (contentHit) return { kind: 'topic', topic: contentHit };
+    if (!forUngroup) return null;
+    if (this.state.canvasGhostPendingGroup) return this.state.canvasGhostPendingGroup;
+    const focused = this.focusedCanvasTopic(this.state.taskNotes);
+    return focused ? { kind: 'topic', topic: focused } : null;
   };
+  // Shared by the free-text input and the suggestion chips below it — a chip
+  // is just a pre-written question asked the same way a typed one would be.
+  // Beyond describing the data, three things can actually happen to the
+  // canvas from here: a pending offer gets accepted (group), declined (leave
+  // it), or a theme or field gets named for an explicit ungroup —
+  // everything else falls through to the read-only reply it always gave.
+  askCanvasGhost = text => {
+    if (!text) return;
+    const trimmed = text.trim();
+    const pending = this.state.canvasGhostPendingGroup;
+    let reply, kind, nextPending = null;
+
+    if (pending && CANVAS_GHOST_AFFIRM_RE.test(trimmed)) {
+      const d = this.describeGhostTarget(pending);
+      d.groupFn();
+      reply = 'Done — "' + d.label + '" is its own group now.';
+      kind = 'grouped';
+    } else if (pending && CANVAS_GHOST_DECLINE_RE.test(trimmed)) {
+      reply = "Okay, I'll leave those where they are.";
+      kind = 'fallback';
+    } else if (CANVAS_GHOST_UNGROUP_RE.test(trimmed)) {
+      const target = this.resolveGhostTarget(trimmed, true);
+      if (target) {
+        const d = this.describeGhostTarget(target);
+        const did = this.ungroupGroupByGhost(d.id);
+        reply = did
+          ? 'Split "' + d.label + '" back into individual notes.'
+          : '"' + d.label + '" isn\'t grouped yet — nothing to split.';
+      } else {
+        reply = "I'm not sure which group you mean — name the theme or kind of note and I'll split it.";
+      }
+      kind = 'fallback';
+    } else {
+      const target = this.resolveGhostTarget(trimmed, false);
+      if (!target) {
+        reply = canvasGhostReply(null);
+        kind = 'fallback';
+      } else if (target.kind === 'topic') {
+        reply = canvasGhostReply(target.topic);
+        kind = 'grouping';
+        nextPending = target;
+      } else {
+        const count = this.state.taskNotes.filter(n => n.title === target.field.title).length;
+        reply = canvasGhostFieldReply(target.field, count);
+        kind = 'grouping';
+        nextPending = target;
+      }
+    }
+
+    // Tagged by kind, not sniffed back out of the reply text, so render() can
+    // pick the input's next placeholder off a fact instead of a string match.
+    this.setState(s => ({
+      canvasGhostThread: [...s.canvasGhostThread, { from: 'user', text }, { from: 'ghost', text: reply, kind }],
+      canvasGhostDraft: '',
+      canvasGhostPendingGroup: nextPending
+    }));
+  };
+  submitCanvasGhost = () => this.askCanvasGhost(this.state.canvasGhostDraft.trim());
+  askCanvasGhostSuggestion = text => () => this.askCanvasGhost(text);
   canvasGhostInputKeyDown = e => {
     if (e.key === 'Enter') { e.preventDefault(); this.submitCanvasGhost(); }
+  };
+  // A topic's centroid is the average center of its notes — what ghostFocusTopic
+  // zooms to, what highlightTopic pans to, and (in reverse) what render() uses
+  // to work out which topic the current pan is centered on.
+  topicCentroid = (topicId, notes) => {
+    const inTopic = notes.filter(n => n.topicId === topicId);
+    if (!inTopic.length) return null;
+    return {
+      x: inTopic.reduce((sum, n) => sum + n.x + NOTE_W / 2, 0) / inTopic.length,
+      y: inTopic.reduce((sum, n) => sum + n.y + NOTE_H / 2, 0) / inTopic.length
+    };
+  };
+  // Whichever topic's centroid sits closest to the viewport's center, in canvas
+  // space — i.e. whatever the user has actually panned or zoomed to look at.
+  focusedCanvasTopic = notes => {
+    const vp = this.viewportRef.current;
+    if (!vp) return null;
+    const scale = this.state.pan.scale;
+    const vx = (vp.clientWidth / 2 - this.state.pan.x) / scale;
+    const vy = (vp.clientHeight / 2 - this.state.pan.y) / scale;
+    let best = null, bestDist = Infinity;
+    TOPIC_GROUPS.forEach(t => {
+      const c = this.topicCentroid(t.id, notes);
+      if (!c) return;
+      const d = Math.hypot(c.x - vx, c.y - vy);
+      if (d < bestDist) { bestDist = d; best = t; }
+    });
+    return best;
+  };
+  // Pans/zooms so canvas-space point c ends up left-of-center — the ghost
+  // card covers the right third, so centering dead-on would zoom in on
+  // something the card itself is sitting over.
+  focusOnPoint = (c, groupIds) => {
+    const vp = this.viewportRef.current;
+    const vw = vp ? vp.clientWidth : 1000, vh = vp ? vp.clientHeight : 700;
+    const scale = 0.9;
+    this.setState({
+      highlightedGroup: groupIds && groupIds.size === 1 ? [...groupIds][0] : null,
+      smoothPan: true,
+      pan: { x: vw * 0.34 - c.x * scale, y: vh / 2 - c.y * scale, scale }
+    }, () => setTimeout(() => this.setState({ smoothPan: false }), 600));
   };
   // Unlike highlightTopic (used by the board's "View canvas" links, which only
   // pans so it doesn't yank the user's current zoom), the ghost agent should
   // read as zooming in on the thing it's pointing at.
   ghostFocusTopic = topicId => {
+    const c = this.topicCentroid(topicId, this.state.taskNotes);
+    if (!c) return;
     const notesInTopic = this.state.taskNotes.filter(n => n.topicId === topicId);
-    if (!notesInTopic.length) return;
-    const cx = notesInTopic.reduce((sum, n) => sum + n.x + NOTE_W / 2, 0) / notesInTopic.length;
-    const cy = notesInTopic.reduce((sum, n) => sum + n.y + NOTE_H / 2, 0) / notesInTopic.length;
-    const vp = this.viewportRef.current;
-    const vw = vp ? vp.clientWidth : 1000, vh = vp ? vp.clientHeight : 700;
-    const scale = 0.9;
-    const groupIds = new Set(notesInTopic.map(n => n.groupId).filter(Boolean));
-    this.setState({
-      highlightedGroup: groupIds.size === 1 ? [...groupIds][0] : null,
-      smoothPan: true,
-      // The ghost card sits over the right side of the canvas now, so the
-      // zoomed-in group is centered in the left portion instead of dead
-      // center, so the card never covers what it's pointing at.
-      pan: { x: vw * 0.34 - cx * scale, y: vh / 2 - cy * scale, scale }
-    }, () => setTimeout(() => this.setState({ smoothPan: false }), 600));
+    this.focusOnPoint(c, new Set(notesInTopic.map(n => n.groupId).filter(Boolean)));
+  };
+  rectsOverlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  // Everything a new cluster needs to steer clear of: every other group's own
+  // box (already padded with its label chip's clearance — see bucketBox), and
+  // every note that isn't part of the cluster being formed and isn't already
+  // covered by one of those boxes. excludeGroupId lets a group re-tidy against
+  // everything BUT its own current footprint, so it is never "blocked" by the
+  // spot it is about to vacate anyway.
+  canvasObstacleRects = (excludeGroupId, movingIds) => {
+    const moving = new Set(movingIds);
+    const rects = [];
+    this.state.taskGroups.forEach(g => {
+      if (g.id === excludeGroupId) return;
+      const box = resolveGroupBox(this.state.taskNotes.filter(n => !moving.has(n.id)), g.id, this.state.groupBoxes);
+      if (box) rects.push({ x: box.minX, y: box.minY, w: box.w, h: box.h });
+    });
+    this.state.taskNotes.forEach(n => {
+      if (moving.has(n.id) || n.groupId) return;
+      rects.push({ x: n.x - 20, y: n.y - 20, w: NOTE_W + 40, h: NOTE_H + 40 });
+    });
+    return rects;
+  };
+  // The nearest place a w×h box can sit clear of every obstacle, starting
+  // from where the cluster would naturally land and spiraling outward ring
+  // by ring — cheap, and the canvas is mostly open grid beyond its clusters,
+  // so a free ring is never far.
+  findFreeSpot = (x0, y0, w, h, obstacles) => {
+    const clear = (x, y) => !obstacles.some(o => this.rectsOverlap({ x, y, w, h }, o));
+    if (clear(x0, y0)) return { x: x0, y: y0 };
+    const step = Math.max(w, h) * 0.7, dirs = 8;
+    for (let ring = 1; ring <= 24; ring++) {
+      const r = ring * step;
+      for (let i = 0; i < dirs; i++) {
+        const angle = (i / dirs) * Math.PI * 2;
+        const x = x0 + Math.cos(angle) * r, y = y0 + Math.sin(angle) * r;
+        if (clear(x, y)) return { x, y };
+      }
+    }
+    return { x: x0, y: y0 };
+  };
+  // Arranges a set of notes into a tidy grid around their current centroid —
+  // used to actually pull notes together on group, instead of just drawing a
+  // box around wherever they already happened to be sitting. Nudged off that
+  // centroid, via findFreeSpot, when obstacles are given and it would
+  // otherwise land on something already there.
+  tidyClusterPositions = (notes, obstacles) => {
+    const cols = Math.max(1, Math.ceil(Math.sqrt(notes.length)));
+    const rows = Math.ceil(notes.length / cols);
+    const gapX = NOTE_W + 24, gapY = NOTE_H + 24;
+    const boxW = (cols - 1) * gapX + NOTE_W, boxH = (rows - 1) * gapY + NOTE_H;
+    const cx = notes.reduce((sum, n) => sum + n.x, 0) / notes.length;
+    const cy = notes.reduce((sum, n) => sum + n.y, 0) / notes.length;
+    let originX = cx - (cols - 1) * gapX / 2, originY = cy - (rows - 1) * gapY / 2;
+    if (obstacles && obstacles.length) {
+      const free = this.findFreeSpot(originX, originY, boxW, boxH, obstacles);
+      originX = free.x; originY = free.y;
+    }
+    const pos = {};
+    notes.forEach((n, i) => {
+      pos[n.id] = { x: originX + (i % cols) * gapX, y: originY + Math.floor(i / cols) * gapY };
+    });
+    return pos;
+  };
+  // The reverse of tidyClusterPositions: fans notes back out around the spot
+  // they were grouped at, so splitting a group reads as the notes actually
+  // scattering rather than the box around them just quietly disappearing.
+  scatterPositions = notes => {
+    const cx = notes.reduce((sum, n) => sum + n.x, 0) / notes.length;
+    const cy = notes.reduce((sum, n) => sum + n.y, 0) / notes.length;
+    const radius = NOTE_W * 0.9;
+    const pos = {};
+    notes.forEach((n, i) => {
+      const angle = (i / notes.length) * Math.PI * 2;
+      pos[n.id] = { x: cx + Math.cos(angle) * radius - NOTE_W / 2, y: cy + Math.sin(angle) * radius - NOTE_H / 2 };
+    });
+    return pos;
+  };
+  // The centroid of a tidyClusterPositions/scatterPositions result, computed
+  // straight from the positions about to be written rather than read back
+  // out of state — state updates land async, but the numbers are already in
+  // hand, so there's nothing to wait on.
+  centroidOfPositions = positions => {
+    const pts = Object.values(positions);
+    return {
+      x: pts.reduce((sum, p) => sum + p.x + NOTE_W / 2, 0) / pts.length,
+      y: pts.reduce((sum, p) => sum + p.y + NOTE_H / 2, 0) / pts.length
+    };
+  };
+  // Holds the "moving" look on screen long enough to actually see it, then
+  // drops back to instant so a later drag doesn't inherit the eased motion.
+  animateCanvasMove = () => {
+    this.setState({ canvasNotesAnimating: true });
+    clearTimeout(this._canvasMoveTimer);
+    this._canvasMoveTimer = setTimeout(() => this.setState({ canvasNotesAnimating: false }), 600);
+  };
+  // The same group/ungroup machinery the canvas toolbar's "Group" action and
+  // a bucket's own close button use (aiGroup, ungroup) — addressed by topic
+  // or by note field instead of a manual selection, so a chat reply can act
+  // instead of only describing what dragging the notes together would do.
+  // Each returns whether it actually changed anything, so askCanvasGhost can
+  // say so, and each does its own focusing rather than leaving the caller to
+  // work out where the notes it just moved ended up.
+  groupTopicByGhost = topicId => {
+    const notesInTopic = this.state.taskNotes.filter(n => n.topicId === topicId);
+    if (!notesInTopic.length) return false;
+    const movingIds = notesInTopic.map(n => n.id);
+    const obstacles = this.canvasObstacleRects(topicId, movingIds);
+    const positions = this.tidyClusterPositions(notesInTopic, obstacles);
+    const t = TOPIC_GROUPS.find(x => x.id === topicId);
+    this.setState(s => ({
+      taskGroups: s.taskGroups.find(g => g.id === topicId)
+        ? s.taskGroups
+        : [...s.taskGroups, { id: t.id, label: t.label, color: t.color, significant: t.significant }],
+      taskNotes: s.taskNotes.map(n => n.topicId === topicId
+        ? { ...n, groupId: topicId, x: positions[n.id].x, y: positions[n.id].y }
+        : n)
+    }), this.syncTasksToGroups);
+    this.animateCanvasMove();
+    this.focusOnPoint(this.centroidOfPositions(positions), new Set([topicId]));
+    return true;
+  };
+  // Pulls every note sharing a title (every "Top quote", every "Volume")
+  // into one new ad-hoc group, wherever on the canvas — and whichever
+  // existing groups — they were sitting in.
+  groupNoteFieldByGhost = field => {
+    const matches = this.state.taskNotes.filter(n => n.title === field.title);
+    if (!matches.length) return false;
+    const gid = canvasFieldGroupId(field);
+    const movingIds = matches.map(n => n.id);
+    const obstacles = this.canvasObstacleRects(gid, movingIds);
+    const positions = this.tidyClusterPositions(matches, obstacles);
+    this.setState(s => ({
+      taskGroups: s.taskGroups.find(g => g.id === gid)
+        ? s.taskGroups
+        : [...s.taskGroups, {
+            id: gid, label: field.label,
+            color: NEW_GROUP_COLORS[s.taskGroups.length % NEW_GROUP_COLORS.length],
+            significant: false, custom: true
+          }],
+      taskNotes: s.taskNotes.map(n => n.title === field.title
+        ? { ...n, groupId: gid, x: positions[n.id].x, y: positions[n.id].y }
+        : n)
+    }), this.syncTasksToGroups);
+    this.animateCanvasMove();
+    this.focusOnPoint(this.centroidOfPositions(positions), new Set([gid]));
+    return true;
+  };
+  // Generic on purpose — a groupId is a groupId whether it names a topic or a
+  // field, so one function scatters either kind back apart.
+  ungroupGroupByGhost = groupId => {
+    const notesInGroup = this.state.taskNotes.filter(n => n.groupId === groupId);
+    if (!notesInGroup.length) return false;
+    const positions = this.scatterPositions(notesInGroup);
+    this.setState(s => ({
+      taskGroups: s.taskGroups.filter(g => g.id !== groupId),
+      taskNotes: s.taskNotes.map(n => n.groupId === groupId
+        ? { ...n, groupId: null, x: positions[n.id].x, y: positions[n.id].y }
+        : n),
+      groupBoxes: (() => { const b = { ...s.groupBoxes }; delete b[groupId]; return b; })()
+    }), this.syncTasksToGroups);
+    this.animateCanvasMove();
+    this.focusOnPoint(this.centroidOfPositions(positions), null);
+    return true;
   };
 
   // ---- Connections drawer (connector tool) ----
@@ -7936,10 +8290,9 @@ class Component extends DCLogic {
   };
 
   highlightTopic = topicId => {
+    const c = this.topicCentroid(topicId, this.state.taskNotes);
+    if (!c) return;
     const notesInTopic = this.state.taskNotes.filter(n => n.topicId === topicId);
-    if (!notesInTopic.length) return;
-    const cx = notesInTopic.reduce((sum, n) => sum + n.x + NOTE_W / 2, 0) / notesInTopic.length;
-    const cy = notesInTopic.reduce((sum, n) => sum + n.y + NOTE_H / 2, 0) / notesInTopic.length;
     const vp = this.viewportRef.current;
     const vw = vp ? vp.clientWidth : 1000, vh = vp ? vp.clientHeight : 700;
     const scale = this.state.pan.scale;
@@ -7949,7 +8302,7 @@ class Component extends DCLogic {
       highlightedGroup: groupIds.size === 1 ? [...groupIds][0] : null,
       selectedIds: Object.fromEntries(notesInTopic.map(n => [n.id, true])),
       smoothPan: true,
-      pan: { x: vw / 2 - cx * scale, y: vh / 2 - cy * scale, scale }
+      pan: { x: vw / 2 - c.x * scale, y: vh / 2 - c.y * scale, scale }
     }, () => setTimeout(() => this.setState({ smoothPan: false }), 600));
   };
 
@@ -8886,6 +9239,36 @@ class Component extends DCLogic {
     this.state.taskGroups.forEach(g => { tGroupsById[g.id] = g; });
     const tSelectedCount = Object.keys(this.state.selectedIds).length;
 
+    // The ghost card's line follows the pan: while the user is still looking at
+    // the theme it opened on, it makes the case for starting there; once they've
+    // panned or zoomed to a different cluster, it switches to naming that one.
+    const canvasFocusedTopic = this.focusedCanvasTopic(tNotes) || topCanvasTheme;
+    const canvasGhostSuggestion = canvasFocusedTopic.id === topCanvasTheme.id
+      ? 'You might want to check out the data on ' + canvasFocusedTopic.label.split(' — ')[0].toLowerCase() + ' first...'
+      : "You're looking at " + canvasFocusedTopic.label.split(' — ')[0] + ' — ' + canvasFocusedTopic.relation;
+    // Ready-made questions so the free-text box never opens on a blank slate.
+    // Highest-confidence themes other than the one already named above, so a
+    // chip never just repeats the sentence sitting right next to it.
+    const canvasGhostSuggestedAsks = TOPIC_GROUPS
+      .filter(t => t.id !== canvasFocusedTopic.id)
+      .slice()
+      .sort((a, b) => b.confidence - a.confidence)
+      .slice(0, 3)
+      .map(t => {
+        const text = "What's happening with " + t.label.split(' — ')[0].toLowerCase() + '?';
+        return { key: t.id, text, onClick: this.askCanvasGhostSuggestion(text) };
+      });
+    // The placeholder models what you'd actually type next, not a generic
+    // invitation to type: an answer to whatever the ghost just asked, or —
+    // before there's anything to answer — the same first question offered as
+    // a chip, so the two never suggest two different things at once.
+    const lastGhostMsg = this.state.canvasGhostThread.filter(m => m.from === 'ghost').slice(-1)[0];
+    const canvasGhostPlaceholder = !lastGhostMsg
+      ? canvasGhostSuggestedAsks[0].text
+      : lastGhostMsg.kind === 'grouping'
+        ? "Yes, let's pull those notes."
+        : 'What else should I look into?';
+
     // A bucket rubber-bands around the card being dragged out of it and only lets
     // go once that card has actually left. "Left" is the same test the drop uses —
     // outside the pick-up bounds plus the stickiness margin — so the box snapping
@@ -8932,6 +9315,14 @@ class Component extends DCLogic {
       };
     }).filter(Boolean);
 
+    // Eases a ghost-directed group/ungroup into view instead of snapping —
+    // shared by the notes themselves and the cluster box drawn around them,
+    // so the box visibly resizes in step with the notes moving inside it.
+    // Cleared once the move finishes so a later manual drag stays 1:1 with
+    // the cursor rather than lagging behind it.
+    const canvasMoveTransition = this.state.canvasNotesAnimating
+      ? ['left', 'top', 'width', 'height'].map(p => p + ' 560ms cubic-bezier(0.22,1,0.36,1)').join(', ')
+      : 'none';
     const bucketsView = this.state.taskGroups.map(g => {
       const box = resolveGroupBox(tBucketNotes, g.id, this.state.groupBoxes);
       if (!box) return null;
@@ -8939,6 +9330,7 @@ class Component extends DCLogic {
       const isHi = this.state.highlightedGroup === g.id;
       return {
         left: box.minX + 'px', top: box.minY + 'px', width: box.w + 'px', height: box.h + 'px',
+        moveTransition: canvasMoveTransition,
         borderColor: col.border, bg: col.bg,
         borderWidth: g.significant ? '2px' : '1.5px',
         glow: (g.significant || isHi) ? ('0 0 60px 8px ' + col.bg) : 'none',
@@ -9021,6 +9413,7 @@ class Component extends DCLogic {
       if (shown) tMatchCount++;
       return {
         left: n.x + 'px', top: n.y + 'px',
+        moveTransition: canvasMoveTransition,
         bg: 'var(--bg-surface)',
         shadow: selected ? '0 0 0 2px var(--accent), var(--shadow-md)'
           : (tQuery && shown) ? '0 0 0 2px var(--accent-border), var(--shadow-md)'
@@ -9997,6 +10390,7 @@ class Component extends DCLogic {
       canvasGhostOpen: this.state.canvasTool === 'ghost',
       canvasGhostIconLg: ghostGradientIcon(48),
       canvasGhostSuggestion,
+      canvasGhostPlaceholder,
       canvasGhostDraft: this.state.canvasGhostDraft,
       setCanvasGhostDraft: this.setCanvasGhostDraft,
       canvasGhostInputKeyDown: this.canvasGhostInputKeyDown,
@@ -10008,6 +10402,8 @@ class Component extends DCLogic {
         text: m.text,
         color: m.from === 'user' ? 'var(--text-secondary)' : 'var(--accent)'
       })),
+      canvasGhostShowSuggestions: this.state.canvasGhostThread.length === 0,
+      canvasGhostSuggestedAsks,
       canvasToolRouteColor: this.state.canvasTool === 'route' ? 'var(--text-primary)' : 'var(--text-secondary)',
       // Connections drawer (Figma-adjacent — connector tool opens this instead
       // of drawing edges, so the canvas can be pointed at more feedback sources)
