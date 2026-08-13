@@ -2693,7 +2693,7 @@
               <span style="font:var(--text-h4);color:#fff">User Report Summary</span>
               <span style="align-self:flex-start;font:500 12px/16.2px var(--font-body);color:var(--warning);background:var(--warning-muted);padding:2px 8px;border-radius:4px">Behavior</span>
             </div>
-            <span style="font:400 14px/20px var(--font-body);color:#fff">Player cast Yuumi's passive shield and was interrupted mid-cast. The shield applied on the client but never registered server-side, so the ally took full damage through a shield that was visibly on them.</span>
+            <span style="font:400 14px/20px var(--font-body);color:#fff">Player cast Yasuo's Q over and over in an empty lane, and every single cast fired a full tornado — not just the third hit in the combo. The stack counter never dropped back down after the first tornado went off, so the client kept treating every later cast as already fully stacked.</span>
             <div style="display:flex;align-items:flex-end;gap:8px">
               <video src="assets/League.mp4" autoplay muted loop playsinline style="width:42px;height:42px;border-radius:6px;object-fit:cover;flex-shrink:0"></video>
               <span style="font:400 12px/16.2px var(--font-mono,ui-monospace,monospace);color:var(--text-secondary)">0:15</span>
@@ -2709,12 +2709,12 @@
                 <span style="font:500 12px/16px var(--font-body);color:#fff">Cursor Agent</span>
               </div>
             </div>
-            <span style="font:400 14px/20px var(--font-body);color:#fff">Based on the replay clip and player input history, this looks like a client/server state desync on cast interrupt — not a rendering issue.</span>
+            <span style="font:400 14px/20px var(--font-body);color:#fff">Based on the replay clip and the cast history, this looks like the Q stack counter never resetting after a tornado fires — not a targeting or hit-detection issue.</span>
             <sc-if value="{{ analyzedExpanded }}" hint-placeholder-val="{{ false }}">
               <div style="display:flex;flex-direction:column;gap:10px;font:400 14px/20px var(--font-body);color:#fff">
-                <span>When the cast is interrupted, <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">YuumiPassive::onCastComplete()</span> applies the shield locally before <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">AbilityState::syncToServer()</span> has confirmed it, so an interrupt leaves the two states diverged.</span>
-                <span>Likely source: <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">src/Game/Champions/Yuumi/YuumiPassive.cpp</span> around lines 418–461, called from <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">ChampionController.cpp</span>.</span>
-                <span style="color:var(--text-secondary)">Watch Vandiril’s recording through the cast interrupt to confirm.</span>
+                <span>The tornado fires and clears the stack UI, but <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">YasuoQ::onTornadoCast()</span> never calls back into <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">mStackCount</span> to reset it, so the counter stays pinned at 3 for every cast after that.</span>
+                <span>Likely source: <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">src/Game/Champions/Yasuo/YasuoQ.cpp</span> around lines 132–168, called from <span style="font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;color:var(--accent)">ChampionController.cpp</span>.</span>
+                <span style="color:var(--text-secondary)">Watch Vandiril’s recording through the second tornado to confirm.</span>
               </div>
               <span onClick="{{ openCursorIde }}" style="font:400 14px/20px var(--font-body);color:var(--text-secondary);text-decoration:underline;cursor:pointer">Go to Code</span>
             </sc-if>
@@ -2724,15 +2724,15 @@
           <div style="display:flex;flex-direction:column;gap:14px;padding:24px 20px;border-radius:12px;background:var(--bg-surface);border:1px solid var(--border-default);box-sizing:border-box">
             <span style="font:var(--text-h4);color:#fff">Player Log</span>
             <div style="display:flex;flex-direction:column;gap:6px;font:400 12px/16px var(--font-mono,ui-monospace,Menlo,monospace);color:var(--text-secondary)">
-              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:01</span><span style="color:#fff">MOVE cmd=(7420, 6180)</span></div>
-              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:02</span><span style="color:#fff">ATTACH ally=Ashe</span></div>
-              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:04</span><span style="color:#fff">CAST spell=YuumiPassive</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">10:14:01</span><span style="color:#fff">CAST spell=YasuoQ stack=1</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">10:14:02</span><span style="color:#fff">CAST spell=YasuoQ stack=2</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">10:14:03</span><span style="color:#fff">CAST spell=YasuoQ stack=3</span></div>
               <sc-if value="{{ playerLogExpanded }}" hint-placeholder-val="{{ false }}">
-                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:05</span><span style="color:#fff">INTERRUPT source=Knockup</span></div>
-                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:06</span><span style="color:var(--warning)">SYNC AbilityState → SKIPPED</span></div>
-                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:06</span><span style="color:var(--danger)">SHIELD applied client-side only</span></div>
-                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:07</span><span style="color:#fff">DAMAGE ally=Ashe absorbed=0</span></div>
-                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">14:32:09</span><span style="color:var(--danger)">STATE desync=true shield_client=true shield_server=false</span></div>
+                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">10:14:03</span><span style="color:#fff">TORNADO fired=true</span></div>
+                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">10:14:04</span><span style="color:var(--warning)">STACK reset=SKIPPED</span></div>
+                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">10:14:05</span><span style="color:var(--danger)">CAST spell=YasuoQ stack=3</span></div>
+                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">10:14:05</span><span style="color:var(--danger)">TORNADO fired=true</span></div>
+                <div style="display:flex;gap:8px"><span style="color:var(--text-tertiary);flex-shrink:0">10:14:06</span><span style="color:var(--danger)">CAST spell=YasuoQ stack=3</span></div>
               </sc-if>
             </div>
             <span onClick="{{ togglePlayerLog }}" style="font:400 14px/20px var(--font-body);color:var(--text-secondary);text-decoration:underline;cursor:pointer">{{ playerLogToggleLabel }}</span>
@@ -4426,6 +4426,66 @@ function canvasGhostReply(hit, wantsGroup) {
     ? "I'll fold that into how I'm grouping these themes — keep going and I'll adjust the clusters as you go."
     : "I'm not seeing a theme that matches that — try naming one of the clusters on screen.";
 }
+// A suggestion chip is asking about one specific note, not the theme in
+// general, so its answer needs to say something about that note's data —
+// but reading the note's own field text back verbatim isn't an answer, it's
+// an echo of the card already sitting open on canvas. Each entry here is a
+// distinct sentence that interprets what that connected source is showing,
+// keyed by note id so it never collapses into the literal field text.
+const CANVAS_GHOST_NOTE_INSIGHT = {
+  f1: "Reddit's 26.03 megathread alone accounts for well over four thousand mentions of the same input delay — this isn't spread thin across smaller threads, it's concentrated in one place.",
+  f2: 'The sentiment model flags this as the steepest sentiment drop of any theme this patch, with negative reactions running above four in five.',
+  f3: "Players keep describing the same half-beat lag between pressing an ability and seeing it fire — the phrasing barely changes from post to post, which usually means it's a shared, reproducible feeling rather than a handful of outliers.",
+  f4: "Telemetry lines the complaint volume up almost exactly with the new 30ms cast-queue window, not with connection quality — so this reads as a design change, not a network issue.",
+  f5: 'Official forum activity on the mythic removal spiked to nearly three thousand threads in just the first week, which is fast even for a change this visible.',
+  f6: "In-game survey responses put satisfaction with the item system down significantly versus last patch, with roughly two-thirds rating it worse.",
+  f7: "The most repeated request on Reddit is for an earlier power spike — as it stands, builds don't feel like they're doing anything until the third item completes.",
+  f8: "Community poll data breaks this down by role, and jungle players are voicing roughly three times the negativity that support players are — this isn't an even complaint across the roster.",
+  f9: 'Survey sentiment splits sharply here — the new HUD itself skews negative, while the redesigned menus in the same update are actually well-liked.',
+  f10: 'The recurring line on Discord is that the HUD photographs well but falls apart the moment a fight gets busy — a look-versus-legibility complaint, not an aesthetic one.',
+  f11: 'Of everything mentioned about the HUD, one element dominates the naming: health bar contrast comes up more than any other piece of the redesign.',
+  f12: "Support has logged ninety separate tickets from colorblind players since this shipped — enough volume that it reads as a structural accessibility gap, not a one-off.",
+  f13: 'One champion is driving more than a third of all balance discussion this patch — Smolder shows up in roughly 38% of every balance-related post.',
+  f14: "Telemetry backs the complaint up rather than contradicting it: Smolder's win rate is running 18 points above the expected band, so the sentiment here isn't just noise.",
+  f15: 'Not every balance complaint is actually about balance — the Viego threads on Discord describe behavior consistent with a bug, not with his win rate.',
+  f16: 'Rolled up across the poll, 41% of respondents call this the least balanced patch of the season — a materially worse read than prior patches got.',
+  f17: 'Reddit volume on the pass grind rate has climbed past 3,400 posts, making it one of the more heavily discussed monetization changes this patch.',
+  f18: "Survey responses from people who actually own the pass are lopsided — nearly three-quarters call the new tier pace worse than before.",
+  f19: 'The line recurring on Discord frames the grind as an obligation rather than a purchase — several owners describe it as feeling like unpaid work.',
+  f20: 'Actual completion behavior backs up the complaint — telemetry shows pass completion down 22% compared to the 26.02 pass.',
+  f21: 'App store reviews show a spike of over 1,300 one-star ratings specifically citing stutter since this patch shipped.',
+  f22: "Telemetry shows this isn't evenly distributed — nearly half of all reports are coming from machines already running below the minimum spec.",
+  f23: 'The recurring description on Reddit is stutter tied specifically to the recall animation, showing up on essentially every use since the patch.',
+  f24: 'Support ticket geography is lopsided here — Brazil and Turkey together account for more than half of every performance report filed.',
+  f25: 'The forum throughline since the reset is an asymmetry in how LP changes feel — losses read as heavier than equivalent gains do.',
+  f26: 'The phrase that keeps showing up on Reddit is players describing two losses as enough to undo a full week of progress.',
+  f27: "Telemetry shows ranked session length is actually down 9% since the patch — people are playing shorter ranked sessions than they were before.",
+  f28: 'Playtest timing shows a real regression here — completing a single shop purchase now takes 4.8 seconds, up from 2.9 seconds on the previous patch.',
+  f29: 'The most common shop complaint on Reddit is layout, not logic — recommended items sit below the fold for anyone on a standard 1080p display.',
+  f30: 'Support tickets confirm this is still an open bug — searching the shop with a partial champion name still returns zero results.',
+  f31: 'The throughline on Reddit is a contrast problem, not a clutter one — enemy and ally ability effects read as visually identical once a fight gets crowded.',
+  f32: 'The largest creator coverage on YouTube singles this patch out as the noisiest visual update in recent memory.',
+  f33: "Community poll respondents are converging on one specific fix — 62% want a slider that only dials down enemy effects, not the player's own.",
+  f34: 'Survey sentiment on the map art update is strongly favorable, with more than three-quarters of respondents rating it positively.',
+  f35: 'Of everything praised in the art update, one change leads consistently — the river and jungle lighting comes up first in nearly every thread.',
+  f36: 'The one recurring caveat on Discord is settings-dependent — the new brush edges lose readability once graphics quality is turned down.',
+  f37: 'Survey respondents single out queue times as the single most-praised change in this entire patch, ahead of anything else shipped.',
+  f38: 'The line recurring on Reddit calls this the clearest, most readable set of patch notes in years — a rare unprompted compliment.',
+  f39: 'Creator coverage on YouTube is unusually one-sided here — sentiment on the ARAM changes specifically is running 88% positive.',
+  f40: 'Community poll data shows real follow-through — three of the five most-requested asks from last patch actually shipped in this one.',
+  f41: 'App store review volume from brand-new accounts — under 20 games played — has climbed to over 400, a meaningful slice of total review activity.',
+  f42: 'Survey responses from new players converge on one specific point of confusion — the item shop tutorial is named more than any other onboarding step.',
+  f43: 'Telemetry shows day-7 retention for new accounts has actually slipped four points, which lines up with the tutorial confusion showing up elsewhere.',
+  f44: 'The throughline on Reddit is a mix balance issue — ability sound effects are getting buried underneath the new music bed rather than sitting above it.',
+  f45: 'The recurring complaint on Discord is a specific, actionable one — the Baron spawn cue is getting drowned out by the new theme music.',
+  f46: 'The clearest ask on the official forums is a reversion, not a new feature — players want independent music and SFX volume sliders restored.',
+  f47: 'Support has logged 260 tickets specifically about party voice chat dropping mid-game, which is enough volume to treat as a real regression rather than a one-off report.',
+  f48: 'Telemetry shows this is regionally concentrated, not global — nearly all of it traces back to EU West since the 26.03 rollout went out.'
+};
+function canvasGhostNoteReply(note, wantsGroup) {
+  const insight = CANVAS_GHOST_NOTE_INSIGHT[note.id] || note.body;
+  return insight + (wantsGroup ? ' Want me to pull those notes into their own group?' : '');
+}
 // Some requests aren't naming a theme at all — they're asking for one kind of
 // data point pulled together from every theme it shows up in ("all the
 // quotes", "the volume numbers"). Keyed by the exact title NOTES stores that
@@ -5962,8 +6022,8 @@ const MESSAGE_THREADS_SEED = [
     contactId: 'bernice',
     unread: 2,
     messages: [
-      { from: 'them', text: 'Reproduced the Yuumi shield desync on my machine \u2014 it only misses when the interrupt lands on the same tick as the cast finishing.', time: '9:12 AM' },
-      { from: 'me', text: 'That matches what Cursor flagged. The local apply happens before syncToServer gets an ack.', time: '9:15 AM' },
+      { from: 'them', text: 'Reproduced the Yasuo Q bug on my machine \u2014 once one tornado fires, the stack counter never drops back to zero, so every cast after that throws another.', time: '9:12 AM' },
+      { from: 'me', text: 'That matches what Cursor flagged. The tornado cast clears the stack UI but never actually resets the counter underneath it.', time: '9:15 AM' },
       { from: 'them', text: 'Then Viego and Aurelion Sol are probably the same bug wearing different hats. Want me to take all three as one fix?', time: '9:20 AM' }
     ]
   },
@@ -6388,7 +6448,7 @@ const FEEDBACK_URGENCY_LABEL = {
 // from the queue length, so adding tickets is what moves it.
 const FB_PAGE_SIZE = 20;
 const FEEDBACK_ROWS = [
-  { id: 1, urgency: 'p0', type: 'bug', ticket: '#BUG-1284719', subject: 'Yuumi passive desync on cast interrupt', topic: 'Champion behavior', squad: 'Champions', repro: '100%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'Vandiril', role: 'player', assignees: [1], date: 'Aug 7, 2026', dateSort: '2026-08-07' },
+  { id: 1, urgency: 'p0', type: 'bug', ticket: '#BUG-1284719', subject: 'Yasuo Q stack never resets, so every cast fires a tornado', topic: 'Champion behavior', squad: 'Champions', repro: '100%', status: 'Ready', channel: 'ingame', clip: true, reporter: 'Vandiril', role: 'player', assignees: [1], date: 'Aug 7, 2026', dateSort: '2026-08-07' },
   { id: 2, urgency: 'p0', type: 'bug', ticket: '#BUG-1283904', subject: 'Client crash on Wild Rift cross-region matchmaking', topic: 'Client & crashes', squad: 'Engine', repro: '78%', status: 'Ready', channel: 'support', clip: false, reporter: 'mossy_midlaner', role: null, assignees: [3, 1], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
   { id: 3, urgency: 'p1', type: 'bug', ticket: '#BUG-1284561', subject: 'Viego passive breaks Trinity Force spellblade cooldown', topic: 'Champion behavior', squad: 'Champions', repro: '100%', status: 'In Progress', channel: 'ingame', clip: true, reporter: 'euw_tessa', role: 'player', assignees: [1], date: 'Aug 6, 2026', dateSort: '2026-08-06' },
   { id: 4, urgency: 'p2', type: 'bug', ticket: '#BUG-1279842', subject: 'Champion select lock-in fails when a duo partner dodges', topic: 'Client & crashes', squad: 'Engine', repro: '62%', status: 'Ready', channel: 'discord', clip: false, reporter: 'duoq_calla', role: 'creator', assignees: [1, 0], date: 'Aug 5, 2026', dateSort: '2026-08-05' },
@@ -6475,22 +6535,22 @@ const TICKET_DETAILS = {
   '#BUG-1284719': {
     kind: 'Behavior',
     clipLength: '0:10',
-    summary: 'Player cast Yuumi\u2019s passive shield and was interrupted mid-cast. The shield applied on the client but never registered server-side, so the ally took full damage through a shield that was visibly on them.',
-    analysis: 'Based on the replay clip and player input history, this looks like a client/server state desync on cast interrupt \u2014 not a rendering issue.',
+    summary: 'Player cast Yasuo\u2019s Q over and over in an empty lane, and every single cast fired a full tornado \u2014 not just the third hit in the combo. The stack counter never dropped back down after the first tornado went off, so the client kept treating every later cast as already fully stacked.',
+    analysis: 'Based on the replay clip and the cast history, this looks like the Q stack counter never resetting after a tornado fires \u2014 not a targeting or hit-detection issue.',
     analysisDetail: [
-      'When the cast is interrupted, YuumiPassive::onCastComplete() applies the shield locally before AbilityState::syncToServer() has confirmed it, so an interrupt leaves the two states diverged.',
-      'Reproduce by attaching to an ally, starting the passive cast, then taking a knockup mid-cast.'
+      'The tornado fires and clears the stack UI, but YasuoQ::onTornadoCast() never calls back into mStackCount to reset it, so the counter stays pinned at 3 for every cast after that.',
+      'Reproduce by landing two Q hits to trigger one tornado, then casting Q again with no target nearby \u2014 it fires another tornado immediately.'
     ],
-    source: 'src/Game/Champions/Yuumi/YuumiPassive.cpp:418\u2013461',
+    source: 'src/Game/Champions/Yasuo/YasuoQ.cpp:132\u2013168',
     log: [
-      { t: '14:32:01', m: 'MOVE cmd=(7420, 6180)' },
-      { t: '14:32:02', m: 'ATTACH ally=Ashe' },
-      { t: '14:32:04', m: 'CAST spell=YuumiPassive' },
-      { t: '14:32:05', m: 'INTERRUPT source=Knockup' },
-      { t: '14:32:06', m: 'SYNC AbilityState \u2192 SKIPPED', level: 'warn' },
-      { t: '14:32:06', m: 'SHIELD applied client-side only', level: 'error' },
-      { t: '14:32:07', m: 'DAMAGE ally=Ashe absorbed=0' },
-      { t: '14:32:09', m: 'STATE desync=true shield_client=true shield_server=false', level: 'error' }
+      { t: '10:14:01', m: 'CAST spell=YasuoQ stack=1' },
+      { t: '10:14:02', m: 'CAST spell=YasuoQ stack=2' },
+      { t: '10:14:03', m: 'CAST spell=YasuoQ stack=3' },
+      { t: '10:14:03', m: 'TORNADO fired=true' },
+      { t: '10:14:04', m: 'STACK reset=SKIPPED', level: 'warn' },
+      { t: '10:14:05', m: 'CAST spell=YasuoQ stack=3', level: 'error' },
+      { t: '10:14:05', m: 'TORNADO fired=true', level: 'error' },
+      { t: '10:14:06', m: 'CAST spell=YasuoQ stack=3', level: 'error' }
     ]
   },
   '#BUG-1284561': {
@@ -6528,7 +6588,7 @@ const TICKET_DETAILS = {
     analysis: 'The VFX scale was bumped in 26.03 without updating the collision capsule. QA already has a PBE build waiting.',
     analysisDetail: [
       'AurelionSolQ::getHitRadius() still returns the pre-26.03 value while the particle system uses the new scale.',
-      'Same ability-state family as Yuumi and Viego \u2014 Champions squad should take all three together.'
+      'Same ability-state family as Yasuo and Viego \u2014 Champions squad should take all three together.'
     ],
     source: 'src/Game/Champions/AurelionSol/AurelionSolQ.cpp:88\u201399',
     log: [
@@ -6591,7 +6651,7 @@ const FB_TAG_ORDER = ['bug', 'feedback', 'ingame', 'discord', 'support', 'reddit
 
 // Narrative summaries shown in "Group by topic" headers (Figma 212:23149).
 const FEEDBACK_TOPIC_SUMMARIES = {
-  'Champion behavior': 'Yuumi, Viego and Aurelion Sol are all mis-resolving ability state',
+  'Champion behavior': 'Yasuo, Viego and Aurelion Sol are all mis-resolving ability state',
   'Client & crashes': 'Cross-region matchmaking and champ select are crashing or hard-locking the client',
   'Ranked & progression': 'Ranked wins are not crediting LP when a shard fails over mid-write',
   'Performance & hardware': 'Recall animation stutters on low-end hardware',
@@ -8085,7 +8145,7 @@ class Component extends DCLogic {
         reply = canvasGhostReply(null, wantsGroup);
         kind = wantsGroup ? 'grouping' : 'fallback';
       } else if (target.kind === 'topic') {
-        reply = canvasGhostReply(target.topic, wantsGroup);
+        reply = target.note ? canvasGhostNoteReply(target.note, wantsGroup) : canvasGhostReply(target.topic, wantsGroup);
         kind = wantsGroup ? 'grouping' : 'fallback';
         nextPending = wantsGroup ? target : null;
       } else {
@@ -8113,7 +8173,7 @@ class Component extends DCLogic {
     });
   };
   submitCanvasGhost = () => this.askCanvasGhost(this.state.canvasGhostDraft.trim());
-  askCanvasGhostSuggestion = (text, topic) => () => this.askCanvasGhost(text, topic ? { kind: 'topic', topic } : null);
+  askCanvasGhostSuggestion = (text, topic, note) => () => this.askCanvasGhost(text, topic ? { kind: 'topic', topic, note } : null);
   canvasGhostInputKeyDown = e => {
     if (e.key === 'Enter') { e.preventDefault(); this.submitCanvasGhost(); }
   };
@@ -8836,7 +8896,7 @@ class Component extends DCLogic {
   };
 
   // "Go to Code" hands the ticket to Cursor. The recording panel is written
-  // against the Yuumi report, so that is the fallback when no row is selected.
+  // against the Yasuo report, so that is the fallback when no row is selected.
   //
   // Cursor is a separate application, so it gets its own window rather than a
   // tab or an inline panel — the dashboard stays put behind it. If the browser
@@ -8874,7 +8934,7 @@ class Component extends DCLogic {
 
   cursorFileFor = (ticket) => {
     const d = TICKET_DETAILS[ticket];
-    return d && d.source ? String(d.source).replace(/:\d+.*$/, '').split('/').pop() : 'YuumiPassive.cpp';
+    return d && d.source ? String(d.source).replace(/:\d+.*$/, '').split('/').pop() : 'YasuoQ.cpp';
   };
 
   openCursorWindow = (url) => {
@@ -9340,12 +9400,17 @@ class Component extends DCLogic {
     // is currently looking at — not other themes — so a chip always asks
     // something concrete about the cluster on screen ("summarize the player
     // quotes") instead of a generic pointer at a different one.
+    // Each chip stays tied to the specific note it was built from, so
+    // clicking it answers with that note's own data point instead of the
+    // theme-level relation sentence already sitting in the line above.
     const canvasGhostSuggestedAsks = tNotes
-      .filter(n => n.topicId === canvasFocusedTopic.id)
-      .map(n => CANVAS_GHOST_FIELD_ASK[n.title])
-      .filter((text, i, arr) => text && arr.indexOf(text) === i)
+      .filter(n => n.topicId === canvasFocusedTopic.id && CANVAS_GHOST_FIELD_ASK[n.title])
+      .filter((n, i, arr) => arr.findIndex(x => x.title === n.title) === i)
       .slice(0, 3)
-      .map((text, i) => ({ key: canvasFocusedTopic.id + '_ask' + i, text, onClick: this.askCanvasGhostSuggestion(text, canvasFocusedTopic) }));
+      .map((n, i) => {
+        const text = CANVAS_GHOST_FIELD_ASK[n.title];
+        return { key: canvasFocusedTopic.id + '_ask' + i, text, onClick: this.askCanvasGhostSuggestion(text, canvasFocusedTopic, n) };
+      });
     // The placeholder models what you'd actually type next, not a generic
     // invitation to type: an answer to whatever the ghost just asked, or —
     // before there's anything to answer — the same first question offered as
@@ -10672,7 +10737,7 @@ class Component extends DCLogic {
       // it is about to open rather than just "an external app".
       ccTarget: (() => {
         const d = TICKET_DETAILS[this.state.cursorTicket || '#BUG-1284719'];
-        return d && d.source ? String(d.source) : 'src/Game/Champions/Yuumi/YuumiPassive.cpp:418\u2013461';
+        return d && d.source ? String(d.source) : 'src/Game/Champions/Yasuo/YasuoQ.cpp:132\u2013168';
       })(),
       showCursorIde: this.state.showCursorIde,
       openCursorIde: this.openCursorIde,
@@ -10680,7 +10745,7 @@ class Component extends DCLogic {
       cursorIdeSrc: 'Cursor%20IDE.html?ticket=' + encodeURIComponent(this.state.cursorTicket || '#BUG-1284719'),
       cursorIdeFile: (() => {
         const d = TICKET_DETAILS[this.state.cursorTicket || '#BUG-1284719'];
-        return d && d.source ? String(d.source).replace(/:\d+.*$/, '').split('/').pop() : 'YuumiPassive.cpp';
+        return d && d.source ? String(d.source).replace(/:\d+.*$/, '').split('/').pop() : 'YasuoQ.cpp';
       })(),
       cursorBackIcon: React.createElement('svg', { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', style: { flexShrink: 0, display: 'block' } },
         React.createElement('path', { d: 'M19 12H5m0 0 6-6m-6 6 6 6', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })
