@@ -394,14 +394,16 @@
       display: flex; align-items: center; gap: 10px; padding: 8px 6px; border-radius: var(--radius-sm);
     }
     .connections-source-row:hover { background: var(--bg-surface-2); }
-    .connections-source-icon { display: flex; flex-shrink: 0; color: var(--text-tertiary); }
     .connections-source-name { flex: 1; min-width: 0; font: 400 13.5px/1.4 var(--font-body); color: var(--text-primary); overflow-wrap: break-word; }
     .connections-connect-btn {
+      display: inline-flex; align-items: center; gap: 5px;
       flex-shrink: 0; height: 26px; padding: 0 10px; border: 1px solid var(--border-default);
       border-radius: var(--radius-full); background: transparent; color: var(--text-secondary);
       font: 500 12px/1 var(--font-body); cursor: pointer; transition: border-color 140ms ease, color 140ms ease;
     }
     .connections-connect-btn:hover { border-color: var(--accent-border); color: var(--accent); }
+    .connections-connect-btn:disabled { opacity: 0.7; cursor: default; }
+    .connections-connect-btn:disabled:hover { border-color: var(--border-default); color: var(--text-secondary); }
     .connections-upload-btn {
       display: flex; align-items: center; justify-content: center; gap: 8px;
       height: 40px; border: 1px dashed var(--border-strong); border-radius: var(--radius-md);
@@ -3555,7 +3557,6 @@
                   <sc-for list="{{ canvasSourcesConnected }}" as="src" hint-placeholder-count="8">
                     <div onClick="{{ src.onToggle }}" class="connections-source-row" style="cursor:pointer">
                       <span class="{{ src.boxClass }}">{{ src.checkIcon }}</span>
-                      <span class="connections-source-icon">{{ src.icon }}</span>
                       <span class="connections-source-name">{{ src.name }}</span>
                     </div>
                   </sc-for>
@@ -3565,9 +3566,8 @@
                     <span class="connections-drawer-label">Connect a source</span>
                     <sc-for list="{{ canvasSourcesAvailable }}" as="src" hint-placeholder-count="2">
                       <div class="connections-source-row">
-                        <span class="connections-source-icon">{{ src.icon }}</span>
                         <span class="connections-source-name">{{ src.name }}</span>
-                        <button type="button" onClick="{{ src.onConnect }}" class="connections-connect-btn">Connect</button>
+                        <button type="button" onClick="{{ src.onConnect }}" disabled="{{ src.connecting }}" class="connections-connect-btn">{{ src.connectIcon }}{{ src.connectLabel }}</button>
                       </div>
                     </sc-for>
                   </div>
@@ -6963,6 +6963,8 @@ class Component extends DCLogic {
     // actively included in what the canvas shows.
     connectionsPanelOpen: false,
     canvasSources: CANVAS_SOURCE_DEFS.map(s => ({ ...s, active: s.connected })),
+    // Source ids currently mid-"Connect" click, showing a spinner before they land in the connected list.
+    connectingSourceIds: [],
     // Which canvas note has its stat-breakdown drawer open.
     noteDetailId: null
   };
@@ -8286,9 +8288,18 @@ class Component extends DCLogic {
   toggleCanvasSourceActive = id => () => this.setState(s => ({
     canvasSources: s.canvasSources.map(src => src.id === id ? { ...src, active: !src.active } : src)
   }));
-  connectCanvasSource = id => () => this.setState(s => ({
-    canvasSources: s.canvasSources.map(src => src.id === id ? { ...src, connected: true, active: true } : src)
-  }));
+  connectCanvasSource = id => () => {
+    if (this.state.connectingSourceIds.includes(id)) return;
+    this.setState(s => ({ connectingSourceIds: [...s.connectingSourceIds, id] }));
+    setTimeout(() => {
+      const src = this.state.canvasSources.find(x => x.id === id);
+      this.setState(s => ({
+        connectingSourceIds: s.connectingSourceIds.filter(x => x !== id),
+        canvasSources: s.canvasSources.map(src => src.id === id ? { ...src, connected: true, active: true } : src)
+      }));
+      if (src) this.showToast('Connected ' + src.name);
+    }, 700);
+  };
   triggerCanvasUpload = () => { if (this.canvasUploadInputRef.current) this.canvasUploadInputRef.current.click(); };
   uploadCanvasFile = e => {
     const file = e.target.files && e.target.files[0];
@@ -10433,17 +10444,23 @@ class Component extends DCLogic {
       canvasSourcesConnected: this.state.canvasSources.filter(s => s.connected).map(s => ({
         key: s.id,
         name: s.name,
-        icon: s.kind === 'social' ? navIcon('messageDots', 16, false) : taskIcon('checkCircle', 16),
         boxClass: s.active ? 'td-step-box is-on' : 'td-step-box',
         checkIcon: s.active ? taskIcon('check', 12) : '',
         onToggle: this.toggleCanvasSourceActive(s.id)
       })),
-      canvasSourcesAvailable: this.state.canvasSources.filter(s => !s.connected).map(s => ({
-        key: s.id,
-        name: s.name,
-        icon: navIcon('messageDots', 16, false),
-        onConnect: this.connectCanvasSource(s.id)
-      })),
+      canvasSourcesAvailable: this.state.canvasSources.filter(s => !s.connected).map(s => {
+        const connecting = this.state.connectingSourceIds.includes(s.id);
+        return {
+          key: s.id,
+          name: s.name,
+          connecting,
+          connectIcon: connecting ? React.createElement('span', {
+            style: { display: 'inline-flex', animation: 'dc-spin 0.8s linear infinite' }
+          }, navIcon('refresh', 12, false)) : null,
+          connectLabel: connecting ? 'Connecting…' : 'Connect',
+          onConnect: this.connectCanvasSource(s.id)
+        };
+      }),
       hasAvailableSources: this.state.canvasSources.some(s => !s.connected),
       canvasUploadInputRef: this.canvasUploadInputRef,
       triggerCanvasUpload: this.triggerCanvasUpload,
