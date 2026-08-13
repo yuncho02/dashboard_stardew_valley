@@ -4414,11 +4414,17 @@ function findCanvasGhostThemeByContent(text, notes) {
 function findCanvasGhostTheme(text, notes) {
   return findCanvasGhostThemeByLabel(text) || (notes ? findCanvasGhostThemeByContent(text, notes) : null);
 }
-function canvasGhostReply(hit) {
+// The grouping offer is only worth asking when the user actually said
+// something group-shaped — a plain content question ("what's driving the
+// sentiment here?") should just get answered, not followed by an unrelated
+// pitch to reorganize the board.
+function canvasGhostReply(hit, wantsGroup) {
   if (hit) {
-    return hit.relation + ' Want me to pull those notes into their own group?';
+    return hit.relation + (wantsGroup ? ' Want me to pull those notes into their own group?' : '');
   }
-  return "I'll fold that into how I'm grouping these themes — keep going and I'll adjust the clusters as you go.";
+  return wantsGroup
+    ? "I'll fold that into how I'm grouping these themes — keep going and I'll adjust the clusters as you go."
+    : "I'm not seeing a theme that matches that — try naming one of the clusters on screen.";
 }
 // Some requests aren't naming a theme at all — they're asking for one kind of
 // data point pulled together from every theme it shows up in ("all the
@@ -4439,9 +4445,42 @@ function findCanvasGhostNoteField(text) {
 function canvasFieldGroupId(field) {
   return 'field_' + field.title.toLowerCase().replace(/[^a-z0-9]+/g, '_');
 }
-function canvasGhostFieldReply(field, count) {
-  return '"' + field.label + '" shows up on ' + count + ' different themes right now — want me to pull them into their own group?';
+function canvasGhostFieldReply(field, count, wantsGroup) {
+  return '"' + field.label + '" shows up on ' + count + ' different themes right now' + (wantsGroup ? ' — want me to pull them into their own group?' : '.');
 }
+// The canvas ghost card's suggestion chips are built from whichever note
+// fields actually sit under the theme the user is currently looking at, so
+// a chip always names something real in the cluster on screen instead of
+// pointing at a different one. Keyed by the exact title NOTES stores that
+// field under — same key space as CANVAS_NOTE_FIELD_GROUPS above.
+const CANVAS_GHOST_FIELD_ASK = {
+  'Top quote': 'Summarize the main themes in the player quotes.',
+  'Volume': 'Where is this volume actually coming from?',
+  'Sentiment': "What's driving the sentiment here?",
+  'Correlation': 'Is this actually caused by the patch, or something else?',
+  'Top ask': 'Summarize what players are asking for here.',
+  'Behavior': 'How is this changing player behavior?',
+  'Creator take': 'What are creators saying about this?',
+  'Who is loudest': "Who's the loudest voice on this, and why?",
+  'Named element': 'What specific part of this gets named most?',
+  'Accessibility': 'What accessibility issues does this raise?',
+  'Loudest name': "Who's the biggest name driving this?",
+  'Data check': 'Does the telemetry back this up?',
+  'Counterpoint': 'Is there a counterargument to this?',
+  'Overall read': "What's the overall read on this?",
+  'Top complaint': "What's the biggest complaint here?",
+  'Still broken': "What's still broken here?",
+  'Theme': 'Summarize the throughline across these posts.',
+  'Most praised': "What's getting the most praise?",
+  'Caveat': "What's the catch here?",
+  'Top positive': "What's the strongest positive signal?",
+  'Carry-over': 'What carried over from last patch?',
+  'Confusion': 'Where are players getting confused?',
+  'Where': 'Where is this concentrated?',
+  'Who is hit': "Who's actually affected by this?",
+  'Task time': 'How much slower has this gotten?',
+  'Regions': 'Which regions is this concentrated in?'
+};
 // Replies to the ghost's own offer, not a fresh question — checked before
 // findCanvasGhostTheme so a bare "yes" is never mistaken for a topic name.
 const CANVAS_GHOST_AFFIRM_RE = /^(yes|yeah|yep|yup|sure|ok(ay)?|do it|please|go ahead|sounds good|let'?s do (it|that))\b/i;
@@ -4449,6 +4488,10 @@ const CANVAS_GHOST_DECLINE_RE = /^(no|nah|nope|not (now|yet)|don'?t|leave (it|th
 // A request to undo grouping rather than propose it, wherever it lands in
 // the sentence — "ungroup those", "split it back up", "separate them".
 const CANVAS_GHOST_UNGROUP_RE = /ungroup|split.*(up|apart)|separate|pull.*apart|undo.*group/i;
+// An explicit ask to organize notes rather than just discuss them — this is
+// what gates the "want me to pull those into their own group?" offer, so a
+// plain content question never gets a grouping pitch bolted onto the end.
+const CANVAS_GHOST_GROUP_INTENT_RE = /\bgroup(s|ed|ing)?\b|\bcluster(s|ed|ing)?\b|\bcombine\b|\borganiz(e|ing)\b|\borganis(e|ing)\b|\bmerge\b|(put|pull|gather|bring).*together/i;
 // Canvas "Connections" drawer (connector tool). Every id but the last two
 // matches a real n.source value in NOTES, so the checklist actually filters
 // the board; twitter/twitch aren't connected yet because there's no data
@@ -7996,7 +8039,12 @@ class Component extends DCLogic {
   // canvas from here: a pending offer gets accepted (group), declined (leave
   // it), or a theme or field gets named for an explicit ungroup —
   // everything else falls through to the read-only reply it always gave.
-  askCanvasGhost = text => {
+  // `presetTarget` lets a suggestion chip skip the text search entirely: the
+  // chip already knows it's asking about the theme on screen (that's the
+  // whole point of scoping chips to it), so a phrasing like "summarize the
+  // quotes" answers about that theme instead of getting misread as a request
+  // for quotes pooled across every theme.
+  askCanvasGhost = (text, presetTarget) => {
     if (!text) return;
     const trimmed = text.trim();
     const focusedNow = (this.focusedCanvasTopic(this.state.taskNotes) || topCanvasTheme).id;
@@ -8028,19 +8076,23 @@ class Component extends DCLogic {
       }
       kind = 'fallback';
     } else {
-      const target = this.resolveGhostTarget(trimmed, false);
+      const target = presetTarget || this.resolveGhostTarget(trimmed, false);
+      // A suggestion chip's text IS the ask, so its own wording decides
+      // whether this reads as a grouping request — same rule as anything
+      // typed by hand, just checked against the chip's fixed text instead.
+      const wantsGroup = CANVAS_GHOST_GROUP_INTENT_RE.test(trimmed);
       if (!target) {
-        reply = canvasGhostReply(null);
-        kind = 'fallback';
+        reply = canvasGhostReply(null, wantsGroup);
+        kind = wantsGroup ? 'grouping' : 'fallback';
       } else if (target.kind === 'topic') {
-        reply = canvasGhostReply(target.topic);
-        kind = 'grouping';
-        nextPending = target;
+        reply = canvasGhostReply(target.topic, wantsGroup);
+        kind = wantsGroup ? 'grouping' : 'fallback';
+        nextPending = wantsGroup ? target : null;
       } else {
         const count = this.state.taskNotes.filter(n => n.title === target.field.title).length;
-        reply = canvasGhostFieldReply(target.field, count);
-        kind = 'grouping';
-        nextPending = target;
+        reply = canvasGhostFieldReply(target.field, count, wantsGroup);
+        kind = wantsGroup ? 'grouping' : 'fallback';
+        nextPending = wantsGroup ? target : null;
       }
     }
 
@@ -8050,15 +8102,18 @@ class Component extends DCLogic {
     // was actually asked about — so render() can tell, on the next pan or
     // zoom, whether the user is still looking at the same cluster or has
     // moved on to a different one.
-    this.setState(s => ({
-      canvasGhostThread: [...s.canvasGhostThread, { from: 'user', text }, { from: 'ghost', text: reply, kind }],
+    // No running transcript: each ask replaces the last exchange rather than
+    // appending to it, so the card only ever shows the question just asked,
+    // never a growing log of everything asked before it.
+    this.setState({
+      canvasGhostThread: [{ from: 'user', text }, { from: 'ghost', text: reply, kind }],
       canvasGhostDraft: '',
       canvasGhostPendingGroup: nextPending,
       canvasGhostThreadTopicId: focusedNow
-    }));
+    });
   };
   submitCanvasGhost = () => this.askCanvasGhost(this.state.canvasGhostDraft.trim());
-  askCanvasGhostSuggestion = text => () => this.askCanvasGhost(text);
+  askCanvasGhostSuggestion = (text, topic) => () => this.askCanvasGhost(text, topic ? { kind: 'topic', topic } : null);
   canvasGhostInputKeyDown = e => {
     if (e.key === 'Enter') { e.preventDefault(); this.submitCanvasGhost(); }
   };
@@ -9271,29 +9326,32 @@ class Component extends DCLogic {
     const canvasGhostSuggestion = canvasFocusedTopic.id === topCanvasTheme.id
       ? topCanvasTheme.relation + ' Want to start there?'
       : "You're looking at " + canvasFocusedTopic.label.split(' — ')[0] + ' — ' + canvasFocusedTopic.relation;
-    // The chips go quiet once a conversation starts, but only about the topic
-    // that conversation was actually about — pan or zoom to a different
-    // cluster and they come back, now offering fresh questions about
-    // wherever the user has actually moved on to.
+    // Pan or zoom to a different cluster and the last exchange is gone, not
+    // just quiet — the card drops straight back to the interpretation line
+    // and fresh chips for wherever the user actually moved on to, instead of
+    // leaving a stale answer sitting under a topic it isn't about anymore.
     const canvasGhostMovedOn = this.state.canvasGhostThread.length > 0 &&
       this.state.canvasGhostThreadTopicId !== canvasFocusedTopic.id;
+    // There is never a running transcript to render, only the most recent
+    // exchange (if any) about the theme actually on screen right now.
+    const canvasGhostVisibleThread = canvasGhostMovedOn ? [] : this.state.canvasGhostThread;
     // Ready-made questions so the free-text box never opens on a blank slate.
-    // Highest-confidence themes other than the one already named above, so a
-    // chip never just repeats the sentence sitting right next to it.
-    const canvasGhostSuggestedAsks = TOPIC_GROUPS
-      .filter(t => t.id !== canvasFocusedTopic.id)
-      .slice()
-      .sort((a, b) => b.confidence - a.confidence)
+    // Pulled from whatever note fields actually sit under the theme the user
+    // is currently looking at — not other themes — so a chip always asks
+    // something concrete about the cluster on screen ("summarize the player
+    // quotes") instead of a generic pointer at a different one.
+    const canvasGhostSuggestedAsks = tNotes
+      .filter(n => n.topicId === canvasFocusedTopic.id)
+      .map(n => CANVAS_GHOST_FIELD_ASK[n.title])
+      .filter((text, i, arr) => text && arr.indexOf(text) === i)
       .slice(0, 3)
-      .map(t => {
-        const text = "What's happening with " + t.label.split(' — ')[0].toLowerCase() + '?';
-        return { key: t.id, text, onClick: this.askCanvasGhostSuggestion(text) };
-      });
+      .map((text, i) => ({ key: canvasFocusedTopic.id + '_ask' + i, text, onClick: this.askCanvasGhostSuggestion(text, canvasFocusedTopic) }));
     // The placeholder models what you'd actually type next, not a generic
     // invitation to type: an answer to whatever the ghost just asked, or —
     // before there's anything to answer — the same first question offered as
-    // a chip, so the two never suggest two different things at once.
-    const lastGhostMsg = this.state.canvasGhostThread.filter(m => m.from === 'ghost').slice(-1)[0];
+    // a chip, so the two never suggest two different things at once. Reset
+    // right along with the thread once the user has moved on.
+    const lastGhostMsg = canvasGhostVisibleThread.filter(m => m.from === 'ghost').slice(-1)[0];
     const canvasGhostPlaceholder = !lastGhostMsg
       ? canvasGhostSuggestedAsks[0].text
       : lastGhostMsg.kind === 'grouping'
@@ -10427,13 +10485,13 @@ class Component extends DCLogic {
       canvasGhostInputKeyDown: this.canvasGhostInputKeyDown,
       submitCanvasGhost: this.submitCanvasGhost,
       canvasGhostSendIcon: taskIcon('arrowUp', 16),
-      canvasGhostHasThread: this.state.canvasGhostThread.length > 0,
-      canvasGhostThread: this.state.canvasGhostThread.map((m, i) => ({
+      canvasGhostHasThread: canvasGhostVisibleThread.length > 0,
+      canvasGhostThread: canvasGhostVisibleThread.map((m, i) => ({
         key: 'cg' + i,
         text: m.text,
         color: m.from === 'user' ? 'var(--text-secondary)' : 'var(--accent)'
       })),
-      canvasGhostShowSuggestions: this.state.canvasGhostThread.length === 0 || canvasGhostMovedOn,
+      canvasGhostShowSuggestions: canvasGhostVisibleThread.length === 0,
       canvasGhostSuggestedAsks,
       canvasToolRouteColor: this.state.canvasTool === 'route' ? 'var(--text-primary)' : 'var(--text-secondary)',
       // Connections drawer (Figma-adjacent — connector tool opens this instead
